@@ -22,7 +22,25 @@ export function HomePage() {
           />
         </Helmet>
         <Div>
-          <RequestsBoard />
+          <RequestsBoard
+            requests={{
+              pendingReview: [
+                {
+                  id: 'hi',
+                  itemDescription: '',
+                  amount: 0,
+                  teamBudget: '',
+                  isFood: false,
+                  images: [],
+                  status: '',
+                },
+              ],
+              underReview: [],
+              errors: [],
+              approved: [],
+              declined: [],
+            }}
+          />
         </Div>
       </CssBaseline>
     </ThemeProvider>

@@ -7,3 +7,11 @@ export interface Request {
   images: any[];
   status: string;
 }
+
+export interface AllRequests {
+  pendingReview: Request[];
+  underReview: Request[];
+  errors: Request[];
+  approved: Request[];
+  declined: Request[];
+}
