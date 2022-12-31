@@ -21,9 +21,12 @@ import {
 import { Stack } from '@mui/material';
 import { useState } from 'react';
 import FormData from './types';
+import { Request } from '../RequestsBoard/types';
+import { v4 as uuidv4 } from 'uuid';
 
 interface Props {
   teams: string[];
+  setRequests: any;
 }
 
 const initialState: FormData = {
@@ -36,6 +39,7 @@ const initialState: FormData = {
 
 export function ReimbursementForm(props: Props) {
   const [formData, setFormData] = useState<FormData>(initialState);
+  const [submitted, setSubmitted] = useState<boolean>(false);
 
   const onItemDescriptionChange = ({ target }) =>
     setFormData(prevState => ({
@@ -49,10 +53,6 @@ export function ReimbursementForm(props: Props) {
       amount: target.value,
     }));
 
-  const handleSubmit = () => {
-    console.log(formData);
-  };
-
   const handleReset = () => {
     setFormData(initialState);
   };
@@ -63,7 +63,7 @@ export function ReimbursementForm(props: Props) {
     }
     setFormData(prevState => ({
       ...prevState,
-      images: [...prevState['images'], e.target.files[0]],
+      images: [...prevState['images'], ...e.target.files],
     }));
   };
 
@@ -81,27 +81,56 @@ export function ReimbursementForm(props: Props) {
     }));
   };
 
+  const onSubmit = () => {
+    if (
+      formData.amount === 0 ||
+      formData.itemDescription === '' ||
+      formData.images.length === 0
+    ) {
+      setSubmitted(true);
+      return;
+    }
+    props.setRequests((prevState: Request[]) => [
+      ...prevState,
+      { ...formData, id: uuidv4() },
+    ]);
+    handleReset();
+    setSubmitted(false);
+  };
+
   return (
     <Form elevation={3}>
       <Stack spacing={3} alignItems="flex-start">
-        <h2 style={{ margin: 0 }}>Reimbursement Request Form</h2>
+        <Stack
+          direction="row"
+          justifyContent="space-between"
+          alignItems="center"
+          style={{ width: '100%' }}
+        >
+          <h2 style={{ margin: 0 }}>Reimbursement Request Form</h2>
+          <p style={{ color: 'grey' }}>* = required</p>
+        </Stack>
         {/* Item Description Field */}
         <TextField
           onChange={onItemDescriptionChange}
           value={formData.itemDescription}
           label={'Item Description'}
           style={{ width: '100%' }}
+          required
+          error={submitted && formData.itemDescription === ''}
         />
 
         {/* Amount Field */}
         <TextField
           onChange={onAmountChange}
           type="number"
-          value={formData.amount}
+          value={formData.amount === 0 ? '' : formData.amount}
           label="Amount"
           InputProps={{
             startAdornment: <InputAdornment position="start">$</InputAdornment>,
           }}
+          required
+          error={submitted && formData.amount === 0}
         />
 
         <Divider />
@@ -141,12 +170,19 @@ export function ReimbursementForm(props: Props) {
 
         {/* Receipt Upload */}
         <Stack spacing={1} direction="row" alignItems="center">
-          <Button variant="outlined" component="label">
-            Upload Receipt(s)
+          <Button
+            variant="outlined"
+            component="label"
+            style={
+              submitted && formData.images.length === 0 ? { color: 'red' } : {}
+            }
+          >
+            Upload Receipt(s) *
             <input
               accept="image/*"
               onChange={handleFileUpload}
               type="file"
+              multiple
               hidden
             />
           </Button>
@@ -163,7 +199,7 @@ export function ReimbursementForm(props: Props) {
         <Divider variant="middle" style={{ width: '100%' }} light />
         <Stack spacing={1} direction="row">
           {/* Submit Button */}
-          <Button variant="contained" onClick={handleSubmit}>
+          <Button variant="contained" onClick={onSubmit}>
             Submit
           </Button>
 

@@ -3,10 +3,11 @@
  * RequestsBoard
  *
  */
-import { Card, Paper } from '@material-ui/core';
+import { Paper } from '@material-ui/core';
 import { Stack } from '@mui/material';
 import * as React from 'react';
 import styled from 'styled-components/macro';
+import { RequestCard } from './RequestCard';
 import { AllRequests, Request } from './types';
 
 interface Props {
@@ -30,12 +31,15 @@ export function RequestsBoard(props: Props) {
 
         return (
           <Section key={statusKey}>
-            <H3>{statusTitleCase}</H3>
+            <H2>{statusTitleCase}</H2>
             <Stack spacing={1}>
               {props.requests[statusKey].map((request: Request) => (
-                <StyledCard elevation={3} key={request.id}>
-                  {request.id}
-                </StyledCard>
+                <RequestCard
+                  request={request}
+                  key={request.id}
+                  showModal={() => {}}
+                  status={statusKey}
+                />
               ))}
             </Stack>
           </Section>
@@ -52,12 +56,7 @@ const Section = styled(Paper)`
   text-align: center;
 `;
 
-const StyledCard = styled(Card)`
-  padding: 8px;
-  text-align: left;
-`;
-
-const H3 = styled.h3`
+const H2 = styled.h2`
   margin: 0px;
   padding-bottom: 16px;
 `;

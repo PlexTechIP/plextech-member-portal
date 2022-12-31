@@ -3,6 +3,9 @@ import { Helmet } from 'react-helmet-async';
 import styled from 'styled-components';
 import { createTheme, ThemeProvider, CssBaseline } from '@material-ui/core';
 import { RequestsBoard } from 'app/components/RequestsBoard';
+import { useState } from 'react';
+import { ReimbursementForm } from 'app/components/ReimbursementForm';
+import { Request } from 'app/components/RequestsBoard/types';
 
 export function HomePage() {
   const darkTheme = createTheme({
@@ -10,6 +13,8 @@ export function HomePage() {
       type: 'dark',
     },
   });
+
+  const [requests, setRequests] = useState<Request[]>([]);
 
   return (
     <ThemeProvider theme={darkTheme}>
@@ -22,19 +27,11 @@ export function HomePage() {
           />
         </Helmet>
         <Div>
+          <ReimbursementForm teams={['Exec']} setRequests={setRequests} />
+
           <RequestsBoard
             requests={{
-              pendingReview: [
-                {
-                  id: 'hi',
-                  itemDescription: '',
-                  amount: 0,
-                  teamBudget: '',
-                  isFood: false,
-                  images: [],
-                  status: '',
-                },
-              ],
+              pendingReview: requests,
               underReview: [],
               errors: [],
               approved: [],
@@ -48,12 +45,16 @@ export function HomePage() {
 }
 
 const Div = styled.div`
-  width: 50%;
-  height: 75%;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: 100%;
+  height: 100%;
   position: absolute;
   top: 0;
   bottom: 0;
   left: 0;
   right: 0;
   margin: auto;
+  padding: 64px;
 `;

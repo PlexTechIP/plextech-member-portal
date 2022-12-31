@@ -5,7 +5,6 @@ export interface Request {
   teamBudget: string;
   isFood: boolean;
   images: any[];
-  status: string;
 }
 
 export interface AllRequests {
