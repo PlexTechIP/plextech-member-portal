@@ -1,6 +1,6 @@
 export default interface FormData {
   itemDescription: string;
-  amount: number;
+  amount: string;
   teamBudget: string;
   isFood: boolean;
   images: any[];

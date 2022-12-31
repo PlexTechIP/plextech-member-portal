@@ -12,6 +12,7 @@ import { AllRequests, Request } from './types';
 
 interface Props {
   requests: AllRequests;
+  showModal: () => void;
 }
 
 const statuses = [
@@ -28,16 +29,26 @@ export function RequestsBoard(props: Props) {
       {statuses.map((statusKey: string) => {
         const regex = statusKey.replace(/([A-Z])/g, ' $1');
         const statusTitleCase = regex.charAt(0).toUpperCase() + regex.slice(1);
+        let sum: number = 0;
+        props.requests[statusKey].forEach((request: Request) => {
+          sum += request.amount;
+        });
 
         return (
           <Section key={statusKey}>
-            <H2>{statusTitleCase}</H2>
             <Stack spacing={1}>
+              {props.requests[statusKey].length === 0 ? (
+                <H2>{statusTitleCase}</H2>
+              ) : (
+                <H2>
+                  {statusTitleCase}: ${sum.toFixed(2)}
+                </H2>
+              )}
               {props.requests[statusKey].map((request: Request) => (
                 <RequestCard
                   request={request}
                   key={request.id}
-                  showModal={() => {}}
+                  showModal={props.showModal}
                   status={statusKey}
                 />
               ))}

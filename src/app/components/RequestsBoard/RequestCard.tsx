@@ -4,6 +4,7 @@ import * as React from 'react';
 import styled from 'styled-components/macro';
 import { Request } from './types';
 import EditIcon from '@mui/icons-material/Edit';
+import ImageIcon from '@mui/icons-material/Image';
 
 interface Props {
   request: Request;
@@ -32,7 +33,10 @@ export function RequestCard(props: Props) {
         >
           <Grid>
             {props.request.images.map(image => (
-              <StyledButton variant="outlined">
+              <StyledButton
+                size="small"
+                startIcon={React.cloneElement(<ImageIcon />)}
+              >
                 {image.name.length < 20
                   ? image.name
                   : `${image.name.substring(0, 20)}...`}

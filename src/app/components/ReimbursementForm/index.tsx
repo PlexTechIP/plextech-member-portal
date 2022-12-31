@@ -23,15 +23,17 @@ import { useState } from 'react';
 import FormData from './types';
 import { Request } from '../RequestsBoard/types';
 import { v4 as uuidv4 } from 'uuid';
+import ImageIcon from '@mui/icons-material/Image';
 
 interface Props {
   teams: string[];
   setRequests: any;
+  onClose: () => void;
 }
 
 const initialState: FormData = {
   itemDescription: '',
-  amount: 0,
+  amount: '',
   teamBudget: 'No budget',
   isFood: false,
   images: [],
@@ -83,7 +85,7 @@ export function ReimbursementForm(props: Props) {
 
   const onSubmit = () => {
     if (
-      formData.amount === 0 ||
+      formData.amount === '' ||
       formData.itemDescription === '' ||
       formData.images.length === 0
     ) {
@@ -92,30 +94,29 @@ export function ReimbursementForm(props: Props) {
     }
     props.setRequests((prevState: Request[]) => [
       ...prevState,
-      { ...formData, id: uuidv4() },
+      { ...formData, id: uuidv4(), amount: parseFloat(formData.amount) },
     ]);
     handleReset();
     setSubmitted(false);
+    props.onClose();
   };
 
   return (
     <Form elevation={3}>
       <Stack spacing={3} alignItems="flex-start">
-        <Stack
+        <StyledStack
           direction="row"
           justifyContent="space-between"
           alignItems="center"
-          style={{ width: '100%' }}
         >
-          <h2 style={{ margin: 0 }}>Reimbursement Request Form</h2>
-          <p style={{ color: 'grey' }}>* = required</p>
-        </Stack>
+          <H2>Reimbursement Request Form</H2>
+          <P>* = required</P>
+        </StyledStack>
         {/* Item Description Field */}
-        <TextField
+        <StyledTextField
           onChange={onItemDescriptionChange}
           value={formData.itemDescription}
           label={'Item Description'}
-          style={{ width: '100%' }}
           required
           error={submitted && formData.itemDescription === ''}
         />
@@ -124,16 +125,17 @@ export function ReimbursementForm(props: Props) {
         <TextField
           onChange={onAmountChange}
           type="number"
-          value={formData.amount === 0 ? '' : formData.amount}
+          value={formData.amount}
           label="Amount"
           InputProps={{
             startAdornment: <InputAdornment position="start">$</InputAdornment>,
           }}
           required
-          error={submitted && formData.amount === 0}
+          error={submitted && formData.amount === ''}
         />
 
         <Divider />
+
         {/* Team Budget Select */}
         <FormControl>
           <FormLabel>Team Budget?</FormLabel>
@@ -169,7 +171,7 @@ export function ReimbursementForm(props: Props) {
         )}
 
         {/* Receipt Upload */}
-        <Stack spacing={1} direction="row" alignItems="center">
+        <Stack spacing={1} alignItems="flex-start">
           <Button
             variant="outlined"
             component="label"
@@ -186,28 +188,36 @@ export function ReimbursementForm(props: Props) {
               hidden
             />
           </Button>
-
+          <Divider />
           {formData.images.map(image => (
-            <p key={image.name}>
-              {image.name.length > 20
-                ? `${image.name.substring(0, 20)}...`
-                : image.name}
-            </p>
+            <Stack direction="row" alignItems="center" spacing={1}>
+              <ImageIcon />
+              <p key={image.name}>
+                {image.name.length > 20
+                  ? `${image.name.substring(0, 20)}...`
+                  : image.name}
+              </p>
+            </Stack>
           ))}
         </Stack>
 
-        <Divider variant="middle" style={{ width: '100%' }} light />
-        <Stack spacing={1} direction="row">
-          {/* Submit Button */}
-          <Button variant="contained" onClick={onSubmit}>
-            Submit
-          </Button>
+        <StyledDivider variant="middle" light />
+        <StyledStack direction="row" justifyContent="space-between">
+          <Stack spacing={1} direction="row">
+            {/* Submit Button */}
+            <Button variant="contained" onClick={onSubmit}>
+              Submit
+            </Button>
 
-          {/* Reset Button */}
-          <Button variant="outlined" onClick={handleReset}>
-            Reset
+            {/* Reset Button */}
+            <Button variant="outlined" onClick={handleReset}>
+              Reset
+            </Button>
+          </Stack>
+          <Button variant="contained" onClick={props.onClose}>
+            Cancel
           </Button>
-        </Stack>
+        </StyledStack>
       </Stack>
     </Form>
   );
@@ -215,4 +225,24 @@ export function ReimbursementForm(props: Props) {
 
 const Form = styled(Paper)`
   padding: 48px;
+`;
+
+const StyledStack = styled(Stack)`
+  width: 100%;
+`;
+
+const StyledDivider = styled(Divider)`
+  width: 100%;
+`;
+
+const H2 = styled.h2`
+  margin: 0;
+`;
+
+const P = styled.p`
+  color: grey;
+`;
+
+const StyledTextField = styled(TextField)`
+  width: 100%;
 `;
