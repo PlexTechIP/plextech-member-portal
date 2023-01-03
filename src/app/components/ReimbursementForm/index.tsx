@@ -28,7 +28,6 @@ import CloseIcon from '@mui/icons-material/Close';
 import FormData from '../../../types/types';
 import { Image } from '../../../types/types';
 import { styled as muiStyled } from '@mui/system';
-import imageCompression from 'browser-image-compression';
 
 interface Props {
   teams: string[];
@@ -52,7 +51,6 @@ export function ReimbursementForm(props: Props) {
   const [formData, setFormData] = useState<FormData>(initialState);
   const [submitted, setSubmitted] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [imageIsLoading, setImageIsLoading] = useState<boolean>(false);
 
   useEffect(() => {
     if (props.request) {
@@ -279,7 +277,7 @@ export function ReimbursementForm(props: Props) {
                 submitted && formData.images.length === 0 ? 'normal' : 'bold',
             }}
           >
-            {imageIsLoading ? 'Loading' : 'Upload Receipt(s) *'}
+            Upload Receipt(s) *
             <input
               accept="image/*"
               onChange={handleFileUpload}
