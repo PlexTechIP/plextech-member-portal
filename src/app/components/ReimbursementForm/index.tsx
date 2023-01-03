@@ -22,11 +22,12 @@ import {
 } from '@material-ui/core';
 import { Stack } from '@mui/material';
 import { useEffect, useState } from 'react';
-import { Request } from '../RequestsBoard/types';
+import { Request } from '../../../types/types';
 import ImageIcon from '@mui/icons-material/Image';
 import CloseIcon from '@mui/icons-material/Close';
-import FormData from './types';
-import { Image } from '../RequestsBoard/types';
+import FormData from '../../../types/types';
+import { Image } from '../../../types/types';
+import { styled as muiStyled } from '@mui/system';
 
 interface Props {
   teams: string[];
@@ -181,27 +182,32 @@ export function ReimbursementForm(props: Props) {
   };
 
   return (
-    <Form elevation={3}>
+    <Form elevation={3} style={{ borderRadius: '5%' }}>
       <Stack spacing={3} alignItems="flex-start">
         <StyledStack
           direction="row"
           justifyContent="space-between"
           alignItems="center"
         >
-          <H2>Reimbursement Request Form</H2>
+          <H1>Reimbursement Request Form</H1>
           <P>* = required</P>
         </StyledStack>
         {/* Item Description Field */}
         <StyledTextField
+          variant="outlined"
           onChange={onItemDescriptionChange}
           value={formData.itemDescription}
           label={'Item Description'}
           required
           error={submitted && formData.itemDescription === ''}
+          helperText={
+            submitted && formData.itemDescription === '' && 'Required'
+          }
         />
 
         {/* Amount Field */}
         <TextField
+          variant="outlined"
           onChange={onAmountChange}
           type="number"
           value={formData.amount}
@@ -211,6 +217,7 @@ export function ReimbursementForm(props: Props) {
           }}
           required
           error={submitted && formData.amount === ''}
+          helperText={submitted && formData.amount === '' && 'Required'}
         />
 
         <Divider />
@@ -252,11 +259,17 @@ export function ReimbursementForm(props: Props) {
         {/* Receipt Upload */}
         <Stack spacing={1} alignItems="flex-start">
           <Button
-            variant="outlined"
+            variant="contained"
             component="label"
-            style={
-              submitted && formData.images.length === 0 ? { color: 'red' } : {}
-            }
+            style={{
+              backgroundColor: 'white',
+              color:
+                submitted && formData.images.length === 0
+                  ? 'red'
+                  : 'rgb(255, 138, 0)',
+              fontWeight:
+                submitted && formData.images.length === 0 ? 'normal' : 'bold',
+            }}
           >
             Upload Receipt(s) *
             <input
@@ -292,18 +305,18 @@ export function ReimbursementForm(props: Props) {
         <StyledStack direction="row" justifyContent="space-between">
           <Stack spacing={1} direction="row">
             {/* Submit Button */}
-            <Button variant="contained" onClick={onSubmit}>
+            <StyledButton variant="contained" onClick={onSubmit}>
               {isLoading ? <CircularProgress size={20} /> : 'Submit'}
-            </Button>
+            </StyledButton>
 
             {/* Reset Button */}
-            <Button variant="outlined" onClick={handleReset}>
+            <StyledButton variant="contained" onClick={handleReset}>
               Reset
-            </Button>
+            </StyledButton>
           </Stack>
-          <Button variant="contained" onClick={props.onClose}>
+          <StyledButton variant="contained" onClick={props.onClose}>
             Cancel
-          </Button>
+          </StyledButton>
         </StyledStack>
       </Stack>
     </Form>
@@ -322,7 +335,7 @@ const StyledDivider = styled(Divider)`
   width: 100%;
 `;
 
-const H2 = styled.h2`
+const H1 = styled.h1`
   margin: 0;
 `;
 
@@ -332,4 +345,10 @@ const P = styled.p`
 
 const StyledTextField = styled(TextField)`
   width: 100%;
+`;
+
+const StyledButton = muiStyled(Button)`
+  background-color: white;
+  color: rgb(255, 138, 0);
+  font-weight: bold;
 `;

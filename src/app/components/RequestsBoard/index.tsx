@@ -8,7 +8,7 @@ import { Stack } from '@mui/material';
 import * as React from 'react';
 import styled from 'styled-components/macro';
 import { RequestCard } from './RequestCard';
-import { AllRequests, Request } from './types';
+import { AllRequests, Request } from '../../../types/types';
 
 interface Props {
   requests: AllRequests;
@@ -35,7 +35,11 @@ export function RequestsBoard(props: Props) {
         });
 
         return (
-          <Section key={statusKey}>
+          <Section
+            key={statusKey}
+            elevation={2}
+            style={{ borderRadius: '10%' }}
+          >
             <Stack spacing={1}>
               {props.requests[statusKey].length === 0 ? (
                 <H2>{statusTitleCase}</H2>
@@ -62,7 +66,7 @@ export function RequestsBoard(props: Props) {
 const Section = styled(Paper)`
   width: 100%;
   height: 100%;
-  padding: 16px;
+  padding: 32px;
   text-align: center;
 `;
 

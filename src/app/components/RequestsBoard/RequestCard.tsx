@@ -2,12 +2,12 @@ import { Button, Card, IconButton, Modal, Paper } from '@material-ui/core';
 import { Stack } from '@mui/material';
 import * as React from 'react';
 import styled from 'styled-components/macro';
-import { Request } from './types';
+import { Request } from '../../../types/types';
 import EditIcon from '@mui/icons-material/Edit';
 import ImageIcon from '@mui/icons-material/Image';
 import { useState } from 'react';
 import CloseIcon from '@mui/icons-material/Close';
-import { Image } from './types';
+import { Image } from '../../../types/types';
 
 interface Props {
   request: Request;
@@ -53,7 +53,11 @@ export function RequestCard(props: Props) {
           </StyledPaper>
         </>
       </StyledModal>
-      <StyledCard elevation={3} key={props.request._id}>
+      <StyledCard
+        elevation={2}
+        key={props.request._id}
+        style={{ borderRadius: '10%' }}
+      >
         <Stack spacing={1}>
           <StyledStack
             direction="row"
