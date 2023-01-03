@@ -12,7 +12,7 @@ import { AllRequests, Request } from './types';
 
 interface Props {
   requests: AllRequests;
-  showModal: () => void;
+  onEdit: (newRequest: Request) => void;
 }
 
 const statuses = [
@@ -47,9 +47,8 @@ export function RequestsBoard(props: Props) {
               {props.requests[statusKey].map((request: Request) => (
                 <RequestCard
                   request={request}
-                  key={request.id}
-                  showModal={props.showModal}
-                  status={statusKey}
+                  key={request._id}
+                  onEdit={() => props.onEdit(request)}
                 />
               ))}
             </Stack>

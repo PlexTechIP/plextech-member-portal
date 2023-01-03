@@ -1,10 +1,17 @@
 export interface Request {
-  id: string;
+  _id: string;
   itemDescription: string;
   amount: number;
   teamBudget: string;
   isFood: boolean;
-  images: any[];
+  images: Image[];
+  status: string;
+}
+
+export interface Image {
+  data: string | Blob;
+  name: string;
+  isBase64: boolean;
 }
 
 export interface AllRequests {

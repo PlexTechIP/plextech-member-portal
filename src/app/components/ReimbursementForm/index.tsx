@@ -8,10 +8,12 @@ import styled from 'styled-components/macro';
 import {
   Button,
   Checkbox,
+  CircularProgress,
   Divider,
   FormControl,
   FormControlLabel,
   FormLabel,
+  IconButton,
   InputAdornment,
   Paper,
   Radio,
@@ -19,16 +21,20 @@ import {
   TextField,
 } from '@material-ui/core';
 import { Stack } from '@mui/material';
-import { useState } from 'react';
-import FormData from './types';
+import { useEffect, useState } from 'react';
 import { Request } from '../RequestsBoard/types';
-import { v4 as uuidv4 } from 'uuid';
 import ImageIcon from '@mui/icons-material/Image';
+import CloseIcon from '@mui/icons-material/Close';
+import FormData from './types';
+import { Image } from '../RequestsBoard/types';
 
 interface Props {
   teams: string[];
   setRequests: any;
   onClose: () => void;
+  request: Request | null;
+  onSubmit: (newRequest: Request) => void;
+  onError: () => void;
 }
 
 const initialState: FormData = {
@@ -37,11 +43,22 @@ const initialState: FormData = {
   teamBudget: 'No budget',
   isFood: false,
   images: [],
+  status: 'pendingReview',
 };
 
 export function ReimbursementForm(props: Props) {
   const [formData, setFormData] = useState<FormData>(initialState);
   const [submitted, setSubmitted] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (props.request) {
+      setFormData({
+        ...props.request,
+        amount: props.request.amount.toString(),
+      });
+    }
+  }, [props.request]);
 
   const onItemDescriptionChange = ({ target }) =>
     setFormData(prevState => ({
@@ -83,8 +100,22 @@ export function ReimbursementForm(props: Props) {
     }));
   };
 
-  const onSubmit = () => {
+  const getBase64 = (file: any) => {
+    return new Promise(resolve => {
+      let baseURL = '';
+      let reader = new FileReader();
+
+      reader.readAsDataURL(file);
+      reader.onload = () => {
+        baseURL = reader.result! as string;
+        resolve(baseURL);
+      };
+    });
+  };
+
+  const onSubmit = async () => {
     if (
+      isLoading ||
       formData.amount === '' ||
       formData.itemDescription === '' ||
       formData.images.length === 0
@@ -92,13 +123,61 @@ export function ReimbursementForm(props: Props) {
       setSubmitted(true);
       return;
     }
-    props.setRequests((prevState: Request[]) => [
-      ...prevState,
-      { ...formData, id: uuidv4(), amount: parseFloat(formData.amount) },
-    ]);
+    setIsLoading(true);
+
+    const bodyData = {
+      ...formData,
+      images: await Promise.all(
+        formData.images.map(async (image: Image) =>
+          !image.isBase64
+            ? {
+                name: image.name,
+                data: (await getBase64(image)) as string,
+                isBase64: true,
+              }
+            : image,
+        ),
+      ),
+      amount: parseFloat(formData.amount),
+    };
+
+    const url = `http://localhost:${process.env.PORT || 3000}/requests/${
+      props.request ? props.request._id : ''
+    }`;
+    const response = await fetch(url, {
+      method: props.request ? 'PUT' : 'POST',
+      mode: 'cors',
+      cache: 'no-cache',
+      credentials: 'same-origin',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      redirect: 'follow',
+      referrerPolicy: 'no-referrer',
+      body: JSON.stringify(bodyData),
+    });
+
+    if (!response.ok) {
+      props.onError();
+    }
+
+    const res = await response.json();
+
     handleReset();
     setSubmitted(false);
     props.onClose();
+    props.onSubmit({
+      ...bodyData,
+      _id: props.request ? props.request._id : (res._id as string),
+    });
+    setIsLoading(false);
+  };
+
+  const onDeleteImage = (index: number) => {
+    setFormData((prevState: FormData) => ({
+      ...prevState,
+      images: prevState.images.filter((image: any, i: number) => i !== index),
+    }));
   };
 
   return (
@@ -189,14 +268,22 @@ export function ReimbursementForm(props: Props) {
             />
           </Button>
           <Divider />
-          {formData.images.map(image => (
-            <Stack direction="row" alignItems="center" spacing={1}>
+          {formData.images.map((image: any, index: number) => (
+            <Stack
+              direction="row"
+              alignItems="center"
+              spacing={1}
+              key={props.request ? image.name : image}
+            >
               <ImageIcon />
-              <p key={image.name}>
+              <p>
                 {image.name.length > 20
                   ? `${image.name.substring(0, 20)}...`
                   : image.name}
               </p>
+              <IconButton onClick={() => onDeleteImage(index)}>
+                <CloseIcon />
+              </IconButton>
             </Stack>
           ))}
         </Stack>
@@ -206,7 +293,7 @@ export function ReimbursementForm(props: Props) {
           <Stack spacing={1} direction="row">
             {/* Submit Button */}
             <Button variant="contained" onClick={onSubmit}>
-              Submit
+              {isLoading ? <CircularProgress size={20} /> : 'Submit'}
             </Button>
 
             {/* Reset Button */}
