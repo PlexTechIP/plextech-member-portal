@@ -28,6 +28,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import FormData from '../../../types/types';
 import { Image } from '../../../types/types';
 import { styled as muiStyled } from '@mui/system';
+import imageCompression from 'browser-image-compression';
 
 interface Props {
   teams: string[];
@@ -51,6 +52,7 @@ export function ReimbursementForm(props: Props) {
   const [formData, setFormData] = useState<FormData>(initialState);
   const [submitted, setSubmitted] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [imageIsLoading, setImageIsLoading] = useState<boolean>(false);
 
   useEffect(() => {
     if (props.request) {
@@ -77,13 +79,18 @@ export function ReimbursementForm(props: Props) {
     setFormData(initialState);
   };
 
-  const handleFileUpload = (e: any) => {
+  const handleFileUpload = async (e: any) => {
     if (!e.target.files[0]) {
       return;
     }
+    let image = e.target.files[0];
+
     setFormData(prevState => ({
       ...prevState,
-      images: [...prevState['images'], ...e.target.files],
+      images: [
+        ...prevState.images,
+        { name: image.name, data: image, isBase64: false },
+      ],
     }));
   };
 
@@ -182,7 +189,7 @@ export function ReimbursementForm(props: Props) {
   };
 
   return (
-    <Form elevation={3} style={{ borderRadius: '5%' }}>
+    <Form elevation={3}>
       <Stack spacing={3} alignItems="flex-start">
         <StyledStack
           direction="row"
@@ -192,6 +199,7 @@ export function ReimbursementForm(props: Props) {
           <H1>Reimbursement Request Form</H1>
           <P>* = required</P>
         </StyledStack>
+
         {/* Item Description Field */}
         <StyledTextField
           variant="outlined"
@@ -271,7 +279,7 @@ export function ReimbursementForm(props: Props) {
                 submitted && formData.images.length === 0 ? 'normal' : 'bold',
             }}
           >
-            Upload Receipt(s) *
+            {imageIsLoading ? 'Loading' : 'Upload Receipt(s) *'}
             <input
               accept="image/*"
               onChange={handleFileUpload}
@@ -306,7 +314,7 @@ export function ReimbursementForm(props: Props) {
           <Stack spacing={1} direction="row">
             {/* Submit Button */}
             <StyledButton variant="contained" onClick={onSubmit}>
-              {isLoading ? <CircularProgress size={20} /> : 'Submit'}
+              {isLoading ? <StyledCircularProgress size={20} /> : 'Submit'}
             </StyledButton>
 
             {/* Reset Button */}
@@ -323,8 +331,9 @@ export function ReimbursementForm(props: Props) {
   );
 }
 
-const Form = styled(Paper)`
+const Form = muiStyled(Paper)`
   padding: 48px;
+  border-radius: 5%;
 `;
 
 const StyledStack = styled(Stack)`
@@ -351,4 +360,8 @@ const StyledButton = muiStyled(Button)`
   background-color: white;
   color: rgb(255, 138, 0);
   font-weight: bold;
+`;
+
+const StyledCircularProgress = muiStyled(CircularProgress)`
+  color: rgb(255, 138, 0);
 `;

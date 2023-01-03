@@ -1,4 +1,12 @@
-import { Button, Card, IconButton, Modal, Paper } from '@material-ui/core';
+import {
+  Button,
+  Card,
+  GridList,
+  GridListTile,
+  IconButton,
+  Modal,
+  Paper,
+} from '@material-ui/core';
 import { Stack } from '@mui/material';
 import * as React from 'react';
 import styled from 'styled-components/macro';
@@ -8,6 +16,7 @@ import ImageIcon from '@mui/icons-material/Image';
 import { useState } from 'react';
 import CloseIcon from '@mui/icons-material/Close';
 import { Image } from '../../../types/types';
+import { styled as muiStyled } from '@mui/system';
 
 interface Props {
   request: Request;
@@ -40,24 +49,19 @@ export function RequestCard(props: Props) {
                 <CloseIcon />
               </IconButton>
             </StyledStack2>
-            {props.request.images.map((image: Image) => (
-              <StyledStack direction="row">
-                <img
-                  key={image.name.substring(0, 20)}
-                  src={image.data as string}
-                  alt="receipt"
-                  style={{ maxWidth: '50%', maxHeight: '100%' }}
-                />
-              </StyledStack>
-            ))}
+            <GridList cellHeight={160} cols={2}>
+              {props.request.images.map((image: Image) => (
+                <GridListTile key={image.name} cols={1}>
+                  <a download={image.name} href={image.data as string}>
+                    <Img src={image.data as string} alt="receipt" />
+                  </a>
+                </GridListTile>
+              ))}
+            </GridList>
           </StyledPaper>
         </>
       </StyledModal>
-      <StyledCard
-        elevation={2}
-        key={props.request._id}
-        style={{ borderRadius: '10%' }}
-      >
+      <StyledCard elevation={2} key={props.request._id}>
         <Stack spacing={1}>
           <StyledStack
             direction="row"
@@ -97,11 +101,12 @@ export function RequestCard(props: Props) {
   );
 }
 
-const StyledCard = styled(Card)`
+const StyledCard = muiStyled(Card)`
   padding: 16px;
   text-align: left;
   display: flex;
   flex-direction: column;
+  border-radius: 10%;
 `;
 
 const H3 = styled.h3`
@@ -130,8 +135,10 @@ const StyledModal = styled(Modal)`
   padding: 64px;
 `;
 
-const StyledPaper = styled(Paper)`
+const StyledPaper = muiStyled(Paper)`
   padding: 48px;
+  border-radius: 5%;
+  height: 100%;
 `;
 
 const H1 = styled.h1`
@@ -147,4 +154,9 @@ const StyledStack = styled(Stack)`
 
 const StyledStack2 = styled(StyledStack)`
   margin-bottom: 24px;
+`;
+
+const Img = styled.img`
+  max-width: 100%;
+  max-height: 100%;
 `;
