@@ -1,15 +1,7 @@
 import * as React from 'react';
 import { Helmet } from 'react-helmet-async';
 import styled from 'styled-components';
-import {
-  createTheme,
-  ThemeProvider,
-  CssBaseline,
-  Modal,
-  Button,
-  CircularProgress,
-} from '@material-ui/core';
-import { Stack } from '@mui/material';
+import { Stack, Modal, Button, CircularProgress } from '@mui/material';
 import { RequestsBoard } from 'app/components/RequestsBoard';
 import { useEffect, useState } from 'react';
 import { ReimbursementForm } from 'app/components/ReimbursementForm';
@@ -17,19 +9,13 @@ import { AllRequests, Request } from 'types/types';
 import AddIcon from '@mui/icons-material/Add';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import { ErrorModal } from 'app/components/ErrorModal';
-import Background from '../../../shapes-background.png';
 import { styled as muiStyled } from '@mui/system';
 
-export function HomePage() {
-  const theme = createTheme({
-    palette: {
-      type: 'light',
-    },
-    typography: {
-      fontFamily: ['"DM Sans"'].join(','),
-    },
-  });
+interface Props {
+  token: string;
+}
 
+export function HomePage(props: Props) {
   const [requests, setRequests] = useState<AllRequests>({
     pendingReview: [],
     underReview: [],
@@ -54,6 +40,7 @@ export function HomePage() {
         credentials: 'same-origin',
         headers: {
           'Content-Type': 'application/json',
+          Authorization: 'Bearer ' + props.token,
         },
         redirect: 'follow',
         referrerPolicy: 'no-referrer',
@@ -68,7 +55,7 @@ export function HomePage() {
     };
 
     f();
-  }, [refresh]);
+  }, [props.token, refresh]);
 
   const onClose = () => {
     setShowModal(false);
@@ -105,30 +92,25 @@ export function HomePage() {
   };
 
   return (
-    <ThemeProvider theme={theme}>
-      <CssBaseline>
-        <Helmet>
-          <title>HomePage</title>
-          <meta
-            name="description"
-            content="A Boilerplate application homepage"
-          />
-        </Helmet>
-        <Div>
-          <StyledModal open={error || showModal} onClose={onClose}>
+    <>
+      <Helmet>
+        <title>Dashboard</title>
+        <meta name="description" content="Your finance dashboard" />
+      </Helmet>
+      {error ? (
+        <ErrorModal open={error} />
+      ) : (
+        <>
+          <StyledModal open={showModal} onClose={onClose}>
             <>
-              {error ? (
-                <ErrorModal />
-              ) : (
-                <ReimbursementForm
-                  request={request}
-                  teams={['Exec']}
-                  setRequests={setRequests}
-                  onClose={onClose}
-                  onSubmit={onSubmit}
-                  onError={onError}
-                />
-              )}
+              <ReimbursementForm
+                request={request}
+                teams={['Exec']}
+                setRequests={setRequests}
+                onClose={onClose}
+                onSubmit={onSubmit}
+                onError={onError}
+              />
             </>
           </StyledModal>
 
@@ -160,9 +142,9 @@ export function HomePage() {
               </StyledButton>
             </Stack>
           </StyledStack>
-        </Div>
-      </CssBaseline>
-    </ThemeProvider>
+        </>
+      )}
+    </>
   );
 }
 
@@ -188,12 +170,6 @@ const StyledModal = styled(Modal)`
   right: 0;
   margin: auto;
   padding: 64px;
-`;
-
-const Div = styled.div`
-  background-image: url(${Background});
-  height: 100vh;
-  background-repeat: repeat;
 `;
 
 const StyledButton = muiStyled(Button)`

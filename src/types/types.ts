@@ -22,7 +22,7 @@ export interface AllRequests {
   declined: Request[];
 }
 
-export default interface FormData {
+export interface FormData {
   _id?: string;
   itemDescription: string;
   amount: string;
@@ -30,4 +30,18 @@ export default interface FormData {
   isFood: boolean;
   images: Image[];
   status: string;
+}
+
+export interface SignUpData {
+  firstName: string;
+  lastName: string;
+  email: string;
+  password: string;
+  PIC: string;
+  venmo: string;
+}
+
+export interface LoginData {
+  email: string;
+  password: string;
 }

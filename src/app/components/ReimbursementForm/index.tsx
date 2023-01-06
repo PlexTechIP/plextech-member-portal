@@ -19,15 +19,16 @@ import {
   Radio,
   RadioGroup,
   TextField,
-} from '@material-ui/core';
-import { Stack } from '@mui/material';
+  Stack,
+} from '@mui/material';
 import { useEffect, useState } from 'react';
 import { Request } from '../../../types/types';
 import ImageIcon from '@mui/icons-material/Image';
 import CloseIcon from '@mui/icons-material/Close';
-import FormData from '../../../types/types';
+import { FormData } from '../../../types/types';
 import { Image } from '../../../types/types';
 import { styled as muiStyled } from '@mui/system';
+import Compressor from 'compressorjs';
 
 interface Props {
   teams: string[];
@@ -81,15 +82,30 @@ export function ReimbursementForm(props: Props) {
     if (!e.target.files[0]) {
       return;
     }
-    let image = e.target.files[0];
+    let images = [...e.target.files];
 
-    setFormData(prevState => ({
-      ...prevState,
-      images: [
-        ...prevState.images,
-        { name: image.name, data: image, isBase64: false },
-      ],
-    }));
+    images.forEach(image => {
+      new Compressor(image, {
+        quality: 0.2,
+
+        success(result: any) {
+          setFormData(prevState => ({
+            ...prevState,
+            images: [
+              ...prevState.images,
+              {
+                name: result.name,
+                data: result,
+                isBase64: false,
+              },
+            ],
+          }));
+        },
+        error(err) {
+          console.log(err.message);
+        },
+      });
+    });
   };
 
   const onTeamBudgetChange = ({ target }) => {
@@ -119,7 +135,8 @@ export function ReimbursementForm(props: Props) {
     });
   };
 
-  const onSubmit = async () => {
+  const onSubmit = async (event: any) => {
+    event.preventDefault();
     if (
       isLoading ||
       formData.amount === '' ||
@@ -138,7 +155,7 @@ export function ReimbursementForm(props: Props) {
           !image.isBase64
             ? {
                 name: image.name,
-                data: (await getBase64(image)) as string,
+                data: (await getBase64(image.data)) as string,
                 isBase64: true,
               }
             : image,
@@ -188,143 +205,150 @@ export function ReimbursementForm(props: Props) {
 
   return (
     <Form elevation={3}>
-      <Stack spacing={3} alignItems="flex-start">
-        <StyledStack
-          direction="row"
-          justifyContent="space-between"
-          alignItems="center"
-        >
-          <H1>Reimbursement Request Form</H1>
-          <P>* = required</P>
-        </StyledStack>
-
-        {/* Item Description Field */}
-        <StyledTextField
-          variant="outlined"
-          onChange={onItemDescriptionChange}
-          value={formData.itemDescription}
-          label={'Item Description'}
-          required
-          error={submitted && formData.itemDescription === ''}
-          helperText={
-            submitted && formData.itemDescription === '' && 'Required'
-          }
-        />
-
-        {/* Amount Field */}
-        <TextField
-          variant="outlined"
-          onChange={onAmountChange}
-          type="number"
-          value={formData.amount}
-          label="Amount"
-          InputProps={{
-            startAdornment: <InputAdornment position="start">$</InputAdornment>,
-          }}
-          required
-          error={submitted && formData.amount === ''}
-          helperText={submitted && formData.amount === '' && 'Required'}
-        />
-
-        <Divider />
-
-        {/* Team Budget Select */}
-        <FormControl>
-          <FormLabel>Team Budget?</FormLabel>
-          <RadioGroup
-            row
-            aria-labelledby="demo-row-radio-buttons-group-label"
-            name="row-radio-buttons-group"
-            defaultValue="No budget"
-            onChange={onTeamBudgetChange}
+      <form>
+        <Stack spacing={3} alignItems="flex-start">
+          <StyledStack
+            direction="row"
+            justifyContent="space-between"
+            alignItems="center"
           >
-            <FormControlLabel
-              value="No budget"
-              control={<Radio />}
-              label="No budget"
-            />
-            {props.teams.map(team => (
-              <FormControlLabel
-                key={team}
-                value={team}
-                control={<Radio />}
-                label={team}
-              />
-            ))}
-          </RadioGroup>
-        </FormControl>
+            <H1>Reimbursement Request Form</H1>
+            <P>* = required</P>
+          </StyledStack>
 
-        {/* Is Food? */}
-        {formData.teamBudget !== 'No budget' && (
-          <Stack spacing={1} direction="row" alignItems="center">
-            <FormLabel>Food?</FormLabel>
-            <Checkbox checked={formData.isFood} onChange={onIsFoodChange} />
-          </Stack>
-        )}
+          {/* Item Description Field */}
+          <StyledTextField
+            variant="outlined"
+            onChange={onItemDescriptionChange}
+            value={formData.itemDescription}
+            label={'Item Description'}
+            required
+            error={submitted && formData.itemDescription === ''}
+            helperText={
+              submitted && formData.itemDescription === '' && 'Required'
+            }
+          />
 
-        {/* Receipt Upload */}
-        <Stack spacing={1} alignItems="flex-start">
-          <Button
-            variant="contained"
-            component="label"
-            style={{
-              backgroundColor: 'white',
-              color:
-                submitted && formData.images.length === 0
-                  ? 'red'
-                  : 'rgb(255, 138, 0)',
-              fontWeight:
-                submitted && formData.images.length === 0 ? 'normal' : 'bold',
+          {/* Amount Field */}
+          <TextField
+            variant="outlined"
+            onChange={onAmountChange}
+            type="number"
+            value={formData.amount}
+            label="Amount"
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">$</InputAdornment>
+              ),
             }}
-          >
-            Upload Receipt(s) *
-            <input
-              accept="image/*"
-              onChange={handleFileUpload}
-              type="file"
-              multiple
-              hidden
-            />
-          </Button>
+            required
+            error={submitted && formData.amount === ''}
+            helperText={submitted && formData.amount === '' && 'Required'}
+          />
+
           <Divider />
-          {formData.images.map((image: any, index: number) => (
-            <Stack
-              direction="row"
-              alignItems="center"
-              spacing={1}
-              key={props.request ? image.name : image}
+
+          {/* Team Budget Select */}
+          <FormControl>
+            <FormLabel>Team Budget?</FormLabel>
+            <RadioGroup
+              row
+              aria-labelledby="demo-row-radio-buttons-group-label"
+              name="row-radio-buttons-group"
+              defaultValue="No budget"
+              onChange={onTeamBudgetChange}
             >
-              <ImageIcon />
-              <p>
-                {image.name.length > 20
-                  ? `${image.name.substring(0, 20)}...`
-                  : image.name}
-              </p>
-              <IconButton onClick={() => onDeleteImage(index)}>
-                <CloseIcon />
-              </IconButton>
+              <FormControlLabel
+                value="No budget"
+                control={<Radio />}
+                label="No budget"
+              />
+              {props.teams.map(team => (
+                <FormControlLabel
+                  key={team}
+                  value={team}
+                  control={<Radio />}
+                  label={team}
+                />
+              ))}
+            </RadioGroup>
+          </FormControl>
+
+          {/* Is Food? */}
+          {formData.teamBudget !== 'No budget' && (
+            <Stack spacing={1} direction="row" alignItems="center">
+              <FormLabel>Food?</FormLabel>
+              <Checkbox checked={formData.isFood} onChange={onIsFoodChange} />
             </Stack>
-          ))}
-        </Stack>
+          )}
 
-        <StyledDivider variant="middle" light />
-        <StyledStack direction="row" justifyContent="space-between">
-          <Stack spacing={1} direction="row">
-            {/* Submit Button */}
-            <StyledButton variant="contained" onClick={onSubmit}>
-              {isLoading ? <StyledCircularProgress size={20} /> : 'Submit'}
-            </StyledButton>
-
-            {/* Reset Button */}
-            <StyledButton variant="contained" onClick={handleReset}>
-              Reset
-            </StyledButton>
+          {/* Receipt Upload */}
+          <Stack spacing={1} alignItems="flex-start">
+            <Button
+              variant="contained"
+              component="label"
+              style={{
+                backgroundColor: 'white',
+                color:
+                  submitted && formData.images.length === 0
+                    ? 'red'
+                    : 'rgb(255, 138, 0)',
+                fontWeight: 'bold',
+              }}
+            >
+              Upload Receipt(s) *
+              <input
+                accept="image/*"
+                onChange={handleFileUpload}
+                type="file"
+                multiple
+                hidden
+              />
+            </Button>
+            <Divider />
+            {formData.images.map((image: any, index: number) => (
+              <Stack
+                direction="row"
+                alignItems="center"
+                spacing={1}
+                key={index}
+              >
+                <ImageIcon />
+                <p>
+                  {image.name.length > 20
+                    ? `${image.name.substring(0, 20)}...`
+                    : image.name}
+                </p>
+                <IconButton onClick={() => onDeleteImage(index)}>
+                  <CloseIcon />
+                </IconButton>
+              </Stack>
+            ))}
           </Stack>
-          <StyledButton variant="contained" onClick={props.onClose}>
-            Cancel
-          </StyledButton>
-        </StyledStack>
-      </Stack>
+
+          <StyledDivider variant="middle" light />
+          <StyledStack direction="row" justifyContent="space-between">
+            <Stack spacing={1} direction="row">
+              {/* Submit Button */}
+              <StyledButton
+                variant="contained"
+                onClick={onSubmit}
+                type="submit"
+              >
+                {isLoading ? <StyledCircularProgress size={20} /> : 'Submit'}
+              </StyledButton>
+
+              {/* Reset Button */}
+              <StyledButton variant="contained" onClick={handleReset}>
+                Reset
+              </StyledButton>
+            </Stack>
+            <StyledButton variant="contained" onClick={props.onClose}>
+              Cancel
+            </StyledButton>
+          </StyledStack>
+        </Stack>
+      </form>
     </Form>
   );
 }

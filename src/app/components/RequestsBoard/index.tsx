@@ -3,8 +3,7 @@
  * RequestsBoard
  *
  */
-import { Paper } from '@material-ui/core';
-import { Stack } from '@mui/material';
+import { Stack, Paper } from '@mui/material';
 import * as React from 'react';
 import styled from 'styled-components/macro';
 import { RequestCard } from './RequestCard';
