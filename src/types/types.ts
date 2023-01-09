@@ -37,11 +37,12 @@ export interface SignUpData {
   lastName: string;
   email: string;
   password: string;
-  PIC: string;
   venmo: string;
+  google?: boolean;
 }
 
 export interface LoginData {
   email: string;
-  password: string;
+  password?: string;
+  google: boolean;
 }

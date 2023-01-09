@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { Helmet } from 'react-helmet-async';
 import styled from 'styled-components';
-import { Stack, Modal, Button, CircularProgress } from '@mui/material';
+import { Stack, Modal, Button } from '@mui/material';
 import { RequestsBoard } from 'app/components/RequestsBoard';
 import { useEffect, useState } from 'react';
 import { ReimbursementForm } from 'app/components/ReimbursementForm';
@@ -12,7 +12,8 @@ import { ErrorModal } from 'app/components/ErrorModal';
 import { styled as muiStyled } from '@mui/system';
 
 interface Props {
-  token: string;
+  token: string | null;
+  removeToken: () => void;
 }
 
 export function HomePage(props: Props) {
@@ -32,30 +33,42 @@ export function HomePage(props: Props) {
   useEffect(() => {
     const f = async () => {
       setIsLoading(true);
-      const url = `http://localhost:${process.env.PORT || 3000}/requests/`;
-      const response = await fetch(url, {
-        method: 'GET',
-        mode: 'cors',
-        cache: 'no-cache',
-        credentials: 'same-origin',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: 'Bearer ' + props.token,
-        },
-        redirect: 'follow',
-        referrerPolicy: 'no-referrer',
-      });
+      try {
+        const url = `http://localhost:${process.env.REACT_APP_BACKEND_PORT}/requests/`;
+        const response = await fetch(url, {
+          method: 'GET',
+          mode: 'cors',
+          cache: 'no-cache',
+          credentials: 'same-origin',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: 'Bearer ' + props.token,
+          },
+          redirect: 'follow',
+          referrerPolicy: 'no-referrer',
+        });
 
-      if (!response.ok) {
+        if (response.status === 401) {
+          props.removeToken();
+        }
+
+        if (!response.ok) {
+          console.error(response);
+          setError(true);
+          return;
+        }
+
+        setRequests(await response.json());
+        setIsLoading(false);
+      } catch (e: any) {
         setError(true);
+        console.error(e);
+        return;
       }
-
-      setRequests(await response.json());
-      setIsLoading(false);
     };
 
     f();
-  }, [props.token, refresh]);
+  }, [props, props.token, refresh]);
 
   const onClose = () => {
     setShowModal(false);
@@ -110,29 +123,27 @@ export function HomePage(props: Props) {
                 onClose={onClose}
                 onSubmit={onSubmit}
                 onError={onError}
+                token={props.token}
               />
             </>
           </StyledModal>
 
           <StyledStack justifyContent="space-between">
-            {isLoading ? (
-              <CircularProgress />
-            ) : (
-              <RequestsBoard requests={requests} onEdit={handleShowModal} />
-            )}
+            <RequestsBoard
+              requests={isLoading ? null : requests}
+              onEdit={handleShowModal}
+            />
             <Stack
               direction="row"
               justifyContent={isLoading ? 'flex-end' : 'space-between'}
             >
-              {isLoading || (
-                <StyledButton
-                  startIcon={React.cloneElement(<RefreshIcon />)}
-                  variant="contained"
-                  onClick={onRefresh}
-                >
-                  Refresh
-                </StyledButton>
-              )}
+              <StyledButton
+                startIcon={React.cloneElement(<RefreshIcon />)}
+                variant="contained"
+                onClick={onRefresh}
+              >
+                Refresh
+              </StyledButton>
               <StyledButton
                 startIcon={React.cloneElement(<AddIcon />)}
                 variant="contained"

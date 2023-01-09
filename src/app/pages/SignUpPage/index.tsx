@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /**
  *
  * SignUpPage
@@ -5,6 +6,7 @@
  */
 import {
   Button,
+  CircularProgress,
   Divider,
   IconButton,
   InputAdornment,
@@ -13,14 +15,15 @@ import {
   TextField,
 } from '@mui/material';
 import * as React from 'react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import styled from 'styled-components';
 import PlexTechLogo from '../../../PlexTechLogo.png';
 import { styled as muiStyled } from '@mui/system';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
-import { GoogleLogin } from 'react-google-login';
 import { SignUpData } from 'types/types';
+import { ErrorModal } from 'app/components/ErrorModal';
+import jwt_decode from 'jwt-decode';
 
 interface Props {
   onBack: () => void;
@@ -35,9 +38,46 @@ export function SignUpPage(props: Props) {
     lastName: '',
     email: '',
     password: '',
-    PIC: '',
     venmo: '',
   });
+  const [error, setError] = useState<boolean>(false);
+  const [incorrect, setIncorrect] = useState<boolean>(false);
+  const [googleResponse, setGoogleResponse] = useState<any>({});
+  const [loading, setLoading] = useState<boolean>();
+
+  useEffect(() => {
+    google.accounts.id.initialize({
+      client_id: process.env.REACT_APP_GOOGLE_CLIENT_ID,
+      callback: handleCallbackResponse,
+    });
+
+    google.accounts.id.renderButton(document.getElementById('google-signup'), {
+      theme: 'outline',
+      size: 'large',
+      text: 'signup_with',
+    });
+  }, []);
+
+  useEffect(() => {
+    const f = async () => {
+      if (googleResponse.email) {
+        await onSubmit();
+      }
+    };
+    f();
+  }, [googleResponse]);
+
+  const handleCallbackResponse = (response: any) => {
+    const res = jwt_decode(response.credential) as any;
+    setFormData({
+      ...formData,
+      email: res.email,
+      firstName: res.given_name,
+      lastName: res.family_name,
+      google: true,
+    });
+    setGoogleResponse(res);
+  };
 
   const onShowPassword = () => {
     setShowPassword(!showPassword);
@@ -75,13 +115,6 @@ export function SignUpPage(props: Props) {
     }));
   };
 
-  const onPICChange = ({ target }) => {
-    setFormData((prevState: SignUpData) => ({
-      ...prevState,
-      PIC: target.value,
-    }));
-  };
-
   const onVenmoChange = ({ target }) => {
     setFormData((prevState: SignUpData) => ({
       ...prevState,
@@ -89,43 +122,56 @@ export function SignUpPage(props: Props) {
     }));
   };
 
-  const onSubmit = async (event: any) => {
-    event.preventDefault();
+  const onSubmit = async (event?: any) => {
+    if (event) {
+      event.preventDefault();
+    }
     if (
-      formData.firstName === '' ||
-      formData.lastName === '' ||
-      formData.email === '' ||
       formData.venmo === '' ||
-      formData.PIC.length !== 5 ||
-      formData.password.length < 8
+      (!formData.google &&
+        (formData.firstName === '' ||
+          formData.lastName === '' ||
+          formData.email === '' ||
+          formData.password.length < 8))
     ) {
       setSubmitted(true);
       return;
     }
+    try {
+      console.log(JSON.stringify({ ...formData, method: 'signup' }));
+      setLoading(true);
+      const url = `http://localhost:${process.env.REACT_APP_BACKEND_PORT}/users/`;
+      const response = await fetch(url, {
+        method: 'POST',
+        mode: 'cors',
+        cache: 'no-cache',
+        credentials: 'same-origin',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        redirect: 'follow',
+        referrerPolicy: 'no-referrer',
+        body: JSON.stringify({ ...formData, method: 'signup' }),
+      });
+      setLoading(false);
 
-    const url = `http://localhost:${process.env.PORT || 3000}/users/`;
-    const response = await fetch(url, {
-      method: 'PUT',
-      mode: 'cors',
-      cache: 'no-cache',
-      credentials: 'same-origin',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      redirect: 'follow',
-      referrerPolicy: 'no-referrer',
-      body: JSON.stringify({ ...formData, method: 'signup' }),
-    });
+      const res = await response.json();
 
-    const res = await response.json();
+      if (response.status === 401) {
+        setIncorrect(true);
+        return;
+      } else if (response.ok) {
+        setError(true);
+        console.error(response);
+      }
 
-    if (response.status === 401) {
-      return;
+      props.setToken(res.access_token);
+
+      setSubmitted(false);
+    } catch (e: any) {
+      console.error(e);
+      setError(true);
     }
-
-    props.setToken(res.access_token);
-
-    setSubmitted(false);
   };
 
   return (
@@ -134,151 +180,187 @@ export function SignUpPage(props: Props) {
         <title>Sign Up</title>
         <meta name="description" content="Signup page for PlexTech finance" />
       </Helmet>
-      <Div>
-        <Form elevation={3}>
-          <form>
-            <Stack alignItems="center" spacing={4}>
-              <StyledStack
-                direction="row"
-                justifyContent="space-between"
-                alignItems="flex-start"
-              >
-                <StyledButton
-                  variant="contained"
-                  style={{ visibility: 'hidden' }}
+      {error ? (
+        <ErrorModal open={error} />
+      ) : (
+        <Div>
+          <Form elevation={3}>
+            <form>
+              <Stack alignItems="center" spacing={4}>
+                <StyledStack
+                  direction="row"
+                  justifyContent="space-between"
+                  alignItems="flex-start"
                 >
-                  Back to login
-                </StyledButton>
-                <Img src={PlexTechLogo} alt="PlexTech logo" />
-                <StyledButton variant="contained" onClick={onBackClick}>
-                  Back to login
-                </StyledButton>
-              </StyledStack>
-              <H1>Sign Up</H1>
-              <GoogleLogin clientId="" />
-              <StyledDivider variant="middle" light>
-                or
-              </StyledDivider>
-              <StyledStack>
-                <p>First Name</p>
-                <TextField
-                  variant="outlined"
-                  required
-                  size="small"
-                  value={formData.firstName}
-                  onChange={onFirstNameChange}
-                  error={submitted && formData.firstName === ''}
-                  helperText={
-                    submitted && formData.firstName === '' && 'Required'
-                  }
-                />
-              </StyledStack>
-              <StyledStack>
-                <p>Last Name</p>
-                <TextField
-                  variant="outlined"
-                  required
-                  size="small"
-                  value={formData.lastName}
-                  onChange={onLastNameChange}
-                  error={submitted && formData.lastName === ''}
-                  helperText={
-                    submitted && formData.lastName === '' && 'Required'
-                  }
-                />
-              </StyledStack>
-              <StyledStack>
-                <p>Email Address</p>
-                <TextField
-                  variant="outlined"
-                  required
-                  size="small"
-                  value={formData.email}
-                  onChange={onEmailChange}
-                  error={submitted && formData.email === ''}
-                  helperText={submitted && formData.email === '' && 'Required'}
-                />
-              </StyledStack>
-              <StyledStack>
-                <p>Password</p>
-                <TextField
-                  variant="outlined"
-                  type={showPassword ? 'text' : 'password'}
-                  autoComplete="current-password"
-                  required
-                  size="small"
-                  InputProps={{
-                    endAdornment: (
-                      <InputAdornment position="end">
-                        <IconButton
-                          onClick={onShowPassword}
-                          onMouseDown={onShowPassword}
-                        >
-                          {showPassword ? <Visibility /> : <VisibilityOff />}
-                        </IconButton>
-                      </InputAdornment>
-                    ),
-                  }}
-                  value={formData.password}
-                  onChange={onPasswordChange}
-                  error={submitted && formData.password.length < 8}
-                  helperText={
-                    submitted &&
-                    formData.password.length < 8 &&
-                    'Password must be at least 8 characters long.'
-                  }
-                />
-              </StyledStack>
-              <StyledStack>
-                <p>PIC (contact PlexTech management if you don't have one)</p>
-                <TextField
-                  variant="outlined"
-                  required
-                  size="small"
-                  type="number"
-                  value={formData.PIC}
-                  onChange={onPICChange}
-                  error={submitted && formData.PIC.length !== 5}
-                  helperText={
-                    submitted &&
-                    formData.PIC.length !== 5 &&
-                    'PIC must be a 5-digit integer'
-                  }
-                />
-              </StyledStack>
-              <StyledStack>
-                <p>Venmo Username</p>
-                <TextField
-                  variant="outlined"
-                  required
-                  size="small"
-                  value={formData.venmo}
-                  onChange={onVenmoChange}
-                  error={submitted && formData.password === ''}
-                  helperText={
-                    submitted && formData.password === '' && 'Required'
-                  }
-                />
-              </StyledStack>
-              <div />
-              <StyledButton
-                variant="contained"
-                onClick={onSubmit}
-                type="submit"
-              >
-                Submit
-              </StyledButton>
-            </Stack>
-          </form>
-        </Form>
-        <div style={{ height: '5%' }} />
-      </Div>
+                  <StyledButton
+                    variant="contained"
+                    style={{ visibility: 'hidden' }}
+                  >
+                    Back to login
+                  </StyledButton>
+                  <Img src={PlexTechLogo} alt="PlexTech logo" />
+                  <StyledButton variant="contained" onClick={onBackClick}>
+                    Back to login
+                  </StyledButton>
+                </StyledStack>
+                <H1>Sign Up</H1>
+                <StyledStack>
+                  {formData.google && <p>Signed in with Google.</p>}
+                  <p>Venmo Username</p>
+                  <TextField
+                    variant="outlined"
+                    required
+                    size="small"
+                    value={formData.venmo}
+                    onChange={onVenmoChange}
+                    error={submitted && formData.venmo === ''}
+                    helperText={
+                      submitted && formData.venmo === '' && 'Required'
+                    }
+                  />
+                </StyledStack>
+                <StyledDivider variant="middle" light />
+                {formData.google ? (
+                  <StyledButton variant="contained" onClick={onSubmit}>
+                    Sign Up
+                  </StyledButton>
+                ) : (
+                  <>
+                    <div id="google-signup" />
+
+                    <StyledDivider variant="middle" light>
+                      or
+                    </StyledDivider>
+                    <StyledStack>
+                      <p>First Name</p>
+                      <TextField
+                        variant="outlined"
+                        required
+                        size="small"
+                        value={formData.firstName}
+                        onChange={onFirstNameChange}
+                        error={
+                          !formData.google! &&
+                          submitted &&
+                          formData.firstName === ''
+                        }
+                        helperText={
+                          !formData.google! &&
+                          submitted &&
+                          formData.firstName === '' &&
+                          'Required'
+                        }
+                      />
+                    </StyledStack>
+                    <StyledStack>
+                      <p>Last Name</p>
+                      <TextField
+                        variant="outlined"
+                        required
+                        size="small"
+                        value={formData.lastName}
+                        onChange={onLastNameChange}
+                        error={
+                          !formData.google! &&
+                          submitted &&
+                          formData.lastName === ''
+                        }
+                        helperText={
+                          !formData.google! &&
+                          submitted &&
+                          formData.lastName === '' &&
+                          'Required'
+                        }
+                      />
+                    </StyledStack>
+                    <StyledStack>
+                      <p>Email Address</p>
+                      <TextField
+                        variant="outlined"
+                        required
+                        size="small"
+                        value={formData.email}
+                        onChange={onEmailChange}
+                        error={
+                          (!formData.google! &&
+                            submitted &&
+                            formData.email === '') ||
+                          incorrect
+                        }
+                        helperText={
+                          (!formData.google! &&
+                            submitted &&
+                            formData.email === '' &&
+                            'Required') ||
+                          (incorrect &&
+                            'You are not registered as a PlexTech member. Contact PlexTech management if this is incorrect.')
+                        }
+                      />
+                    </StyledStack>
+                    <StyledStack>
+                      <p>Password</p>
+                      <TextField
+                        variant="outlined"
+                        type={showPassword ? 'text' : 'password'}
+                        autoComplete="current-password"
+                        required
+                        size="small"
+                        InputProps={{
+                          endAdornment: (
+                            <InputAdornment position="end">
+                              <IconButton
+                                onClick={onShowPassword}
+                                onMouseDown={onShowPassword}
+                              >
+                                {showPassword ? (
+                                  <Visibility />
+                                ) : (
+                                  <VisibilityOff />
+                                )}
+                              </IconButton>
+                            </InputAdornment>
+                          ),
+                        }}
+                        value={formData.password}
+                        onChange={onPasswordChange}
+                        error={
+                          !formData.google! &&
+                          submitted &&
+                          formData.password.length < 8
+                        }
+                        helperText={
+                          !formData.google! &&
+                          submitted &&
+                          formData.password.length < 8 &&
+                          'Password must be at least 8 characters long.'
+                        }
+                      />
+                    </StyledStack>
+                    <div />
+                    <StyledButton
+                      variant="contained"
+                      onClick={onSubmit}
+                      type="submit"
+                    >
+                      {loading ? (
+                        <StyledCircularProgress size={20} />
+                      ) : (
+                        'Log In'
+                      )}
+                    </StyledButton>
+                  </>
+                )}
+              </Stack>
+            </form>
+          </Form>
+          <div style={{ height: '5%' }} />
+        </Div>
+      )}
     </>
   );
 }
 
 const Form = muiStyled(Paper)`
-  min-height: 95%;
   width: 40%;
   margin: auto;
   padding: 64px;
@@ -312,4 +394,8 @@ const H1 = styled.h1`
   margin: 0px;
   font-size: 3.052rem;
   padding-top: 24px;
+`;
+
+const StyledCircularProgress = muiStyled(CircularProgress)`
+  color: rgb(255, 138, 0);
 `;

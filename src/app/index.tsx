@@ -20,6 +20,8 @@ import { createTheme, ThemeProvider } from '@mui/material/styles';
 import Background from '../shapes-background.png';
 import styled from 'styled-components';
 import useToken from 'useToken';
+import { useState } from 'react';
+import { TopBar } from './components/TopBar';
 
 export function App() {
   const { i18n } = useTranslation();
@@ -29,6 +31,8 @@ export function App() {
       fontFamily: ['"DM Sans"'].join(','),
     },
   });
+
+  const [open, setOpen] = useState<boolean>(false);
 
   const { token, removeToken, setToken } = useToken();
 
@@ -44,13 +48,20 @@ export function App() {
         </Helmet>
         <Div>
           {(!token && token !== '' && token !== undefined) ||
-          token === 'undefined' ? (
-            <LoginPage setToken={setToken} />
+          token === 'undefined' ||
+          token?.charAt(0) === 'ƒ' ? (
+            <LoginPage setToken={setToken} token={token} />
           ) : (
-            <Routes>
-              <Route path="/" element={<HomePage token={token} />} />
-              <Route path="*" element={<NotFoundPage />} />
-            </Routes>
+            <>
+              <TopBar open={open} setOpen={setOpen} />
+              <Routes>
+                <Route
+                  path="/"
+                  element={<HomePage token={token} removeToken={removeToken} />}
+                />
+                <Route path="*" element={<NotFoundPage />} />
+              </Routes>
+            </>
           )}
         </Div>
         <GlobalStyle />
@@ -63,5 +74,4 @@ const Div = styled.div`
   background-image: url(${Background});
   height: 100vh;
   background-repeat: repeat;
-  overflow-y: scroll;
 `;

@@ -3,8 +3,8 @@
  * ErrorModal
  *
  */
-import { IconButton, Paper } from '@material-ui/core';
-import { Modal, Stack } from '@mui/material';
+import { IconButton } from '@material-ui/core';
+import { Modal, Stack, Paper } from '@mui/material';
 import * as React from 'react';
 import styled from 'styled-components/macro';
 import RefreshIcon from '@mui/icons-material/Refresh';
@@ -25,8 +25,8 @@ export function ErrorModal(props: Props) {
         <Stack spacing={2}>
           <Stack direction="row" alignItems="center">
             <H1>Error</H1>
-            <IconButton>
-              <RefreshIcon onClick={onRefresh} />
+            <IconButton onClick={onRefresh}>
+              <RefreshIcon />
             </IconButton>
           </Stack>
           <P>

@@ -10,7 +10,7 @@ import { RequestCard } from './RequestCard';
 import { AllRequests, Request } from '../../../types/types';
 
 interface Props {
-  requests: AllRequests;
+  requests: AllRequests | null;
   onEdit: (newRequest: Request) => void;
 }
 
@@ -29,9 +29,11 @@ export function RequestsBoard(props: Props) {
         const regex = statusKey.replace(/([A-Z])/g, ' $1');
         const statusTitleCase = regex.charAt(0).toUpperCase() + regex.slice(1);
         let sum: number = 0;
-        props.requests[statusKey].forEach((request: Request) => {
-          sum += request.amount;
-        });
+        if (props.requests) {
+          props.requests![statusKey].forEach((request: Request) => {
+            sum += request.amount;
+          });
+        }
 
         return (
           <Section
@@ -40,20 +42,23 @@ export function RequestsBoard(props: Props) {
             style={{ borderRadius: '10%' }}
           >
             <Stack spacing={1}>
-              {props.requests[statusKey].length === 0 ? (
+              {!props.requests || props.requests![statusKey].length === 0 ? (
                 <H2>{statusTitleCase}</H2>
               ) : (
                 <H2>
                   {statusTitleCase}: ${sum.toFixed(2)}
                 </H2>
               )}
-              {props.requests[statusKey].map((request: Request) => (
-                <RequestCard
-                  request={request}
-                  key={request._id}
-                  onEdit={() => props.onEdit(request)}
-                />
-              ))}
+              {props.requests &&
+                props.requests![statusKey].map(
+                  (request: Request, index: number) => (
+                    <RequestCard
+                      request={request}
+                      key={index}
+                      onEdit={() => props.onEdit(request)}
+                    />
+                  ),
+                )}
             </Stack>
           </Section>
         );

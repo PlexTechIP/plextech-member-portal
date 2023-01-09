@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /**
  *
  * LoginPage
@@ -18,16 +19,17 @@ import {
   TextField,
   CircularProgress,
 } from '@mui/material';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
-import { GoogleLogin } from 'react-google-login';
 import { LoginData } from 'types/types';
 import { SignUpPage } from '../SignUpPage/Loadable';
 import { ErrorModal } from 'app/components/ErrorModal';
 import { ForgotPasswordPage } from '../ForgotPasswordPage/Loadable';
+import jwt_decode from 'jwt-decode';
 
 interface Props {
   setToken: (token: string) => void;
+  token: string | null;
 }
 
 export function LoginPage(props: Props) {
@@ -36,14 +38,48 @@ export function LoginPage(props: Props) {
   const [formData, setFormData] = useState<LoginData>({
     email: '',
     password: '',
+    google: false,
   });
   const [incorrect, setIncorrect] = useState<boolean>(false);
   const [showSignUp, setShowSignUp] = useState<boolean>(false);
   const [error, setError] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
   const [forgotPassword, setForgotPassword] = useState<boolean>(false);
+  const [googleResponse, setGoogleResponse] = useState<any>({});
 
-  const onForgotPassword = () => {};
+  useEffect(() => {
+    google.accounts.id.initialize({
+      client_id: process.env.REACT_APP_GOOGLE_CLIENT_ID,
+      callback: handleCallbackResponse,
+    });
+
+    google.accounts.id.renderButton(document.getElementById('google-signin'), {
+      theme: 'outline',
+      size: 'large',
+    });
+  }, [showSignUp]);
+
+  useEffect(() => {
+    const f = async () => {
+      if (googleResponse.email) {
+        await onSubmit();
+      }
+    };
+    f();
+  }, [googleResponse]);
+
+  const handleCallbackResponse = (response: any) => {
+    const res = jwt_decode(response.credential) as any;
+    setFormData({
+      email: res.email,
+      google: true,
+    });
+    setGoogleResponse(res);
+  };
+
+  const onForgotPassword = () => {
+    setForgotPassword(true);
+  };
 
   const onShowPassword = () => {
     setShowPassword(!showPassword);
@@ -67,41 +103,57 @@ export function LoginPage(props: Props) {
     }));
   };
 
-  const onSubmit = async (event: any) => {
-    event.preventDefault();
-    if (formData.email === '' || formData.password === '') {
+  const onSubmit = async (event?: any) => {
+    if (event) {
+      event.preventDefault();
+    }
+    if (
+      !formData.google &&
+      (formData.email === '' || formData.password === '')
+    ) {
       setSubmitted(true);
       return;
     }
     setLoading(true);
+    try {
+      const url = `http://localhost:${process.env.REACT_APP_BACKEND_PORT}/users/`;
+      const response = await fetch(url, {
+        method: 'POST',
+        mode: 'cors',
+        cache: 'no-cache',
+        credentials: 'same-origin',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        redirect: 'follow',
+        referrerPolicy: 'no-referrer',
+        body: JSON.stringify({ ...formData, method: 'login' }),
+      });
 
-    const url = `http://localhost:${process.env.PORT || 3000}/users/`;
-    const response = await fetch(url, {
-      method: 'PUT',
-      mode: 'cors',
-      cache: 'no-cache',
-      credentials: 'same-origin',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      redirect: 'follow',
-      referrerPolicy: 'no-referrer',
-      body: JSON.stringify({ ...formData, method: 'login' }),
-    });
+      setLoading(false);
 
-    const res = await response.json();
-    setLoading(false);
+      if (response.status === 404) {
+        setShowSignUp(true);
+        return;
+      }
+      if (response.status === 401) {
+        setIncorrect(true);
+        return;
+      } else if (!response.ok) {
+        console.error(response);
+        setError(true);
+        return;
+      }
+      setIncorrect(false);
 
-    if (response.status === 401) {
-      setIncorrect(true);
-      return;
-    } else if (!response.ok) {
+      const res = await response.json();
+
+      props.setToken(res.access_token);
+      setSubmitted(false);
+    } catch (e: any) {
+      console.error(e);
       setError(true);
     }
-    setIncorrect(false);
-
-    props.setToken(res.access_token);
-    setSubmitted(false);
   };
   if (showSignUp) {
     return (
@@ -112,7 +164,13 @@ export function LoginPage(props: Props) {
     );
   }
   if (forgotPassword) {
-    return <ForgotPasswordPage />;
+    return (
+      <ForgotPasswordPage
+        onBack={() => setForgotPassword(false)}
+        setToken={props.setToken}
+        token={props.token}
+      />
+    );
   }
   return (
     <>
@@ -135,11 +193,18 @@ export function LoginPage(props: Props) {
                     variant="outlined"
                     required
                     size="small"
-                    value={formData.email}
+                    value={formData.google ? '' : formData.email}
                     onChange={onEmailChange}
-                    error={(submitted && formData.email === '') || incorrect}
+                    error={
+                      (submitted && formData.email === '') ||
+                      (formData.google && incorrect) ||
+                      incorrect
+                    }
                     helperText={
                       (submitted && formData.email === '' && 'Required') ||
+                      (formData.google &&
+                        incorrect &&
+                        'You are not registered as a PlexTech member. Contact PlexTech management if this is incorrect.') ||
                       (incorrect && 'Incorrect email or password.')
                     }
                   />
@@ -164,12 +229,16 @@ export function LoginPage(props: Props) {
                         </InputAdornment>
                       ),
                     }}
-                    value={formData.password}
+                    value={formData.google ? '' : formData.password}
                     onChange={onPasswordChange}
-                    error={(submitted && formData.password === '') || incorrect}
+                    error={
+                      !formData.google &&
+                      ((submitted && formData.password === '') || incorrect)
+                    }
                     helperText={
-                      (submitted && formData.password === '' && 'Required') ||
-                      (incorrect && 'Incorrect email or password.')
+                      !formData.google &&
+                      ((submitted && formData.password === '' && 'Required') ||
+                        (incorrect && 'Incorrect email or password.'))
                     }
                   />
                 </StyledStack>
@@ -179,7 +248,7 @@ export function LoginPage(props: Props) {
                     onClick={onSubmit}
                     type="submit"
                   >
-                    {loading ? <StyledCircularProgress size={20} /> : 'Submit'}
+                    {loading ? <StyledCircularProgress size={20} /> : 'Log In'}
                   </StyledButton>
                   <StyledButton variant="text" onClick={onForgotPassword}>
                     Forgot Password?
@@ -189,8 +258,7 @@ export function LoginPage(props: Props) {
                 <StyledDivider variant="middle" light>
                   or
                 </StyledDivider>
-
-                <GoogleLogin clientId="" />
+                <div id="google-signin" />
                 <StyledButton variant="contained" onClick={onSignUpClick}>
                   Don't have an account yet?
                 </StyledButton>

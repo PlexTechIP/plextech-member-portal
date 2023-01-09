@@ -28,6 +28,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import { FormData } from '../../../types/types';
 import { Image } from '../../../types/types';
 import { styled as muiStyled } from '@mui/system';
+import DeleteIcon from '@mui/icons-material/Delete';
 import Compressor from 'compressorjs';
 
 interface Props {
@@ -37,6 +38,7 @@ interface Props {
   request: Request | null;
   onSubmit: (newRequest: Request) => void;
   onError: () => void;
+  token: string | null;
 }
 
 const initialState: FormData = {
@@ -102,7 +104,7 @@ export function ReimbursementForm(props: Props) {
           }));
         },
         error(err) {
-          console.log(err.message);
+          console.error(err.message);
         },
       });
     });
@@ -164,9 +166,9 @@ export function ReimbursementForm(props: Props) {
       amount: parseFloat(formData.amount),
     };
 
-    const url = `http://localhost:${process.env.PORT || 3000}/requests/${
-      props.request ? props.request._id : ''
-    }`;
+    const url = `http://localhost:${
+      process.env.REACT_APP_BACKEND_PORT
+    }/requests/${props.request ? props.request._id : ''}`;
     const response = await fetch(url, {
       method: props.request ? 'PUT' : 'POST',
       mode: 'cors',
@@ -174,6 +176,7 @@ export function ReimbursementForm(props: Props) {
       credentials: 'same-origin',
       headers: {
         'Content-Type': 'application/json',
+        Authorization: 'Bearer ' + props.token,
       },
       redirect: 'follow',
       referrerPolicy: 'no-referrer',
@@ -211,9 +214,16 @@ export function ReimbursementForm(props: Props) {
             direction="row"
             justifyContent="space-between"
             alignItems="center"
+            style={{ marginBottom: '16px' }}
           >
             <H1>Reimbursement Request Form</H1>
-            <P>* = required</P>
+            {props.request ? (
+              <IconButton>
+                <DeleteIcon fontSize="large" />
+              </IconButton>
+            ) : (
+              <P>* = required</P>
+            )}
           </StyledStack>
 
           {/* Item Description Field */}

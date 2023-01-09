@@ -1,45 +1,47 @@
 /**
  *
- * ForgotPasswordPage
+ * PasswordResetPage
  *
  */
 import {
   Stack,
   TextField,
+  Paper,
   Button,
   CircularProgress,
-  Paper,
 } from '@mui/material';
 import { ErrorModal } from 'app/components/ErrorModal';
 import * as React from 'react';
-import { Helmet } from 'react-helmet-async';
-import { styled as muiStyled } from '@mui/system';
-import styled from 'styled-components/macro';
-import PlexTechLogo from '../../../PlexTechLogo.png';
 import { useState } from 'react';
-import { PasswordResetPage } from '../PasswordResetPage/Loadable';
+import { Helmet } from 'react-helmet-async';
+import styled from 'styled-components/macro';
+import { styled as muiStyled } from '@mui/system';
+import PlexTechLogo from '../../../PlexTechLogo.png';
+import { NewPasswordPage } from '../NewPasswordPage/Loadable';
 
 interface Props {
   onBack: () => void;
+  email: string;
   setToken: (newToken: string) => void;
   token: string | null;
 }
 
-export function ForgotPasswordPage(props: Props) {
+export function PasswordResetPage(props: Props) {
   const [submitted, setSubmitted] = useState<boolean>(false);
-  const [email, setEmail] = useState<string>('');
+  const [code, setCode] = useState<string>('');
   const [error, setError] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
   const [incorrect, setIncorrect] = useState<boolean>(false);
-  const [showResetPage, setShowResetPage] = useState<boolean>(false);
+  const [expired, setExpired] = useState<boolean>(false);
+  const [success, setSuccess] = useState<boolean>(false);
 
-  const onEmailChange = ({ target }) => {
-    setEmail(target.value);
+  const onCodeChange = ({ target }) => {
+    setCode(target.value);
   };
 
   const onSubmit = async (event: any) => {
     event.preventDefault();
-    if (email === '') {
+    if (code === '') {
       setSubmitted(true);
       return;
     }
@@ -49,7 +51,7 @@ export function ForgotPasswordPage(props: Props) {
 
     try {
       const response = await fetch(url, {
-        method: 'PUT',
+        method: 'POST',
         mode: 'cors',
         cache: 'no-cache',
         credentials: 'same-origin',
@@ -58,48 +60,50 @@ export function ForgotPasswordPage(props: Props) {
         },
         redirect: 'follow',
         referrerPolicy: 'no-referrer',
-        body: JSON.stringify({ email, method: 'passwordCode' }),
+        body: JSON.stringify({
+          email: props.email,
+          code,
+          method: 'checkResetPasswordCode',
+        }),
       });
-
       setLoading(false);
 
-      if (response.status === 401) {
-        console.error(response);
-        setIncorrect(true);
-        return;
-      }
       if (!response.ok) {
+        if (response.status === 401) {
+          setIncorrect(true);
+          return;
+        }
+        if (response.status === 498) {
+          setExpired(true);
+          return;
+        }
+        console.error(response);
         setError(true);
         return;
       }
-      setShowResetPage(true);
+      const res = await response.json();
+
+      props.setToken('ƒ' + res.access_token);
+      setSuccess(true);
+      setExpired(false);
       setIncorrect(false);
       setSubmitted(false);
     } catch (e: any) {
       console.error(e);
       setError(true);
+      return;
     }
   };
 
-  if (showResetPage) {
-    return (
-      <PasswordResetPage
-        onBack={props.onBack}
-        email={email}
-        setToken={props.setToken}
-        token={props.token}
-      />
-    );
+  if (success) {
+    return <NewPasswordPage setToken={props.setToken} token={props.token} />;
   }
 
   return (
     <>
       <Helmet>
-        <title>Forgot Password</title>
-        <meta
-          name="description"
-          content="Forgot Password page for PlexTech finance"
-        />
+        <title>Reset Password</title>
+        <meta name="Reset Password" content="Login page for PlexTech finance" />
       </Helmet>
       {error ? (
         <ErrorModal open={error} />
@@ -124,25 +128,20 @@ export function ForgotPasswordPage(props: Props) {
                     Back to login
                   </StyledButton>
                 </StyledStack>
-                <H1>Forgot Password</H1>
-                <p>
-                  We'll send a 5-digit code to your email address that you can
-                  use to reset your password. This code will expire in 5
-                  minutes. Please keep this tab open.
-                </p>
+                <H1>Reset Password</H1>
                 <StyledStack>
-                  <p>Email Address</p>
+                  <p>5-digit code (check your email)</p>
                   <TextField
                     variant="outlined"
                     required
                     size="small"
-                    value={email}
-                    onChange={onEmailChange}
-                    error={(submitted && email === '') || incorrect}
+                    value={code}
+                    onChange={onCodeChange}
+                    error={(submitted && code === '') || incorrect}
                     helperText={
-                      (submitted && email === '' && 'Required') ||
-                      (incorrect &&
-                        "Account doesn't exist. Go back to the login page to make an account.")
+                      (submitted && code === '' && 'Required') ||
+                      (incorrect && 'Incorrect code.') ||
+                      (expired && 'Code expired. Please try again.')
                     }
                   />
                 </StyledStack>
@@ -165,7 +164,7 @@ export function ForgotPasswordPage(props: Props) {
 }
 
 const Form = muiStyled(Paper)`
-  min-height: 75%;
+  min-height: 65%;
   width: 40%;
   margin: auto;
   padding: 64px;
