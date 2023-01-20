@@ -6,6 +6,7 @@
 import { IconButton } from '@material-ui/core';
 import { Modal, Stack, Paper } from '@mui/material';
 import * as React from 'react';
+import { styled as muiStyled } from '@mui/system';
 import styled from 'styled-components/macro';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import ErrorImage from '../../../error.webp';
@@ -21,7 +22,7 @@ const onRefresh = () => {
 export function ErrorModal(props: Props) {
   return (
     <StyledModal open={props.open}>
-      <StyledPaper style={{ borderRadius: '5%' }}>
+      <StyledPaper>
         <Stack spacing={2}>
           <Stack direction="row" alignItems="center">
             <H1>Error</H1>
@@ -43,8 +44,9 @@ export function ErrorModal(props: Props) {
   );
 }
 
-const StyledPaper = styled(Paper)`
+const StyledPaper = muiStyled(Paper)`
   padding: 48px;
+  border-radius: 48px;
 `;
 
 const H1 = styled.h1`

@@ -6,11 +6,13 @@ import EditIcon from '@mui/icons-material/Edit';
 import ImageIcon from '@mui/icons-material/Image';
 import { useState } from 'react';
 import { styled as muiStyled } from '@mui/system';
-import { ImageModal } from '../ImageModal';
+import { Visibility } from '@mui/icons-material';
+import { ImageModal } from './ImageModal';
 
 interface Props {
   request: Request;
-  onEdit: () => void;
+  onEdit: (mine: boolean) => void;
+  mine: boolean;
 }
 
 export function RequestCard(props: Props) {
@@ -27,9 +29,10 @@ export function RequestCard(props: Props) {
   return (
     <>
       <ImageModal
-        request={props.request}
+        images={props.request.images}
         onClose={onClose}
-        showModal={showModal}
+        open={showModal}
+        itemDescription={props.request.itemDescription}
       />
       <StyledCard elevation={2} key={props.request._id}>
         <Stack spacing={1}>
@@ -43,26 +46,30 @@ export function RequestCard(props: Props) {
           </StyledStack>
           <Stack
             direction="row"
-            justifyContent="space-between"
-            alignItems="flex-end"
+            justifyContent={props.mine ? 'space-between' : 'flex-end'}
+            alignItems="center"
           >
+            {props.mine && (
+              <StyledButton
+                size="small"
+                startIcon={React.cloneElement(<ImageIcon />)}
+                onClick={onClick}
+              >
+                View Receipt(s)
+              </StyledButton>
+            )}
             <StyledButton
               size="small"
-              startIcon={React.cloneElement(<ImageIcon />)}
-              onClick={onClick}
-            >
-              View Receipts
-            </StyledButton>
-            <StyledButton
-              size="small"
-              startIcon={React.cloneElement(<EditIcon />)}
-              onClick={props.onEdit}
+              startIcon={React.cloneElement(
+                props.mine ? <EditIcon /> : <Visibility />,
+              )}
+              onClick={() => props.onEdit(props.mine)}
               disabled={
                 props.request.status === 'underReview' ||
                 props.request.status === 'approved'
               }
             >
-              Edit
+              {props.mine ? 'Edit' : 'View'}
             </StyledButton>
           </Stack>
         </Stack>
@@ -76,7 +83,7 @@ const StyledCard = muiStyled(Card)`
   text-align: left;
   display: flex;
   flex-direction: column;
-  border-radius: 10%;
+  border-radius: 16px;
 `;
 
 const H3 = styled.h3`

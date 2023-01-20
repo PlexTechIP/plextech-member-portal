@@ -1,3 +1,5 @@
+import { Dayjs } from 'dayjs';
+
 export interface Request {
   _id: string;
   itemDescription: string;
@@ -6,6 +8,17 @@ export interface Request {
   isFood: boolean;
   images: Image[];
   status: string;
+  user_id: string;
+  comments: Comment[];
+  date: Dayjs;
+}
+
+export interface Comment {
+  message: String;
+  firstName: String;
+  lastName: String;
+  date: Dayjs;
+  user_id: string;
 }
 
 export interface Image {
@@ -30,6 +43,7 @@ export interface FormData {
   isFood: boolean;
   images: Image[];
   status: string;
+  comments: Comment[];
 }
 
 export interface SignUpData {
@@ -39,10 +53,24 @@ export interface SignUpData {
   password: string;
   venmo: string;
   google?: boolean;
+  teams: string[];
 }
 
 export interface LoginData {
   email: string;
   password?: string;
   google: boolean;
+}
+
+export interface User {
+  email: string;
+  _id: string;
+  firstName: string;
+  lastName: string;
+  registered: boolean;
+  venmo: string;
+  strikes: Dayjs[];
+  tardies: Dayjs[];
+  absences: Dayjs[];
+  treasurer: boolean;
 }

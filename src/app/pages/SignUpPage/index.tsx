@@ -10,7 +10,9 @@ import {
   Divider,
   IconButton,
   InputAdornment,
+  MenuItem,
   Paper,
+  Select,
   Stack,
   TextField,
 } from '@mui/material';
@@ -24,6 +26,16 @@ import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { SignUpData } from 'types/types';
 import { ErrorModal } from 'app/components/ErrorModal';
 import jwt_decode from 'jwt-decode';
+
+const possibleTeams = [
+  'Exec',
+  'Project Team 1',
+  'Project Team 2',
+  'Project Team 3',
+  'Project Team 4',
+  'Curriculum Team 1',
+  'Curriculum Team 2',
+];
 
 interface Props {
   onBack: () => void;
@@ -39,6 +51,7 @@ export function SignUpPage(props: Props) {
     email: '',
     password: '',
     venmo: '',
+    teams: [],
   });
   const [error, setError] = useState<boolean>(false);
   const [incorrect, setIncorrect] = useState<boolean>(false);
@@ -61,7 +74,7 @@ export function SignUpPage(props: Props) {
   useEffect(() => {
     const f = async () => {
       if (googleResponse.email) {
-        await onSubmit();
+        await onSubmit({});
       }
     };
     f();
@@ -122,8 +135,8 @@ export function SignUpPage(props: Props) {
     }));
   };
 
-  const onSubmit = async (event?: any) => {
-    if (event) {
+  const onSubmit = async (event: any) => {
+    if (event.preventDefault) {
       event.preventDefault();
     }
     if (
@@ -138,7 +151,6 @@ export function SignUpPage(props: Props) {
       return;
     }
     try {
-      console.log(JSON.stringify({ ...formData, method: 'signup' }));
       setLoading(true);
       const url = `http://localhost:${process.env.REACT_APP_BACKEND_PORT}/users/`;
       const response = await fetch(url, {
@@ -160,7 +172,7 @@ export function SignUpPage(props: Props) {
       if (response.status === 401) {
         setIncorrect(true);
         return;
-      } else if (response.ok) {
+      } else if (!response.ok) {
         setError(true);
         console.error(response);
       }
@@ -172,6 +184,16 @@ export function SignUpPage(props: Props) {
       console.error(e);
       setError(true);
     }
+  };
+
+  const handleChange = event => {
+    const {
+      target: { value },
+    } = event;
+    setFormData((prevState: SignUpData) => ({
+      ...prevState,
+      teams: value,
+    }));
   };
 
   return (
@@ -204,8 +226,8 @@ export function SignUpPage(props: Props) {
                   </StyledButton>
                 </StyledStack>
                 <H1>Sign Up</H1>
+                {formData.google && <p>Signed in with Google.</p>}
                 <StyledStack>
-                  {formData.google && <p>Signed in with Google.</p>}
                   <p>Venmo Username</p>
                   <TextField
                     variant="outlined"
@@ -218,6 +240,20 @@ export function SignUpPage(props: Props) {
                       submitted && formData.venmo === '' && 'Required'
                     }
                   />
+                </StyledStack>
+                <StyledStack>
+                  <p>Project/Curriculum Team</p>
+                  <Select
+                    multiple
+                    value={formData.teams}
+                    onChange={handleChange}
+                  >
+                    {possibleTeams.map(name => (
+                      <MenuItem key={name} value={name}>
+                        {name}
+                      </MenuItem>
+                    ))}
+                  </Select>
                 </StyledStack>
                 <StyledDivider variant="middle" light />
                 {formData.google ? (
@@ -345,7 +381,7 @@ export function SignUpPage(props: Props) {
                       {loading ? (
                         <StyledCircularProgress size={20} />
                       ) : (
-                        'Log In'
+                        'Sign Up'
                       )}
                     </StyledButton>
                   </>
@@ -364,7 +400,7 @@ const Form = muiStyled(Paper)`
   width: 40%;
   margin: auto;
   padding: 64px;
-  border-radius: 5%;
+  border-radius: 48px;
 `;
 
 const StyledStack = styled(Stack)`

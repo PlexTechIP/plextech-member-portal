@@ -12,7 +12,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 
 import { GlobalStyle } from 'styles/global-styles';
 
-import { HomePage } from './pages/HomePage/Loadable';
+import { HomePage } from './pages/ReimbursementsPage/Loadable';
 import { NotFoundPage } from './components/NotFoundPage/Loadable';
 import { useTranslation } from 'react-i18next';
 import { LoginPage } from './pages/LoginPage/Loadable';
@@ -22,6 +22,8 @@ import styled from 'styled-components';
 import useToken from 'useToken';
 import { useState } from 'react';
 import { TopBar } from './components/TopBar';
+import { AttendancePage } from './pages/AttendancePage/Loadable';
+import { ProfilePage } from './pages/ProfilePage/Loadable';
 
 export function App() {
   const { i18n } = useTranslation();
@@ -40,11 +42,11 @@ export function App() {
     <ThemeProvider theme={theme}>
       <BrowserRouter>
         <Helmet
-          titleTemplate="%s - PlexTech Finance"
-          defaultTitle="PlexTech Finance"
+          titleTemplate="%s - PlexTech Member Portal"
+          defaultTitle="PlexTech Member Portal"
           htmlAttributes={{ lang: i18n.language }}
         >
-          <meta name="description" content="PlexTech Finance" />
+          <meta name="description" content="PlexTech Member Portal" />
         </Helmet>
         <Div>
           {(!token && token !== '' && token !== undefined) ||
@@ -53,11 +55,18 @@ export function App() {
             <LoginPage setToken={setToken} token={token} />
           ) : (
             <>
-              <TopBar open={open} setOpen={setOpen} />
+              <TopBar open={open} setOpen={setOpen} token={token} />
               <Routes>
+                <Route path="/" element={<ProfilePage />} />
                 <Route
-                  path="/"
+                  path="/reimbursements"
                   element={<HomePage token={token} removeToken={removeToken} />}
+                />
+                <Route
+                  path="/attendance"
+                  element={
+                    <AttendancePage token={token} removeToken={removeToken} />
+                  }
                 />
                 <Route path="*" element={<NotFoundPage />} />
               </Routes>
@@ -72,6 +81,7 @@ export function App() {
 
 const Div = styled.div`
   background-image: url(${Background});
-  height: 100vh;
   background-repeat: repeat;
+  min-height: 100vh;
+  padding-bottom: 24px;
 `;

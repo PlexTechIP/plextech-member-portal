@@ -13,20 +13,21 @@ import {
 } from '@mui/material';
 import * as React from 'react';
 import styled from 'styled-components/macro';
-import { Request, Image } from 'types/types';
+import { Image } from 'types/types';
 import { styled as muiStyled } from '@mui/system';
 import CloseIcon from '@mui/icons-material/Close';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 
 interface Props {
-  request: Request;
+  images: Image[] | undefined;
   onClose: () => void;
-  showModal: boolean;
+  open: boolean;
+  itemDescription: string | undefined;
 }
 
 export function ImageModal(props: Props) {
   return (
-    <StyledModal open={props.showModal} onClose={props.onClose}>
+    <StyledModal open={props.open} onClose={props.onClose}>
       <>
         <StyledPaper>
           <StyledStack
@@ -34,24 +35,26 @@ export function ImageModal(props: Props) {
             alignItems="center"
             justifyContent="space-between"
           >
-            <H1>Receipts for {props.request.itemDescription}</H1>
+            <H1>Receipts for {props.itemDescription}</H1>
             <IconButton onClick={props.onClose}>
               <CloseIcon />
             </IconButton>
           </StyledStack>
-          <ImageList cols={3} rowHeight={300}>
-            {props.request.images.map((image: Image) => (
-              <ImageListItem key={image.name} cols={1}>
-                <a download={image.name} href={image.data as string}>
-                  <Img
-                    src={image.data as string}
-                    alt="receipt"
-                    loading="lazy"
-                  />
-                </a>
-              </ImageListItem>
-            ))}
-          </ImageList>
+          {props.images && (
+            <ImageList cols={3} rowHeight={300} style={{ height: '100%' }}>
+              {props.images!.map((image: Image) => (
+                <ImageListItem key={image.name} cols={1}>
+                  <a download={image.name} href={image.data as string}>
+                    <Img
+                      src={image.data as string}
+                      alt="receipt"
+                      loading="lazy"
+                    />
+                  </a>
+                </ImageListItem>
+              ))}
+            </ImageList>
+          )}
           <Div>
             <Stack direction="row" alignItems="center" spacing={1}>
               <StyledInfoOutlinedIcon />
@@ -114,7 +117,7 @@ const Img = styled.img`
 
 const StyledPaper = muiStyled(Paper)`
   padding: 48px;
-  border-radius: 5%;
+  border-radius: 48px;
   height: 100%;
 `;
 

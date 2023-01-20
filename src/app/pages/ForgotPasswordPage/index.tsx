@@ -63,7 +63,7 @@ export function ForgotPasswordPage(props: Props) {
 
       setLoading(false);
 
-      if (response.status === 401) {
+      if (response.status === 401 || response.status === 422) {
         console.error(response);
         setIncorrect(true);
         return;
@@ -169,7 +169,7 @@ const Form = muiStyled(Paper)`
   width: 40%;
   margin: auto;
   padding: 64px;
-  border-radius: 5%;
+  border-radius: 48px;
 `;
 
 const StyledStack = styled(Stack)`

@@ -50,7 +50,7 @@ export function NewPasswordPage(props: Props) {
     setLoading(true);
 
     try {
-      const url = `http://localhost:${process.env.REACT_APP_BACKEND_PORT}/change-password/`;
+      const url = `http://localhost:${process.env.REACT_APP_BACKEND_PORT}/profile/`;
       const response = await fetch(url, {
         method: 'PUT',
         mode: 'cors',
@@ -148,7 +148,7 @@ const Form = muiStyled(Paper)`
   width: 40%;
   margin: auto;
   padding: 64px;
-  border-radius: 5%;
+  border-radius: 48px;
 `;
 
 const StyledStack = styled(Stack)`
