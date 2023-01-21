@@ -48,7 +48,7 @@ export function TopBar(props: Props) {
 
   useEffect(() => {
     const f = async () => {
-      const url = `http://localhost:${process.env.REACT_APP_BACKEND_PORT}/profile/`;
+      const url = `${process.env.REACT_APP_BACKEND_URL}/profile/`;
       const response = await fetch(url, {
         method: 'GET',
         mode: 'cors',

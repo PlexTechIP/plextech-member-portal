@@ -30,6 +30,7 @@
     "compressorjs": "1.1.1",
     "cors": "2.8.5",
     "cross-env": "7.0.3",
+    "dayjs": "1.11.7",
     "eslint-config-prettier": "8.5.0",
     "eslint-plugin-prettier": "4.2.1",
     "eslint-plugin-react-hooks": "4.6.0",

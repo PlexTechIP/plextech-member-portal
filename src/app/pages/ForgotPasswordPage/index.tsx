@@ -45,7 +45,7 @@ export function ForgotPasswordPage(props: Props) {
     }
     setLoading(true);
 
-    const url = `http://localhost:${process.env.REACT_APP_BACKEND_PORT}/users/`;
+    const url = `${process.env.REACT_APP_BACKEND_URL}/users/`;
 
     try {
       const response = await fetch(url, {

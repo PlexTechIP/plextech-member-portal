@@ -48,7 +48,7 @@ export function AttendancePage(props: Props) {
   useEffect(() => {
     const f = async () => {
       setLoading(true);
-      const url = `http://localhost:${process.env.REACT_APP_BACKEND_PORT}/attendance/`;
+      const url = `${process.env.REACT_APP_BACKEND_URL}/attendance/`;
       try {
         const response = await fetch(url, {
           method: 'GET',
@@ -101,7 +101,7 @@ export function AttendancePage(props: Props) {
       }
     }
 
-    const url = `http://localhost:${process.env.REACT_APP_BACKEND_PORT}/profile/`;
+    const url = `${process.env.REACT_APP_BACKEND_URL}/profile/`;
     try {
       const response = await fetch(url, {
         method: 'POST',
@@ -137,7 +137,7 @@ export function AttendancePage(props: Props) {
 
   const onSendPenalties = async () => {
     setLoading(true);
-    const url = `http://localhost:${process.env.REACT_APP_BACKEND_PORT}/attendance/`;
+    const url = `${process.env.REACT_APP_BACKEND_URL}/attendance/`;
     const absent = users
       .filter((user: User) => user.absences.includes(date!))
       .map(user => user._id);

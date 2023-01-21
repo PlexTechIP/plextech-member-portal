@@ -137,7 +137,7 @@ export function ReimbursementForm(props: Props) {
 
   const onDelete = async () => {
     setDeleteModal(false);
-    const url = `http://localhost:${process.env.REACT_APP_BACKEND_PORT}/requests/`;
+    const url = `${process.env.REACT_APP_BACKEND_URL}/requests/`;
     await fetch(url, {
       method: 'DELETE',
       mode: 'cors',
@@ -213,7 +213,7 @@ export function ReimbursementForm(props: Props) {
       amount: parseFloat(formData.amount),
     };
 
-    const url = `http://localhost:${process.env.REACT_APP_BACKEND_PORT}/requests/`;
+    const url = `${process.env.REACT_APP_BACKEND_URL}/requests/`;
     const response = await fetch(url, {
       method: props.request ? 'PUT' : 'POST',
       mode: 'cors',

@@ -38,7 +38,7 @@ export function HomePage(props: Props) {
     const f = async () => {
       setIsLoading(true);
       try {
-        const url = `http://localhost:${process.env.REACT_APP_BACKEND_PORT}/requests/`;
+        const url = `${process.env.REACT_APP_BACKEND_URL}/requests/`;
         const response = await fetch(url, {
           method: 'GET',
           mode: 'cors',

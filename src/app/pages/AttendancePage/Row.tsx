@@ -47,7 +47,7 @@ export default function Row(props: Props) {
   const onDelete = async (_id: string) => {
     setShowDelete(false);
     setLoading(true);
-    const url = `http://localhost:${process.env.REACT_APP_BACKEND_PORT}/attendance/`;
+    const url = `${process.env.REACT_APP_BACKEND_URL}/attendance/`;
     try {
       const response = await fetch(url, {
         method: 'DELETE',
