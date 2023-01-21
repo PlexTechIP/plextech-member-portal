@@ -202,7 +202,7 @@ export function AttendancePage(props: Props) {
                 <StyledCircularProgress />
               ) : (
                 <StyledButton onClick={onSendPenalties} variant="contained">
-                  Send Penalties
+                  Save
                 </StyledButton>
               )}
             </StyledStack>
