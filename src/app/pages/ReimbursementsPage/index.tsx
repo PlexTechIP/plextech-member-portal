@@ -178,8 +178,8 @@ const StyledStack = styled(Stack)`
   width: 100%;
   height: 100%;
   padding-top: 24px;
-  padding-left: 64px;
-  padding-right: 64px;
+  padding-left: 48px;
+  padding-right: 48px;
 `;
 
 const StyledModal = styled(Modal)`
