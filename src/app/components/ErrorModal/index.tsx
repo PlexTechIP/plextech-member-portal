@@ -32,7 +32,7 @@ export function ErrorModal(props: Props) {
           </Stack>
           <P>
             Try refreshing the page and contact{' '}
-            <a href="mailto:shamith09@berkeley.edu?subject=[Plexfinance Error]&body=Message">
+            <a href="mailto:shamith09@berkeley.edu?subject=[Plexfinance Error]">
               shamith09@berkeley.edu
             </a>{' '}
             if the issue persists.
