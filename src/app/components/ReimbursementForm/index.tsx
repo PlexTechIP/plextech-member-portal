@@ -142,7 +142,7 @@ export function ReimbursementForm(props: Props) {
       method: 'DELETE',
       mode: 'cors',
       cache: 'no-cache',
-      credentials: 'same-origin',
+      credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
         Authorization: 'Bearer ' + props.token,
@@ -218,7 +218,7 @@ export function ReimbursementForm(props: Props) {
       method: props.request ? 'PUT' : 'POST',
       mode: 'cors',
       cache: 'no-cache',
-      credentials: 'same-origin',
+      credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
         Authorization: 'Bearer ' + props.token,
