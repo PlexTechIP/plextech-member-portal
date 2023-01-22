@@ -55,7 +55,7 @@ export function NewPasswordPage(props: Props) {
         method: 'PUT',
         mode: 'cors',
         cache: 'no-cache',
-        credentials: 'include',
+        credentials: 'omit',
         headers: {
           'Content-Type': 'application/json',
           Authorization:

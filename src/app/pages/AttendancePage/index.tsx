@@ -54,7 +54,7 @@ export function AttendancePage(props: Props) {
           method: 'GET',
           mode: 'cors',
           cache: 'no-cache',
-          credentials: 'include',
+          credentials: 'omit',
           headers: {
             'Content-Type': 'application/json',
             Authorization: 'Bearer ' + props.token,
@@ -107,7 +107,7 @@ export function AttendancePage(props: Props) {
         method: 'POST',
         mode: 'cors',
         cache: 'no-cache',
-        credentials: 'include',
+        credentials: 'omit',
         headers: {
           'Content-Type': 'application/json',
           Authorization: 'Bearer ' + props.token,
@@ -150,7 +150,7 @@ export function AttendancePage(props: Props) {
         method: 'POST',
         mode: 'cors',
         cache: 'no-cache',
-        credentials: 'include',
+        credentials: 'omit',
         headers: {
           'Content-Type': 'application/json',
           Authorization: 'Bearer ' + props.token,

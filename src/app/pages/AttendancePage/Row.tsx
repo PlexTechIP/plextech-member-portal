@@ -53,7 +53,7 @@ export default function Row(props: Props) {
         method: 'DELETE',
         mode: 'cors',
         cache: 'no-cache',
-        credentials: 'include',
+        credentials: 'omit',
         headers: {
           'Content-Type': 'application/json',
           Authorization: 'Bearer ' + props.token,

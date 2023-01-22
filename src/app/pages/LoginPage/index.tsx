@@ -121,7 +121,7 @@ export function LoginPage(props: Props) {
         method: 'POST',
         mode: 'cors',
         cache: 'no-cache',
-        credentials: 'include',
+        credentials: 'omit',
         headers: {
           'Content-Type': 'application/json',
         },
