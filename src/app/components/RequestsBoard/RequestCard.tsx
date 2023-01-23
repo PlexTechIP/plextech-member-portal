@@ -58,7 +58,7 @@ export function RequestCard(props: Props) {
                 View Receipt(s)
               </StyledButton>
             ) : (
-              <p>{props.request.firstName}</p>
+              <P>{props.request.firstName}</P>
             )}
             <StyledButton
               size="small"
@@ -106,4 +106,9 @@ const StyledButton = muiStyled(Button)`
 
 const StyledStack = styled(Stack)`
   width: 100%;
+`;
+
+const P = styled.p`
+  margin: 0;
+  overflow: hidden;
 `;
