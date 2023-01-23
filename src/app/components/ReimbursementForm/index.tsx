@@ -97,7 +97,11 @@ export function ReimbursementForm(props: Props) {
     }));
 
   const handleReset = () => {
-    setFormData({ ...initialState, comments: [] });
+    if (props.request) {
+      setFormData({ ...initialState });
+    } else {
+      setFormData({ ...initialState, comments: [] });
+    }
   };
 
   const handleFileUpload = async (e: any) => {
