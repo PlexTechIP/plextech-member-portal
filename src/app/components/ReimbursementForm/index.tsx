@@ -314,12 +314,14 @@ export function ReimbursementForm(props: Props) {
 
   return (
     <Form elevation={3}>
-      <DeleteDialog
-        open={deleteModal}
-        onClose={() => setDeleteModal(false)}
-        onDelete={onDelete}
-        item="request"
-      />
+      {props.canEdit && (
+        <DeleteDialog
+          open={deleteModal}
+          onClose={() => setDeleteModal(false)}
+          onDelete={onDelete}
+          item="request"
+        />
+      )}
       <ImageModal
         open={showImageModal}
         onClose={() => setShowImageModal(false)}
