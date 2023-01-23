@@ -69,18 +69,36 @@ export function ReimbursementForm(props: Props) {
   const [comment, setComment] = useState<string>('');
 
   useEffect(() => {
-    if (props.request) {
-      setFormData({
-        ...props.request,
-        amount: props.request.amount.toString(),
-        comments: props.request.comments.map((comment: any) => ({
-          ...comment,
-          date: dayjs(comment.date),
-        })),
+    const f = async () => {
+      const url = `${process.env.REACT_APP_BACKEND_URL}/requests/`;
+      const response = await fetch(url, {
+        method: 'PUT',
+        mode: 'cors',
+        cache: 'no-cache',
+        credentials: 'omit',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer ' + props.token,
+        },
+        redirect: 'follow',
+        referrerPolicy: 'no-referrer',
+        body: JSON.stringify({ comment: true, request_id: props.request!._id }),
       });
-    } else {
-      handleReset();
-    }
+      const res = await response.json();
+      if (props.request) {
+        setFormData({
+          ...props.request,
+          amount: props.request.amount.toString(),
+          comments: res.comments.map((comment: any) => ({
+            ...comment,
+            date: dayjs(comment.date),
+          })),
+        });
+      } else {
+        handleReset();
+      }
+    };
+    f();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -97,11 +115,7 @@ export function ReimbursementForm(props: Props) {
     }));
 
   const handleReset = () => {
-    if (props.request) {
-      setFormData({ ...initialState });
-    } else {
-      setFormData({ ...initialState, comments: [] });
-    }
+    setFormData({ ...initialState, comments: [] });
   };
 
   const handleFileUpload = async (e: any) => {
@@ -263,18 +277,38 @@ export function ReimbursementForm(props: Props) {
     }));
   };
 
-  const onCommentSubmit = (event: any) => {
+  const onCommentSubmit = async (event: any) => {
     event.preventDefault();
     if (comment === '') {
       return;
     }
-    formData.comments.push({
+    const commentObj = {
       message: comment,
       date: dayjs(),
       user_id: (jwt_decode(props.token!) as { sub: string }).sub,
       firstName: props.userName.firstName,
       lastName: props.userName.lastName,
-    });
+    };
+    formData.comments.push(commentObj);
+    if (props.request) {
+      const url = `${process.env.REACT_APP_BACKEND_URL}/requests/`;
+      await fetch(url, {
+        method: 'POST',
+        mode: 'cors',
+        cache: 'no-cache',
+        credentials: 'omit',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer ' + props.token,
+        },
+        redirect: 'follow',
+        referrerPolicy: 'no-referrer',
+        body: JSON.stringify({
+          comment: commentObj,
+          request_id: props.request!._id,
+        }),
+      });
+    }
     setComment('');
   };
 
