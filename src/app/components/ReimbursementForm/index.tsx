@@ -73,7 +73,10 @@ export function ReimbursementForm(props: Props) {
       setFormData({
         ...props.request,
         amount: props.request.amount.toString(),
-        comments: props.request.comments,
+        comments: props.request.comments.map((comment: any) => ({
+          ...comment,
+          date: dayjs(comment.date),
+        })),
       });
     } else {
       handleReset();
@@ -242,7 +245,9 @@ export function ReimbursementForm(props: Props) {
       _id: props.request ? props.request._id : (res._id as string),
       comments: [],
       date: dayjs(),
-      user_id: (jwt_decode(props.token!) as { sub: string }).sub,
+      user_id: props.request
+        ? props.request.user_id
+        : (jwt_decode(props.token!) as { sub: string }).sub,
     });
     setIsLoading(false);
   };
@@ -252,6 +257,21 @@ export function ReimbursementForm(props: Props) {
       ...prevState,
       images: prevState.images.filter((image: any, i: number) => i !== index),
     }));
+  };
+
+  const onCommentSubmit = (event: any) => {
+    event.preventDefault();
+    if (comment === '') {
+      return;
+    }
+    formData.comments.push({
+      message: comment,
+      date: dayjs(),
+      user_id: (jwt_decode(props.token!) as { sub: string }).sub,
+      firstName: props.userName.firstName,
+      lastName: props.userName.lastName,
+    });
+    setComment('');
   };
 
   return (
@@ -448,24 +468,7 @@ export function ReimbursementForm(props: Props) {
               InputProps={{
                 endAdornment: (
                   <InputAdornment position="end">
-                    <IconButton
-                      onClick={(event: any) => {
-                        event.preventDefault();
-                        if (comment === '') {
-                          return;
-                        }
-                        formData.comments.push({
-                          message: comment,
-                          date: dayjs(),
-                          user_id: (jwt_decode(props.token!) as { sub: string })
-                            .sub,
-                          firstName: props.userName.firstName,
-                          lastName: props.userName.lastName,
-                        });
-                        setComment('');
-                      }}
-                      type="submit"
-                    >
+                    <IconButton onClick={onCommentSubmit} type="submit">
                       <SendIcon />
                     </IconButton>
                   </InputAdornment>

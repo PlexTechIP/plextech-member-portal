@@ -69,6 +69,8 @@ export function HomePage(props: Props) {
 
         delete res.treasurer;
         delete res.teams;
+        delete res.firstName;
+        delete res.lastName;
         setRequests(res);
         setIsLoading(false);
       } catch (e: any) {
