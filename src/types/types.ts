@@ -11,6 +11,8 @@ export interface Request {
   user_id: string;
   comments: Comment[];
   date: Dayjs;
+  firstName?: string;
+  lastName?: string;
 }
 
 export interface Comment {

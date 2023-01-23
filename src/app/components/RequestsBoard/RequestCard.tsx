@@ -46,10 +46,10 @@ export function RequestCard(props: Props) {
           </StyledStack>
           <Stack
             direction="row"
-            justifyContent={props.mine ? 'space-between' : 'flex-end'}
+            justifyContent="space-between"
             alignItems="center"
           >
-            {props.mine && (
+            {props.mine ? (
               <StyledButton
                 size="small"
                 startIcon={React.cloneElement(<ImageIcon />)}
@@ -57,6 +57,8 @@ export function RequestCard(props: Props) {
               >
                 View Receipt(s)
               </StyledButton>
+            ) : (
+              <p>{props.request.firstName}</p>
             )}
             <StyledButton
               size="small"
