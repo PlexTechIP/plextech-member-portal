@@ -198,7 +198,7 @@ export default function Row(props: Props) {
                     .map((late: Dayjs) => (
                       <TableRow key={late.toString()}>
                         <TableCell component="th" scope="row">
-                          {late.format('MM/DD/YYYY')}
+                          {dayjs(late).format('MM/DD/YYYY')}
                         </TableCell>
                         <TableCell>Tardy</TableCell>
                       </TableRow>
@@ -217,7 +217,7 @@ export default function Row(props: Props) {
                       user.strikes.map((strike: Dayjs) => (
                         <TableRow key={strike.toString()}>
                           <TableCell component="th" scope="row">
-                            {strike.format('MM/DD/YYYY')}
+                            {dayjs(strike).format('MM/DD/YYYY')}
                           </TableCell>
                           <TableCell>Strike</TableCell>
                         </TableRow>
