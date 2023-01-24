@@ -12,7 +12,7 @@ import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import { User } from 'types/types';
 import { Button } from '@mui/material';
-import { Dayjs } from 'dayjs';
+import dayjs, { Dayjs } from 'dayjs';
 import { useEffect, useState } from 'react';
 import { DeleteDialog } from 'app/components/DeleteDialog';
 import { Delete } from '@mui/icons-material';
@@ -99,7 +99,7 @@ export default function Row(props: Props) {
             size="small"
             onClick={() => setOpen(!open)}
             style={{ width: '10px', backgroundColor: 'transparent' }}
-            disabled={user.absences.length + user.tardies.length === 0 && !open}
+            disabled={!open && user.absences.length + user.tardies.length === 0}
           >
             {open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
           </IconButton>
@@ -207,7 +207,7 @@ export default function Row(props: Props) {
                       user.absences.map((absence: Dayjs) => (
                         <TableRow key={absence.toString()}>
                           <TableCell component="th" scope="row">
-                            {absence.format('MM/DD/YYYY')}
+                            {dayjs(absence).format('MM/DD/YYYY')}
                           </TableCell>
                           <TableCell>Absence</TableCell>
                         </TableRow>
