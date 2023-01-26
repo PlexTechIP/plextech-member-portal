@@ -144,6 +144,24 @@ export function AttendancePage(props: Props) {
     }
   };
 
+  const onPrint = () => {
+    console.log({
+      tardy: users
+        .filter(
+          user =>
+            user.tardies.filter((d: Dayjs) => d.isSame(date, 'day')).length > 0,
+        )
+        .map(user => `${user.firstName} ${user.lastName}`),
+      absent: users
+        .filter(
+          user =>
+            user.absences.filter((d: Dayjs) => d.isSame(date, 'day')).length >
+            0,
+        )
+        .map(user => `${user.firstName} ${user.lastName}`),
+    });
+  };
+
   const onSendPenalties = async () => {
     setLoading(true);
     const url = `${process.env.REACT_APP_BACKEND_URL}/attendance/`;
@@ -216,9 +234,14 @@ export function AttendancePage(props: Props) {
               {loading ? (
                 <StyledCircularProgress />
               ) : (
-                <StyledButton onClick={onSendPenalties} variant="contained">
-                  Save
-                </StyledButton>
+                <Stack direction="row">
+                  <StyledButton onClick={onSendPenalties} variant="contained">
+                    Save
+                  </StyledButton>
+                  <StyledButton onClick={onPrint} variant="contained">
+                    Print
+                  </StyledButton>
+                </Stack>
               )}
             </StyledStack>
             <TextField
