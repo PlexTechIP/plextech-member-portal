@@ -44,6 +44,8 @@ export function AttendancePage(props: Props) {
   const [date, setDate] = useState<Dayjs | null>(dayjs());
   const [addUsers, setAddUsers] = useState<string>('');
   const [incorrect, setIncorrect] = useState<boolean>(false);
+  const [remove_absent, setRemoveAbsent] = useState<Dayjs[]>([]);
+  const [remove_late, setRemoveLate] = useState<Dayjs[]>([]);
 
   useEffect(() => {
     const f = async () => {
@@ -66,7 +68,14 @@ export function AttendancePage(props: Props) {
 
         const res = await response.json();
 
-        setUsers(res.users);
+        setUsers(
+          res.users.map((user: any) => ({
+            ...user,
+            tardies: user.tardies.map((date: string) => dayjs(date)),
+            absences: user.absences.map((date: string) => dayjs(date)),
+            strikes: user.strikes.map((date: string) => dayjs(date)),
+          })),
+        );
 
         if (response.status === 401 || response.status === 422) {
           props.removeToken();
@@ -138,10 +147,10 @@ export function AttendancePage(props: Props) {
   const onSendPenalties = async () => {
     setLoading(true);
     const url = `${process.env.REACT_APP_BACKEND_URL}/attendance/`;
-    const absent = users
+    const add_absent = users
       .filter((user: User) => user.absences.includes(date!))
       .map(user => user._id);
-    const late = users
+    const add_late = users
       .filter((user: User) => user.tardies.includes(date!))
       .map(user => user._id);
 
@@ -157,7 +166,13 @@ export function AttendancePage(props: Props) {
         },
         redirect: 'follow',
         referrerPolicy: 'no-referrer',
-        body: JSON.stringify({ date, absent, late }),
+        body: JSON.stringify({
+          date,
+          add_absent,
+          add_late,
+          remove_absent,
+          remove_late,
+        }),
       });
 
       if (response.status === 401 || response.status === 422) {

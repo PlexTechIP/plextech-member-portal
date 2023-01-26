@@ -38,9 +38,15 @@ export default function Row(props: Props) {
   const [strike, setStrike] = useState<boolean>(false);
 
   useEffect(() => {
-    setTardy(user.tardies.includes(date));
-    setAbsence(user.absences.includes(date));
-    setStrike(user.strikes.includes(date));
+    setTardy(
+      user.tardies.filter((d: Dayjs) => d.isSame(date, 'day')).length > 0,
+    );
+    setAbsence(
+      user.absences.filter((d: Dayjs) => d.isSame(date, 'day')).length > 0,
+    );
+    setStrike(
+      user.strikes.filter((d: Dayjs) => d.isSame(date, 'day')).length > 0,
+    );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [date]);
 
@@ -113,13 +119,13 @@ export default function Row(props: Props) {
             onClick={() => {
               if (tardy) {
                 user.tardies = user.tardies.filter(
-                  (late: Dayjs) => late !== date,
+                  (late: Dayjs) => !date.isSame(late, 'day'),
                 );
               } else {
                 user.tardies.push(date);
                 if (absence) {
                   user.absences = user.absences.filter(
-                    (absence: Dayjs) => absence !== date,
+                    (absence: Dayjs) => !date.isSame(absence, 'day'),
                   );
                   setAbsence(false);
                 }
@@ -137,13 +143,13 @@ export default function Row(props: Props) {
             onClick={() => {
               if (absence) {
                 user.absences = user.absences.filter(
-                  (absence: Dayjs) => absence !== date,
+                  (absence: Dayjs) => !date.isSame(absence, 'day'),
                 );
               } else {
                 user.absences.push(date);
                 if (tardy) {
                   user.tardies = user.tardies.filter(
-                    (late: Dayjs) => late !== date,
+                    (late: Dayjs) => !date.isSame(late, 'day'),
                   );
                   setTardy(false);
                 }
@@ -161,7 +167,7 @@ export default function Row(props: Props) {
             onClick={() => {
               if (strike) {
                 user.strikes = user.strikes.filter(
-                  (strike: Dayjs) => strike !== date,
+                  (strike: Dayjs) => !date.isSame(strike, 'day'),
                 );
               } else {
                 user.strikes.push(date);
