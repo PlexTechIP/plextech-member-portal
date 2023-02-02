@@ -44,8 +44,6 @@ export function AttendancePage(props: Props) {
   const [date, setDate] = useState<Dayjs | null>(dayjs());
   const [addUsers, setAddUsers] = useState<string>('');
   const [incorrect, setIncorrect] = useState<boolean>(false);
-  const [remove_absent, setRemoveAbsent] = useState<Dayjs[]>([]);
-  const [remove_late, setRemoveLate] = useState<Dayjs[]>([]);
 
   useEffect(() => {
     const f = async () => {
@@ -151,61 +149,19 @@ export function AttendancePage(props: Props) {
           user =>
             user.tardies.filter((d: Dayjs) => d.isSame(date, 'day')).length > 0,
         )
-        .map(user => `${user.firstName} ${user.lastName}`),
+        .map(user =>
+          user.registered ? `${user.firstName} ${user.lastName}` : user.email,
+        ),
       absent: users
         .filter(
           user =>
             user.absences.filter((d: Dayjs) => d.isSame(date, 'day')).length >
             0,
         )
-        .map(user => `${user.firstName} ${user.lastName}`),
+        .map(user =>
+          user.registered ? `${user.firstName} ${user.lastName}` : user.email,
+        ),
     });
-  };
-
-  const onSendPenalties = async () => {
-    setLoading(true);
-    const url = `${process.env.REACT_APP_BACKEND_URL}/attendance/`;
-    const add_absent = users
-      .filter((user: User) => user.absences.includes(date!))
-      .map(user => user._id);
-    const add_late = users
-      .filter((user: User) => user.tardies.includes(date!))
-      .map(user => user._id);
-
-    try {
-      const response = await fetch(url, {
-        method: 'POST',
-        mode: 'cors',
-        cache: 'no-cache',
-        credentials: 'omit',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: 'Bearer ' + props.token,
-        },
-        redirect: 'follow',
-        referrerPolicy: 'no-referrer',
-        body: JSON.stringify({
-          date,
-          add_absent,
-          add_late,
-          remove_absent,
-          remove_late,
-        }),
-      });
-
-      if (response.status === 401 || response.status === 422) {
-        props.removeToken();
-        return;
-      } else if (!response.ok) {
-        setError(true);
-        console.error(response);
-      }
-
-      setLoading(false);
-    } catch (e: any) {
-      setError(true);
-      console.error(e);
-    }
   };
 
   return (
@@ -234,14 +190,9 @@ export function AttendancePage(props: Props) {
               {loading ? (
                 <StyledCircularProgress />
               ) : (
-                <Stack direction="row">
-                  <StyledButton onClick={onSendPenalties} variant="contained">
-                    Save
-                  </StyledButton>
-                  <StyledButton onClick={onPrint} variant="contained">
-                    Print
-                  </StyledButton>
-                </Stack>
+                <StyledButton onClick={onPrint} variant="contained">
+                  Log Report
+                </StyledButton>
               )}
             </StyledStack>
             <TextField

@@ -13,9 +13,12 @@ import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import { User } from 'types/types';
 import { Button } from '@mui/material';
 import dayjs, { Dayjs } from 'dayjs';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { DeleteDialog } from 'app/components/DeleteDialog';
 import { Delete } from '@mui/icons-material';
+import Stack from '@mui/material/Stack';
+
+const SLIP_DAYS = 3;
 
 interface Props {
   user: User;
@@ -32,23 +35,6 @@ export default function Row(props: Props) {
 
   const [open, setOpen] = useState<boolean>(false);
   const [showDelete, setShowDelete] = useState<boolean>(false);
-
-  const [tardy, setTardy] = useState<boolean>(false);
-  const [absence, setAbsence] = useState<boolean>(false);
-  const [strike, setStrike] = useState<boolean>(false);
-
-  useEffect(() => {
-    setTardy(
-      user.tardies.filter((d: Dayjs) => d.isSame(date, 'day')).length > 0,
-    );
-    setAbsence(
-      user.absences.filter((d: Dayjs) => d.isSame(date, 'day')).length > 0,
-    );
-    setStrike(
-      user.strikes.filter((d: Dayjs) => d.isSame(date, 'day')).length > 0,
-    );
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [date]);
 
   const onDelete = async (_id: string) => {
     setShowDelete(false);
@@ -70,6 +56,94 @@ export default function Row(props: Props) {
       });
       setLoading(false);
       props.onDelete(_id);
+
+      if (response.status === 401 || response.status === 422) {
+        props.removeToken();
+        return;
+      } else if (!response.ok) {
+        setError(true);
+        console.error(response);
+      }
+    } catch (e: any) {
+      setError(true);
+      console.error(e);
+    }
+  };
+
+  const onDeleteDates = async (type: any, dat: Dayjs) => {
+    const url = `${process.env.REACT_APP_BACKEND_URL}/attendance/`;
+    setLoading(true);
+    try {
+      const response = await fetch(url, {
+        method: 'DELETE',
+        mode: 'cors',
+        cache: 'no-cache',
+        credentials: 'omit',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer ' + props.token,
+        },
+        redirect: 'follow',
+        referrerPolicy: 'no-referrer',
+        body: JSON.stringify({ _id: user._id, date: dat, type }),
+      });
+      setLoading(false);
+      if (type === 'tardy') {
+        delete user.tardies[
+          user.tardies.findIndex((d: Dayjs) => d.isSame(dat, 'day'))
+        ];
+        user.tardies = user.tardies.filter((user: any) => user !== undefined);
+      } else if (type === 'absent') {
+        delete user.absences[
+          user.absences.findIndex((d: Dayjs) => d.isSame(dat, 'day'))
+        ];
+        user.absences = user.absences.filter((user: any) => user !== undefined);
+      } else {
+        delete user.strikes[
+          user.strikes.findIndex((d: Dayjs) => d.isSame(dat, 'day'))
+        ];
+        user.strikes = user.strikes.filter((user: any) => user !== undefined);
+      }
+
+      if (response.status === 401 || response.status === 422) {
+        props.removeToken();
+        return;
+      } else if (!response.ok) {
+        setError(true);
+        console.error(response);
+      }
+    } catch (e: any) {
+      setError(true);
+      console.error(e);
+    }
+  };
+
+  const onAdd = async (type: any) => {
+    const url = `${process.env.REACT_APP_BACKEND_URL}/attendance/`;
+    setLoading(true);
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        mode: 'cors',
+        cache: 'no-cache',
+        credentials: 'omit',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer ' + props.token,
+        },
+        redirect: 'follow',
+        referrerPolicy: 'no-referrer',
+        body: JSON.stringify({ _id: user._id, date, type }),
+      });
+      setLoading(false);
+
+      if (type === 'tardy') {
+        user.tardies.push(date);
+      } else if (type === 'absent') {
+        user.absences.push(date);
+      } else {
+        user.strikes.push(date);
+      }
 
       if (response.status === 401 || response.status === 422) {
         props.removeToken();
@@ -117,22 +191,8 @@ export default function Row(props: Props) {
           <Button
             size="small"
             onClick={() => {
-              if (tardy) {
-                user.tardies = user.tardies.filter(
-                  (late: Dayjs) => !date.isSame(late, 'day'),
-                );
-              } else {
-                user.tardies.push(date);
-                if (absence) {
-                  user.absences = user.absences.filter(
-                    (absence: Dayjs) => !date.isSame(absence, 'day'),
-                  );
-                  setAbsence(false);
-                }
-              }
-              setTardy(!tardy);
+              onAdd('tardy');
             }}
-            color={tardy ? 'error' : 'primary'}
           >
             {user.tardies.length}
           </Button>
@@ -141,22 +201,8 @@ export default function Row(props: Props) {
           <Button
             size="small"
             onClick={() => {
-              if (absence) {
-                user.absences = user.absences.filter(
-                  (absence: Dayjs) => !date.isSame(absence, 'day'),
-                );
-              } else {
-                user.absences.push(date);
-                if (tardy) {
-                  user.tardies = user.tardies.filter(
-                    (late: Dayjs) => !date.isSame(late, 'day'),
-                  );
-                  setTardy(false);
-                }
-              }
-              setAbsence(!absence);
+              onAdd('absent');
             }}
-            color={absence ? 'error' : 'primary'}
           >
             {user.absences.length}
           </Button>
@@ -165,16 +211,8 @@ export default function Row(props: Props) {
           <Button
             size="small"
             onClick={() => {
-              if (strike) {
-                user.strikes = user.strikes.filter(
-                  (strike: Dayjs) => !date.isSame(strike, 'day'),
-                );
-              } else {
-                user.strikes.push(date);
-              }
-              setStrike(!strike);
+              onAdd('strike');
             }}
-            color={strike ? 'error' : 'primary'}
           >
             {user.strikes.length}
           </Button>
@@ -187,16 +225,42 @@ export default function Row(props: Props) {
       </TableRow>
       <TableRow>
         <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={6}>
-          <Collapse in={open} timeout="auto" unmountOnExit>
+          <Collapse
+            in={
+              user.tardies.length + user.absences.length + user.strikes.length >
+                0 && open
+            }
+            timeout="auto"
+            unmountOnExit
+          >
             <Box sx={{ margin: 1 }}>
-              <Typography variant="subtitle1" gutterBottom component="div">
-                History
-              </Typography>
+              {
+                <Stack
+                  direction="row"
+                  justifyContent="space-between"
+                  style={{ width: '100%' }}
+                >
+                  <Typography variant="subtitle1" gutterBottom component="div">
+                    History
+                  </Typography>
+                  <Typography variant="subtitle1" gutterBottom component="div">
+                    Slip meetings left:{' '}
+                    {Math.max(
+                      0,
+                      SLIP_DAYS -
+                        user.tardies.length -
+                        user.absences.length -
+                        user.strikes.length,
+                    )}
+                  </Typography>
+                </Stack>
+              }
               <Table size="small" aria-label="purchases">
                 <TableHead>
                   <TableRow>
                     <TableCell>Date</TableCell>
                     <TableCell>Tardy/Absence/Strike?</TableCell>
+                    <TableCell>Delete</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -207,6 +271,13 @@ export default function Row(props: Props) {
                           {dayjs(late).format('MM/DD/YYYY')}
                         </TableCell>
                         <TableCell>Tardy</TableCell>
+                        <TableCell>
+                          <IconButton
+                            onClick={() => onDeleteDates('tardy', late)}
+                          >
+                            <Delete />
+                          </IconButton>
+                        </TableCell>
                       </TableRow>
                     ))
                     .concat(
@@ -216,16 +287,30 @@ export default function Row(props: Props) {
                             {dayjs(absence).format('MM/DD/YYYY')}
                           </TableCell>
                           <TableCell>Absence</TableCell>
+                          <TableCell>
+                            <IconButton
+                              onClick={() => onDeleteDates('absent', absence)}
+                            >
+                              <Delete />
+                            </IconButton>
+                          </TableCell>
                         </TableRow>
                       )),
                     )
                     .concat(
-                      user.strikes.map((strike: Dayjs) => (
-                        <TableRow key={strike.toString()}>
+                      user.strikes.map((s: Dayjs) => (
+                        <TableRow key={s.toString()}>
                           <TableCell component="th" scope="row">
-                            {dayjs(strike).format('MM/DD/YYYY')}
+                            {dayjs(s).format('MM/DD/YYYY')}
                           </TableCell>
                           <TableCell>Strike</TableCell>
+                          <TableCell>
+                            <IconButton
+                              onClick={() => onDeleteDates('strike', s)}
+                            >
+                              <Delete />
+                            </IconButton>
+                          </TableCell>
                         </TableRow>
                       )),
                     )
