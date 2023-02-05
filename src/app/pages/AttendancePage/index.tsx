@@ -64,6 +64,14 @@ export function AttendancePage(props: Props) {
         });
         setLoading(false);
 
+        if (response.status === 401 || response.status === 422) {
+          props.removeToken();
+          return;
+        } else if (!response.ok) {
+          setError(true);
+          console.error(response);
+        }
+
         const res = await response.json();
 
         setUsers(
@@ -74,14 +82,6 @@ export function AttendancePage(props: Props) {
             strikes: user.strikes.map((date: string) => dayjs(date)),
           })),
         );
-
-        if (response.status === 401 || response.status === 422) {
-          props.removeToken();
-          return;
-        } else if (!response.ok) {
-          setError(true);
-          console.error(response);
-        }
       } catch (e: any) {
         setError(true);
         console.error(e);
@@ -250,12 +250,12 @@ export function AttendancePage(props: Props) {
 }
 
 const Form = muiStyled(Paper)`
-  width: 50%;
+  min-height: 95%;
+  width: 40%;
+  min-width: 500px;
   margin: auto;
   padding: 64px;
   border-radius: 48px;
-  margin-top: 24px;
-  margin-bottom: 24px;
 `;
 
 const StyledStack = styled(Stack)`

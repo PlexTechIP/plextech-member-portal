@@ -275,6 +275,7 @@ export function LoginPage(props: Props) {
 const Form = muiStyled(Paper)`
   min-height: 95%;
   width: 40%;
+  min-width: 500px;
   margin: auto;
   padding: 64px;
   border-radius: 48px;

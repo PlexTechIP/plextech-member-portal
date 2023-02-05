@@ -24,6 +24,7 @@ import { useState } from 'react';
 import { TopBar } from './components/TopBar';
 import { AttendancePage } from './pages/AttendancePage/Loadable';
 import { ProfilePage } from './pages/ProfilePage/Loadable';
+import { ForumPage } from './pages/ForumPage/Loadable';
 
 export function App() {
   const { i18n } = useTranslation();
@@ -55,9 +56,19 @@ export function App() {
             <LoginPage setToken={setToken} token={token} />
           ) : (
             <>
-              <TopBar open={open} setOpen={setOpen} token={token} />
+              <TopBar
+                open={open}
+                setOpen={setOpen}
+                token={token}
+                removeToken={removeToken}
+              />
               <Routes>
-                <Route path="/" element={<ProfilePage />} />
+                <Route
+                  path="/"
+                  element={
+                    <ProfilePage token={token} removeToken={removeToken} />
+                  }
+                />
                 <Route
                   path="/reimbursements"
                   element={<HomePage token={token} removeToken={removeToken} />}
@@ -66,6 +77,12 @@ export function App() {
                   path="/attendance"
                   element={
                     <AttendancePage token={token} removeToken={removeToken} />
+                  }
+                />
+                <Route
+                  path="/forum"
+                  element={
+                    <ForumPage token={token} removeToken={removeToken} />
                   }
                 />
                 <Route path="*" element={<NotFoundPage />} />

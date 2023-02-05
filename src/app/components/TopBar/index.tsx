@@ -15,6 +15,7 @@ import {
   ListItemButton,
   ListItemIcon,
   ListItemText,
+  Divider,
 } from '@mui/material';
 import * as React from 'react';
 import styled from 'styled-components/macro';
@@ -24,18 +25,21 @@ import KeyboardArrowLeftIcon from '@mui/icons-material/KeyboardArrowLeft';
 import PersonIcon from '@mui/icons-material/Person';
 import RecentActorsIcon from '@mui/icons-material/RecentActors';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
+import ForumIcon from '@mui/icons-material/Forum';
 import { useEffect, useState } from 'react';
 
 interface Props {
   open: boolean;
   setOpen: (newOpen: boolean) => void;
   token: string | null;
+  removeToken: () => void;
 }
 
 const iconMap = {
   Profile: <PersonIcon />,
   Attendance: <RecentActorsIcon />,
   Reimbursements: <AttachMoneyIcon />,
+  Forum: <ForumIcon />,
 };
 
 let page = window.location.href.split('/').slice(-1)[0];
@@ -44,7 +48,7 @@ page =
   (page.indexOf('?') === -1 ? page.slice(1) : page.slice(1, page.indexOf('?')));
 
 export function TopBar(props: Props) {
-  const [tabs, setTabs] = useState<string[]>([]);
+  const [protectedTabs, setProtectedTabs] = useState<string[]>([]);
 
   useEffect(() => {
     const f = async () => {
@@ -62,17 +66,20 @@ export function TopBar(props: Props) {
         referrerPolicy: 'no-referrer',
       });
 
+      if (response.status === 401 || response.status === 422) {
+        props.removeToken();
+        return;
+      }
+
       const res = await response.json();
 
       if (res.treasurer) {
-        setTabs(['Profile', 'Reimbursements', 'Attendance']);
-      } else {
-        setTabs(['Profile', 'Reimbursements']);
+        setProtectedTabs(['Attendance']);
       }
     };
 
     f();
-  }, [props.token]);
+  }, [props, props.token]);
 
   return (
     <AppBar position="sticky" elevation={0}>
@@ -110,7 +117,7 @@ export function TopBar(props: Props) {
               </Stack>
 
               <List>
-                {tabs.map((text, index) => (
+                {Object.keys(iconMap).map((text: string) => (
                   <ListItem key={text}>
                     <ListItemButton
                       href={`/${text !== 'Profile' ? text.toLowerCase() : ''}`}
@@ -120,6 +127,19 @@ export function TopBar(props: Props) {
                     </ListItemButton>
                   </ListItem>
                 ))}
+                {protectedTabs && (
+                  <>
+                    <Divider />
+                    {protectedTabs.map((text: string) => (
+                      <ListItem key={text}>
+                        <ListItemButton href={text.toLowerCase()}>
+                          <ListItemIcon>{iconMap[text]}</ListItemIcon>
+                          <ListItemText primary={text} />
+                        </ListItemButton>
+                      </ListItem>
+                    ))}
+                  </>
+                )}
               </List>
             </Box>
           </Drawer>

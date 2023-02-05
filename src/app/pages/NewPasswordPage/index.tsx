@@ -144,8 +144,9 @@ export function NewPasswordPage(props: Props) {
 }
 
 const Form = muiStyled(Paper)`
-  min-height: 65%;
-  width: 40%;
+  min-height: 95%;
+  max-width: 600px;
+  min-width: 500px;
   margin: auto;
   padding: 64px;
   border-radius: 48px;
