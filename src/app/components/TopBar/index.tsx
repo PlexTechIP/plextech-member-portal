@@ -26,6 +26,7 @@ import PersonIcon from '@mui/icons-material/Person';
 import RecentActorsIcon from '@mui/icons-material/RecentActors';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import ForumIcon from '@mui/icons-material/Forum';
+import LogoutIcon from '@mui/icons-material/Logout';
 import { useEffect, useState } from 'react';
 
 interface Props {
@@ -140,6 +141,12 @@ export function TopBar(props: Props) {
                     ))}
                   </>
                 )}
+                <ListItem>
+                  <ListItemButton onClick={props.removeToken}>
+                    <ListItemIcon>{<LogoutIcon />}</ListItemIcon>
+                    <ListItemText primary="Log out" />
+                  </ListItemButton>
+                </ListItem>
               </List>
             </Box>
           </Drawer>
