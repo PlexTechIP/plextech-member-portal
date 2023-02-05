@@ -195,7 +195,7 @@ const StyledModal = styled(Modal)`
   right: 0;
   margin: auto;
   padding: 64px;
-  overflow-y: auto;
+  overflow: auto;
   -ms-overflow-style: none; /* IE and Edge */
   scrollbar-width: none;
   ::-webkit-scrollbar {
