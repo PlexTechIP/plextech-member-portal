@@ -186,6 +186,7 @@ const StyledStack = styled(Stack)`
 
 const StyledModal = styled(Modal)`
   width: 50%;
+  min-width: 500px;
   height: 100%;
   position: absolute;
   top: 0;
