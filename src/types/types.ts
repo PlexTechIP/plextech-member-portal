@@ -76,3 +76,16 @@ export interface User {
   absences: Dayjs[];
   treasurer: boolean;
 }
+
+export interface Post {
+  user_id?: string;
+  firstName?: string;
+  lastName?: string;
+  _id: string;
+  title: string;
+  body: string;
+  date: Dayjs;
+  images: Image[];
+  anonymous: boolean;
+  private: boolean;
+}
