@@ -7,9 +7,10 @@ import * as React from 'react';
 import styled from 'styled-components/macro';
 import { Post } from 'types/types';
 import { styled as muiStyled } from '@mui/system';
-import { Divider, Modal, Paper, Stack } from '@mui/material';
+import { Divider, IconButton, Modal, Paper, Stack } from '@mui/material';
 import { CommentForm } from '../CommentForm';
 import { useState } from 'react';
+import CloseIcon from '@mui/icons-material/Close';
 
 interface Props {
   post: Post;
@@ -32,20 +33,32 @@ export function PostModal(props: Props) {
               alignItems="center"
             >
               <H1>{post.title}</H1>
-              <H2>{post.date.format('MM/DD/YYYY')}</H2>
+              <IconButton onClick={props.onClose}>
+                <CloseIcon fontSize="large" />
+              </IconButton>
             </StyledStack>
-            <P>
-              {post.anonymous
-                ? 'Anonymous'
-                : `${post.firstName} ${post.lastName}`}
-            </P>
+            <StyledStack
+              direction="row"
+              justifyContent="space-between"
+              alignItems="center"
+            >
+              <P>
+                {post.anonymous
+                  ? 'Anonymous'
+                  : `${post.firstName} ${post.lastName}`}
+              </P>
+              <P>{post.date.format('MM/DD/YYYY')}</P>
+            </StyledStack>
           </Stack>
           <Divider />
           <P>{post.body}</P>
           <CommentForm
             comment={comment}
             onChange={setComment}
-            onSubmit={() => {}}
+            onSubmit={(event: any) => {
+              event.preventDefault();
+              setComment('');
+            }}
             message="Add Comment"
           />
         </Stack>
@@ -80,10 +93,6 @@ const StyledStack = muiStyled(Stack)`
 `;
 
 const H1 = styled.h1`
-  margin: 0;
-`;
-
-const H2 = styled.h2`
   margin: 0;
 `;
 

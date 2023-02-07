@@ -3,6 +3,7 @@
  * ForumPage
  *
  */
+import { Button, Modal, Stack } from '@mui/material';
 import { ErrorModal } from 'app/components/ErrorModal';
 import { ForumPostCard } from 'app/components/ForumPostCard';
 import dayjs from 'dayjs';
@@ -11,6 +12,8 @@ import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import styled from 'styled-components/macro';
 import { Post } from 'types/types';
+import AddIcon from '@mui/icons-material/Add';
+import { ForumPostForm } from 'app/components/ForumPostForm';
 
 interface Props {
   token: string | null;
@@ -21,6 +24,7 @@ export function ForumPage(props: Props) {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<boolean>(false);
   const [posts, setPosts] = useState<Post[]>([]);
+  const [showForm, setShowForm] = useState<boolean>(false);
 
   useEffect(() => {
     const f = async () => {
@@ -75,10 +79,24 @@ export function ForumPage(props: Props) {
         />
       </Helmet>
       {error && <ErrorModal open={error} />}
+      <Modal open={showForm}>
+        <ForumPostForm />
+      </Modal>
       <Div>
-        {posts.map((post: Post) => (
-          <ForumPostCard key={post._id} post={post} />
-        ))}
+        <Stack spacing={2}>
+          <Button
+            onClick={() => setShowForm(true)}
+            startIcon={React.cloneElement(<AddIcon />)}
+            fullWidth
+            variant="contained"
+            style={{ backgroundColor: 'white', color: 'rgb(255, 138, 0)' }}
+          >
+            Create Post
+          </Button>
+          {posts.map((post: Post) => (
+            <ForumPostCard key={post._id} post={post} />
+          ))}
+        </Stack>
       </Div>
     </>
   );
@@ -90,5 +108,7 @@ const Div = styled.div`
   min-width: 500px;
   margin: auto;
   padding: 64px;
-  border-radius: 48px;
+  .MuiButton-root {
+    border-radius: 48px;
+  }
 `;
