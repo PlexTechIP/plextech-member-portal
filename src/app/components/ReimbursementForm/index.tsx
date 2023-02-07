@@ -35,7 +35,7 @@ import { ImageModal } from '../RequestsBoard/ImageModal';
 import dayjs from 'dayjs';
 import jwt_decode from 'jwt-decode';
 import { CommentCard } from '../CommentCard';
-import SendIcon from '@mui/icons-material/Send';
+import { CommentForm } from '../CommentForm';
 
 interface Props {
   teams: string[];
@@ -497,24 +497,12 @@ export function ReimbursementForm(props: Props) {
               <StyledDivider variant="middle" light />
             </>
           )}
-          <form style={{ width: '100%' }}>
-            <TextField
-              variant="outlined"
-              onChange={(event: any) => setComment(event.target.value)}
-              value={comment}
-              label="Add comment (optional)"
-              fullWidth
-              InputProps={{
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton onClick={onCommentSubmit} type="submit">
-                      <SendIcon />
-                    </IconButton>
-                  </InputAdornment>
-                ),
-              }}
-            />
-          </form>
+          <CommentForm
+            comment={comment}
+            onChange={setComment}
+            onSubmit={onCommentSubmit}
+            message="Add Comment (optional)"
+          />
 
           <StyledStack direction="row" justifyContent="space-between">
             <Stack spacing={1} direction="row">

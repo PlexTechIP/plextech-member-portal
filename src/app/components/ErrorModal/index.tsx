@@ -56,7 +56,6 @@ const H1 = styled.h1`
 const P = styled.p`
   margin: 0px;
 `;
-
 const StyledModal = styled(Modal)`
   width: 50%;
   min-width: 500px;

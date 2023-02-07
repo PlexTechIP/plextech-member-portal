@@ -251,7 +251,7 @@ export function AttendancePage(props: Props) {
 
 const Form = muiStyled(Paper)`
   min-height: 95%;
-  width: 40%;
+  width: 60%;
   min-width: 500px;
   margin: auto;
   padding: 64px;

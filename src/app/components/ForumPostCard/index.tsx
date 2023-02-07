@@ -22,7 +22,11 @@ export function ForumPostCard(props: Props) {
 
   return (
     <>
-      <PostModal open={showModal} post={post} />
+      <PostModal
+        open={showModal}
+        post={post}
+        onClose={() => setShowModal(false)}
+      />
       <StyledCard onClick={() => setShowModal(true)}>
         <StyledStack
           direction="row"
