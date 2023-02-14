@@ -42,7 +42,9 @@ export function RequestCard(props: Props) {
             alignItems="center"
           >
             <H3>{props.request.itemDescription}</H3>
-            <H3>${props.request.amount}</H3>
+            <H3 style={{ flexShrink: 0, paddingLeft: '8px' }}>
+              ${props.request.amount}
+            </H3>
           </StyledStack>
           <Stack
             direction="row"
@@ -86,6 +88,8 @@ const StyledCard = muiStyled(Card)`
   display: flex;
   flex-direction: column;
   border-radius: 16px;
+  width: 0;
+  min-width: 100%;
 `;
 
 const H3 = styled.h3`
@@ -93,7 +97,6 @@ const H3 = styled.h3`
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
-  max-width: 75%;
 `;
 
 const StyledButton = muiStyled(Button)`

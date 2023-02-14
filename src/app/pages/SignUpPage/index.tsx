@@ -29,12 +29,12 @@ import jwt_decode from 'jwt-decode';
 
 const possibleTeams = [
   'Exec',
-  'Project Team 1',
-  'Project Team 2',
-  'Project Team 3',
-  'Project Team 4',
-  'Curriculum Team 1',
-  'Curriculum Team 2',
+  'Zendesk',
+  'CFS Energy',
+  'Songtradr',
+  'Angaza',
+  "Jeremy's Curriculum Team",
+  "Tommy's Curriculum Team",
 ];
 
 interface Props {

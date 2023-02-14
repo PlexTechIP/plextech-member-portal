@@ -394,6 +394,11 @@ export function ReimbursementForm(props: Props) {
                 control={<Radio disabled={!props.canEdit} />}
                 label="No budget"
               />
+              <FormControlLabel
+                value="NMEP"
+                control={<Radio disabled={!props.canEdit} />}
+                label="NMEP"
+              />
               {props.teams.map(team => (
                 <FormControlLabel
                   key={team}
