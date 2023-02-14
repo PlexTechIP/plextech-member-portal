@@ -447,7 +447,7 @@ export function ReimbursementForm(props: Props) {
                   'Upload Receipt(s) *'
                 )}
                 <input
-                  accept="image/*"
+                  accept="image/*,application/pdf"
                   onChange={handleFileUpload}
                   type="file"
                   multiple
