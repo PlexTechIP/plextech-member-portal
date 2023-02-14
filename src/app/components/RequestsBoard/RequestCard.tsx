@@ -43,7 +43,7 @@ export function RequestCard(props: Props) {
           >
             <H3>{props.request.itemDescription}</H3>
             <H3 style={{ flexShrink: 0, paddingLeft: '8px' }}>
-              ${props.request.amount}
+              ${props.request.amount.toFixed(2)}
             </H3>
           </StyledStack>
           <Stack
