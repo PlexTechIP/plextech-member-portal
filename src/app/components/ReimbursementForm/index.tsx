@@ -82,7 +82,10 @@ export function ReimbursementForm(props: Props) {
         },
         redirect: 'follow',
         referrerPolicy: 'no-referrer',
-        body: JSON.stringify({ comment: true, request_id: props.request!._id }),
+        body: JSON.stringify({
+          comment: true,
+          request_id: props.request ? props.request._id : null,
+        }),
       });
       const res = await response.json();
       if (props.request) {
@@ -126,6 +129,21 @@ export function ReimbursementForm(props: Props) {
     let images = [...e.target.files];
 
     images.forEach((image: any, index: number) => {
+      if (image.type === 'application/pdf') {
+        setFormData(prevState => ({
+          ...prevState,
+          images: [
+            ...prevState.images,
+            {
+              name: image.name,
+              data: image,
+              isBase64: false,
+            },
+          ],
+        }));
+        return;
+      }
+
       new Compressor(image, {
         quality: 0.2,
 
@@ -150,6 +168,7 @@ export function ReimbursementForm(props: Props) {
         },
       });
     });
+    setImageLoading(false);
   };
 
   const onShowDeleteModal = () => {
