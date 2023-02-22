@@ -119,7 +119,7 @@ export function LoginPage(props: Props) {
       const url = `${process.env.REACT_APP_BACKEND_URL}/users/`;
       const response = await fetch(url, {
         method: 'POST',
-        mode: 'no-cors',
+        mode: 'cors',
         cache: 'no-cache',
         credentials: 'omit',
         headers: {
