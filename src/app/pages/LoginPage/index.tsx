@@ -140,6 +140,7 @@ export function LoginPage(props: Props) {
         setIncorrect(true);
         return;
       } else if (!response.ok) {
+        console.log(formData);
         console.error(await response.text());
         setError(true);
         return;
