@@ -265,7 +265,12 @@ export function ReimbursementForm(props: Props) {
       },
       redirect: 'follow',
       referrerPolicy: 'no-referrer',
-      body: JSON.stringify({ ...bodyData, date: dayjs(), ...props.userName }),
+      body: JSON.stringify({
+        ...bodyData,
+        date: dayjs(),
+        ...props.userName,
+        request_id: props.request ? props.request._id : null,
+      }),
     });
 
     if (!response.ok) {
