@@ -43,13 +43,15 @@ const iconMap = {
   Forum: <ForumIcon />,
 };
 
+const protectedTabs = ['Attendance'];
+
 let page = window.location.href.split('/').slice(-1)[0];
 page =
   page.charAt(0).toUpperCase() +
   (page.indexOf('?') === -1 ? page.slice(1) : page.slice(1, page.indexOf('?')));
 
 export function TopBar(props: Props) {
-  const [protectedTabs, setProtectedTabs] = useState<string[]>([]);
+  const [isTreasurer, setIsTreasurer] = useState<boolean>(false);
 
   useEffect(() => {
     const f = async () => {
@@ -74,9 +76,7 @@ export function TopBar(props: Props) {
 
       const res = await response.json();
 
-      if (res.treasurer) {
-        setProtectedTabs(['Attendance']);
-      }
+      setIsTreasurer(res.treasurer);
     };
 
     f();
@@ -118,17 +118,21 @@ export function TopBar(props: Props) {
               </Stack>
 
               <List>
-                {Object.keys(iconMap).map((text: string) => (
-                  <ListItem key={text}>
-                    <ListItemButton
-                      href={`/${text !== 'Profile' ? text.toLowerCase() : ''}`}
-                    >
-                      <ListItemIcon>{iconMap[text]}</ListItemIcon>
-                      <ListItemText primary={text} />
-                    </ListItemButton>
-                  </ListItem>
-                ))}
-                {protectedTabs && (
+                {Object.keys(iconMap)
+                  .filter(key => !protectedTabs.includes(key))
+                  .map((text: string) => (
+                    <ListItem key={text}>
+                      <ListItemButton
+                        href={`/${
+                          text !== 'Profile' ? text.toLowerCase() : ''
+                        }`}
+                      >
+                        <ListItemIcon>{iconMap[text]}</ListItemIcon>
+                        <ListItemText primary={text} />
+                      </ListItemButton>
+                    </ListItem>
+                  ))}
+                {isTreasurer && (
                   <>
                     <Divider />
                     {protectedTabs.map((text: string) => (
