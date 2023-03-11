@@ -25,6 +25,7 @@ import { styled as muiStyled } from '@mui/system';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { SignUpData } from 'types/types';
 import { ErrorModal } from 'app/components/ErrorModal';
+import { Error } from 'types/types';
 import jwt_decode from 'jwt-decode';
 
 const possibleTeams = [
@@ -53,7 +54,7 @@ export function SignUpPage(props: Props) {
     venmo: '',
     teams: [],
   });
-  const [error, setError] = useState<boolean>(false);
+  const [error, setError] = useState<Error>();
   const [incorrect, setIncorrect] = useState<boolean>(false);
   const [googleResponse, setGoogleResponse] = useState<any>({});
   const [loading, setLoading] = useState<boolean>();
@@ -173,7 +174,10 @@ export function SignUpPage(props: Props) {
         setIncorrect(true);
         return;
       } else if (!response.ok) {
-        setError(true);
+        setError({
+          errorCode: response.status,
+          errorMessage: response.statusText,
+        });
         console.error(response);
       }
 
@@ -182,7 +186,9 @@ export function SignUpPage(props: Props) {
       setSubmitted(false);
     } catch (e: any) {
       console.error(e);
-      setError(true);
+      setError({
+        errorMessage: e,
+      });
     }
   };
 
@@ -203,7 +209,7 @@ export function SignUpPage(props: Props) {
         <meta name="description" content="Signup page for PlexTech finance" />
       </Helmet>
       {error ? (
-        <ErrorModal open={error} />
+        <ErrorModal open={!!error} error={error} />
       ) : (
         <Div>
           <Form elevation={3}>

@@ -5,7 +5,7 @@ import { Stack, Modal, CircularProgress } from '@mui/material';
 import { RequestsBoard } from 'app/components/RequestsBoard';
 import { useEffect, useState } from 'react';
 import { ReimbursementForm } from 'app/components/ReimbursementForm';
-import { AllRequests, Request } from 'types/types';
+import { AllRequests, Error, Request } from 'types/types';
 import { ErrorModal } from 'app/components/ErrorModal';
 import { styled as muiStyled } from '@mui/system';
 
@@ -25,7 +25,7 @@ export function HomePage(props: Props) {
   const [showModal, setShowModal] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [request, setRequest] = useState<Request | null>(null);
-  const [error, setError] = useState<boolean>(false);
+  const [error, setError] = useState<Error>();
   const [isTreasurer, setIsTreasurer] = useState<boolean>(false);
   const [teams, setTeams] = useState<string[]>([]);
   const [canEdit, setCanEdit] = useState<boolean>(false);
@@ -58,7 +58,10 @@ export function HomePage(props: Props) {
 
         if (!response.ok) {
           console.error(response);
-          setError(true);
+          setError({
+            errorCode: response.status,
+            errorMessage: response.statusText,
+          });
           return;
         }
 
@@ -74,7 +77,9 @@ export function HomePage(props: Props) {
         setRequests(res);
         setIsLoading(false);
       } catch (e: any) {
-        setError(true);
+        setError({
+          errorMessage: e,
+        });
         console.error(e);
         return;
       }
@@ -87,8 +92,11 @@ export function HomePage(props: Props) {
     setShowModal(false);
   };
 
-  const onError = () => {
-    setError(true);
+  const onError = (response: Response) => {
+    setError({
+      errorCode: response.status,
+      errorMessage: response.statusText,
+    });
   };
 
   const onRequest = () => {
@@ -141,7 +149,7 @@ export function HomePage(props: Props) {
         <meta name="description" content="Your finance dashboard" />
       </Helmet>
       {error ? (
-        <ErrorModal open={error} />
+        <ErrorModal open={!error} error={error} />
       ) : (
         <>
           <StyledModal open={showModal} onClose={onClose}>

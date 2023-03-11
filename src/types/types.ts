@@ -89,3 +89,8 @@ export interface Post {
   anonymous: boolean;
   private: boolean;
 }
+
+export interface Error {
+  errorCode?: number;
+  errorMessage?: string;
+}

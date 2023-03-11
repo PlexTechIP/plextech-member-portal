@@ -28,7 +28,7 @@ import {
   IconButton,
 } from '@mui/material';
 import { styled as muiStyled } from '@mui/system';
-import { User } from 'types/types';
+import { Error, User } from 'types/types';
 import Row from './Row';
 import AddIcon from '@mui/icons-material/Add';
 
@@ -39,7 +39,7 @@ interface Props {
 
 export function AttendancePage(props: Props) {
   const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<boolean>(false);
+  const [error, setError] = useState<Error>();
   const [users, setUsers] = useState<User[]>([]);
   const [date, setDate] = useState<Dayjs | null>(dayjs());
   const [addUsers, setAddUsers] = useState<string>('');
@@ -68,7 +68,10 @@ export function AttendancePage(props: Props) {
           props.removeToken();
           return;
         } else if (!response.ok) {
-          setError(true);
+          setError({
+            errorCode: response.status,
+            errorMessage: response.statusText,
+          });
           console.error(response);
         }
 
@@ -83,7 +86,9 @@ export function AttendancePage(props: Props) {
           })),
         );
       } catch (e: any) {
-        setError(true);
+        setError({
+          errorMessage: e,
+        });
         console.error(e);
       }
     };
@@ -128,7 +133,10 @@ export function AttendancePage(props: Props) {
         props.removeToken();
         return;
       } else if (!response.ok) {
-        setError(true);
+        setError({
+          errorCode: response.status,
+          errorMessage: response.statusText,
+        });
         console.error(response);
       }
 
@@ -137,7 +145,9 @@ export function AttendancePage(props: Props) {
       setLoading(false);
       setAddUsers('');
     } catch (e: any) {
-      setError(true);
+      setError({
+        errorMessage: e,
+      });
       console.error(e);
     }
   };
@@ -170,7 +180,7 @@ export function AttendancePage(props: Props) {
         <title>Attendance</title>
         <meta name="description" content="Take attendance here" />
       </Helmet>
-      {error && <ErrorModal open={error} />}
+      {error && <ErrorModal open={!!error} error={error} />}
       <Form>
         <Stack spacing={4}>
           <LocalizationProvider dateAdapter={AdapterDayjs}>

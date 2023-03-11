@@ -10,6 +10,7 @@ import { styled as muiStyled } from '@mui/system';
 import { RequestCard } from './RequestCard';
 import { AllRequests, Request } from '../../../types/types';
 import AddIcon from '@mui/icons-material/Add';
+import { DragDropContext, Droppable } from 'react-beautiful-dnd';
 import jwt_decode from 'jwt-decode';
 
 interface Props {
@@ -29,56 +30,77 @@ const statuses = [
 ];
 
 export function RequestsBoard(props: Props) {
-  return (
-    <Stack direction="row" spacing={1}>
-      {statuses.map((statusKey: string) => {
-        const regex = statusKey.replace(/([A-Z])/g, ' $1');
-        const statusTitleCase = regex.charAt(0).toUpperCase() + regex.slice(1);
-        let sum: number = 0;
-        if (props.requests) {
-          props.requests![statusKey].forEach((request: Request) => {
-            sum += request.amount;
-          });
-        }
+  const onDragEnd = (event: any) => {
+    event.preventDefault();
+  };
 
-        return (
-          <Section key={statusKey} elevation={2}>
-            <Stack spacing={1}>
-              {!props.requests || props.requests![statusKey].length === 0 ? (
-                <H2>{statusTitleCase}</H2>
-              ) : (
-                <H2>
-                  {statusTitleCase}: ${sum.toFixed(2)}
-                </H2>
-              )}
-              {props.requests &&
-                props.requests![statusKey].map(
-                  (request: Request, index: number) => (
-                    <RequestCard
-                      request={request}
-                      key={index}
-                      onEdit={(mine: boolean) => props.onEdit(request, mine)}
-                      mine={
-                        !props.isTreasurer ||
-                        request.user_id ===
-                          (jwt_decode(props.token!) as any).sub
-                      }
-                    />
-                  ),
+  return (
+    <DragDropContext onDragEnd={onDragEnd}>
+      <Stack direction="row" spacing={1}>
+        {statuses.map((statusKey: string) => {
+          const regex = statusKey.replace(/([A-Z])/g, ' $1');
+          const statusTitleCase =
+            regex.charAt(0).toUpperCase() + regex.slice(1);
+          let sum: number = 0;
+          if (props.requests) {
+            props.requests![statusKey].forEach((request: Request) => {
+              sum += request.amount;
+            });
+          }
+
+          return (
+            <Section key={statusKey}>
+              <Droppable droppableId={statusKey}>
+                {(provided: any) => (
+                  <Stack
+                    spacing={1}
+                    elevation={2}
+                    ref={provided.innerRef}
+                    {...provided.droppableProps}
+                  >
+                    {!props.requests ||
+                    props.requests![statusKey].length === 0 ? (
+                      <H2>{statusTitleCase}</H2>
+                    ) : (
+                      <H2>
+                        {statusTitleCase}: ${sum.toFixed(2)}
+                      </H2>
+                    )}
+                    {statusKey === 'pendingReview' && props.requests !== null && (
+                      <StyledButton
+                        startIcon={React.cloneElement(<AddIcon />)}
+                        onClick={props.onRequest}
+                      >
+                        Request Reimbursement
+                      </StyledButton>
+                    )}
+                    {provided.placeholder}
+                    {props.requests &&
+                      props.requests[statusKey].map(
+                        (request: Request, index: number) => (
+                          <RequestCard
+                            request={request}
+                            key={index}
+                            index={index}
+                            onEdit={(mine: boolean) =>
+                              props.onEdit(request, mine)
+                            }
+                            mine={
+                              !props.isTreasurer ||
+                              request.user_id ===
+                                (jwt_decode(props.token!) as any).sub
+                            }
+                          />
+                        ),
+                      )}
+                  </Stack>
                 )}
-              {statusKey === 'pendingReview' && props.requests !== null && (
-                <StyledButton
-                  startIcon={React.cloneElement(<AddIcon />)}
-                  onClick={props.onRequest}
-                >
-                  Request Reimbursement
-                </StyledButton>
-              )}
-            </Stack>
-          </Section>
-        );
-      })}
-    </Stack>
+              </Droppable>
+            </Section>
+          );
+        })}
+      </Stack>
+    </DragDropContext>
   );
 }
 

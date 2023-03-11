@@ -17,6 +17,7 @@ import { useState } from 'react';
 import { DeleteDialog } from 'app/components/DeleteDialog';
 import { Delete } from '@mui/icons-material';
 import Stack from '@mui/material/Stack';
+import { Error } from 'types/types';
 
 const SLIP_DAYS = 3;
 
@@ -25,7 +26,7 @@ interface Props {
   date: Dayjs;
   setLoading: (newValue: boolean) => void;
   removeToken: () => void;
-  setError: (newValue: boolean) => void;
+  setError: (newValue: Error) => void;
   token: string | null;
   onDelete: (id: string) => void;
 }
@@ -61,11 +62,16 @@ export default function Row(props: Props) {
         props.removeToken();
         return;
       } else if (!response.ok) {
-        setError(true);
+        setError({
+          errorCode: response.status,
+          errorMessage: response.statusText,
+        });
         console.error(response);
       }
     } catch (e: any) {
-      setError(true);
+      setError({
+        errorMessage: e,
+      });
       console.error(e);
     }
   };
@@ -109,11 +115,16 @@ export default function Row(props: Props) {
         props.removeToken();
         return;
       } else if (!response.ok) {
-        setError(true);
+        setError({
+          errorCode: response.status,
+          errorMessage: response.statusText,
+        });
         console.error(response);
       }
     } catch (e: any) {
-      setError(true);
+      setError({
+        errorMessage: e,
+      });
       console.error(e);
     }
   };
@@ -149,11 +160,16 @@ export default function Row(props: Props) {
         props.removeToken();
         return;
       } else if (!response.ok) {
-        setError(true);
+        setError({
+          errorCode: response.status,
+          errorMessage: response.statusText,
+        });
         console.error(response);
       }
     } catch (e: any) {
-      setError(true);
+      setError({
+        errorMessage: e,
+      });
       console.error(e);
     }
   };

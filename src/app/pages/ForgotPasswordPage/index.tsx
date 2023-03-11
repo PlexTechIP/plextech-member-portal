@@ -18,6 +18,7 @@ import styled from 'styled-components/macro';
 import PlexTechLogo from '../../../PlexTechLogo.png';
 import { useState } from 'react';
 import { PasswordResetPage } from '../PasswordResetPage/Loadable';
+import { Error } from 'types/types';
 
 interface Props {
   onBack: () => void;
@@ -28,7 +29,7 @@ interface Props {
 export function ForgotPasswordPage(props: Props) {
   const [submitted, setSubmitted] = useState<boolean>(false);
   const [email, setEmail] = useState<string>('');
-  const [error, setError] = useState<boolean>(false);
+  const [error, setError] = useState<Error>();
   const [loading, setLoading] = useState<boolean>(false);
   const [incorrect, setIncorrect] = useState<boolean>(false);
   const [showResetPage, setShowResetPage] = useState<boolean>(false);
@@ -69,7 +70,10 @@ export function ForgotPasswordPage(props: Props) {
         return;
       }
       if (!response.ok) {
-        setError(true);
+        setError({
+          errorCode: response.status,
+          errorMessage: response.statusText,
+        });
         return;
       }
       setShowResetPage(true);
@@ -77,7 +81,9 @@ export function ForgotPasswordPage(props: Props) {
       setSubmitted(false);
     } catch (e: any) {
       console.error(e);
-      setError(true);
+      setError({
+        errorMessage: e,
+      });
     }
   };
 
@@ -102,7 +108,7 @@ export function ForgotPasswordPage(props: Props) {
         />
       </Helmet>
       {error ? (
-        <ErrorModal open={error} />
+        <ErrorModal open={!!error} error={error} />
       ) : (
         <Div>
           <Form elevation={3}>

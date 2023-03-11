@@ -8,7 +8,7 @@ import * as React from 'react';
 import { useEffect, useState } from 'react';
 import { styled as muiStyled } from '@mui/system';
 import styled from 'styled-components/macro';
-import { User } from 'types/types';
+import { Error, User } from 'types/types';
 import { Helmet } from 'react-helmet-async';
 import { ErrorModal } from 'app/components/ErrorModal';
 import { AttendanceCard } from 'app/components/AttendanceCard';
@@ -19,7 +19,7 @@ interface Props {
 }
 
 export function ProfilePage(props: Props) {
-  const [error, setError] = useState<boolean>(false);
+  const [error, setError] = useState<Error>();
   const [loading, setLoading] = useState<boolean>(false);
   const [user, setUser] = useState<User>();
 
@@ -46,7 +46,10 @@ export function ProfilePage(props: Props) {
           props.removeToken();
           return;
         } else if (!response.ok) {
-          setError(true);
+          setError({
+            errorCode: response.status,
+            errorMessage: response.statusText,
+          });
           console.error(response);
         }
 
@@ -54,7 +57,9 @@ export function ProfilePage(props: Props) {
 
         setUser(res);
       } catch (e: any) {
-        setError(true);
+        setError({
+          errorMessage: e,
+        });
         console.error(e);
       }
     };
@@ -67,7 +72,7 @@ export function ProfilePage(props: Props) {
         <title>Profile</title>
         <meta name="description" content="Profile information" />
       </Helmet>
-      {error && <ErrorModal open={error} />}
+      {error && <ErrorModal open={!!error} error={error} />}
       <Div>{user && <AttendanceCard user={user} />}</Div>
     </>
   );

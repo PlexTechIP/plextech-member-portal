@@ -11,7 +11,7 @@ import * as React from 'react';
 import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import styled from 'styled-components/macro';
-import { Post } from 'types/types';
+import { Error, Post } from 'types/types';
 import AddIcon from '@mui/icons-material/Add';
 import { ForumPostForm } from 'app/components/ForumPostForm';
 
@@ -22,7 +22,7 @@ interface Props {
 
 export function ForumPage(props: Props) {
   const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<boolean>(false);
+  const [error, setError] = useState<Error>();
   const [posts, setPosts] = useState<Post[]>([]);
   const [showForm, setShowForm] = useState<boolean>(false);
 
@@ -49,7 +49,10 @@ export function ForumPage(props: Props) {
           props.removeToken();
           return;
         } else if (!response.ok) {
-          setError(true);
+          setError({
+            errorCode: response.status,
+            errorMessage: response.statusText,
+          });
           console.error(response);
         }
 
@@ -62,7 +65,9 @@ export function ForumPage(props: Props) {
           })),
         );
       } catch (e: any) {
-        setError(true);
+        setError({
+          errorMessage: e,
+        });
         console.error(e);
       }
     };
@@ -78,7 +83,7 @@ export function ForumPage(props: Props) {
           content="An anonymous forum to discuss anything PlexTech related."
         />
       </Helmet>
-      {error && <ErrorModal open={error} />}
+      {error && <ErrorModal open={!!error} error={error} />}
       <Modal open={showForm}>
         <ForumPostForm />
       </Modal>

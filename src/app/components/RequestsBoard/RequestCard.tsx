@@ -8,11 +8,13 @@ import { useState } from 'react';
 import { styled as muiStyled } from '@mui/system';
 import { Visibility } from '@mui/icons-material';
 import { ImageModal } from './ImageModal';
+import { Draggable } from 'react-beautiful-dnd';
 
 interface Props {
   request: Request;
   onEdit: (mine: boolean) => void;
   mine: boolean;
+  index: number;
 }
 
 export function RequestCard(props: Props) {
@@ -27,58 +29,68 @@ export function RequestCard(props: Props) {
   };
 
   return (
-    <>
-      <ImageModal
-        images={props.request.images}
-        onClose={onClose}
-        open={showModal}
-        itemDescription={props.request.itemDescription}
-      />
-      <StyledCard elevation={2} key={props.request._id}>
-        <Stack spacing={1}>
-          <StyledStack
-            direction="row"
-            justifyContent="space-between"
-            alignItems="center"
-          >
-            <H3>{props.request.itemDescription}</H3>
-            <H3 style={{ flexShrink: 0, paddingLeft: '8px' }}>
-              ${props.request.amount.toFixed(2)}
-            </H3>
-          </StyledStack>
-          <Stack
-            direction="row"
-            justifyContent="space-between"
-            alignItems="center"
-          >
-            {props.mine ? (
+    <Draggable draggableId={props.request._id} index={props.index}>
+      {(provided: any) => (
+        <StyledCard
+          elevation={2}
+          key={props.request._id}
+          {...provided.draggableProps}
+          {...provided.dragHandleProps}
+          ref={provided.innerRef}
+        >
+          {showModal && (
+            <ImageModal
+              images={props.request.images}
+              onClose={onClose}
+              open={showModal}
+              itemDescription={props.request.itemDescription}
+            />
+          )}
+          <Stack spacing={1}>
+            <StyledStack
+              direction="row"
+              justifyContent="space-between"
+              alignItems="center"
+            >
+              <H3>{props.request.itemDescription}</H3>
+              <H3 style={{ flexShrink: 0, paddingLeft: '8px' }}>
+                ${props.request.amount.toFixed(2)}
+              </H3>
+            </StyledStack>
+            <Stack
+              direction="row"
+              justifyContent="space-between"
+              alignItems="center"
+            >
+              {props.mine ? (
+                <StyledButton
+                  size="small"
+                  startIcon={React.cloneElement(<ImageIcon />)}
+                  onClick={onClick}
+                >
+                  View Receipt(s)
+                </StyledButton>
+              ) : (
+                <P>{props.request.firstName}</P>
+              )}
               <StyledButton
                 size="small"
-                startIcon={React.cloneElement(<ImageIcon />)}
-                onClick={onClick}
+                startIcon={React.cloneElement(
+                  props.mine ? <EditIcon /> : <Visibility />,
+                )}
+                onClick={() => props.onEdit(props.mine)}
+                disabled={
+                  props.request.status === 'underReview' ||
+                  props.request.status === 'approved'
+                }
               >
-                View Receipt(s)
+                {props.mine ? 'Edit' : 'View'}
               </StyledButton>
-            ) : (
-              <P>{props.request.firstName}</P>
-            )}
-            <StyledButton
-              size="small"
-              startIcon={React.cloneElement(
-                props.mine ? <EditIcon /> : <Visibility />,
-              )}
-              onClick={() => props.onEdit(props.mine)}
-              disabled={
-                props.request.status === 'underReview' ||
-                props.request.status === 'approved'
-              }
-            >
-              {props.mine ? 'Edit' : 'View'}
-            </StyledButton>
+            </Stack>
           </Stack>
-        </Stack>
-      </StyledCard>
-    </>
+        </StyledCard>
+      )}
+    </Draggable>
   );
 }
 

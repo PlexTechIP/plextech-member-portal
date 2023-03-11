@@ -18,6 +18,7 @@ import styled from 'styled-components/macro';
 import { styled as muiStyled } from '@mui/system';
 import PlexTechLogo from '../../../PlexTechLogo.png';
 import { NewPasswordPage } from '../NewPasswordPage/Loadable';
+import { Error } from 'types/types';
 
 interface Props {
   onBack: () => void;
@@ -29,7 +30,7 @@ interface Props {
 export function PasswordResetPage(props: Props) {
   const [submitted, setSubmitted] = useState<boolean>(false);
   const [code, setCode] = useState<string>('');
-  const [error, setError] = useState<boolean>(false);
+  const [error, setError] = useState<Error>();
   const [loading, setLoading] = useState<boolean>(false);
   const [incorrect, setIncorrect] = useState<boolean>(false);
   const [expired, setExpired] = useState<boolean>(false);
@@ -78,7 +79,10 @@ export function PasswordResetPage(props: Props) {
           return;
         }
         console.error(response);
-        setError(true);
+        setError({
+          errorCode: response.status,
+          errorMessage: response.statusText,
+        });
         return;
       }
       const res = await response.json();
@@ -90,7 +94,9 @@ export function PasswordResetPage(props: Props) {
       setSubmitted(false);
     } catch (e: any) {
       console.error(e);
-      setError(true);
+      setError({
+        errorMessage: e,
+      });
       return;
     }
   };
@@ -106,7 +112,7 @@ export function PasswordResetPage(props: Props) {
         <meta name="Reset Password" content="Login page for PlexTech finance" />
       </Helmet>
       {error ? (
-        <ErrorModal open={error} />
+        <ErrorModal open={!!error} error={error} />
       ) : (
         <Div>
           <Form elevation={3}>

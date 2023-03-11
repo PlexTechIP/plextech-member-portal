@@ -10,9 +10,11 @@ import { styled as muiStyled } from '@mui/system';
 import styled from 'styled-components/macro';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import ErrorImage from '../../../error.webp';
+import { Error } from 'types/types';
 
 interface Props {
   open: boolean;
+  error: Error;
 }
 
 const onRefresh = () => {
@@ -20,12 +22,20 @@ const onRefresh = () => {
 };
 
 export function ErrorModal(props: Props) {
+  const { errorCode, errorMessage } = props.error;
+
   return (
     <StyledModal open={props.open}>
       <StyledPaper>
         <Stack spacing={2}>
-          <Stack direction="row" alignItems="center">
-            <H1>Error</H1>
+          <Stack
+            direction="row"
+            alignItems="center"
+            justifyContent="space-between"
+          >
+            <H1>
+              Error{errorCode && ` ${errorCode}`}: {errorMessage}
+            </H1>
             <IconButton onClick={onRefresh}>
               <RefreshIcon />
             </IconButton>

@@ -43,7 +43,7 @@ interface Props {
   onClose: () => void;
   request: Request | null;
   onSubmit: (newRequest: Request, remove?: boolean) => void;
-  onError: () => void;
+  onError: (response: Response) => void;
   token: string | null;
   canEdit: boolean;
   userName: { firstName: string; lastName: string };
@@ -274,7 +274,7 @@ export function ReimbursementForm(props: Props) {
     });
 
     if (!response.ok) {
-      props.onError();
+      props.onError(response);
     }
 
     const res = await response.json();

@@ -20,6 +20,7 @@ import { useState } from 'react';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { ErrorModal } from 'app/components/ErrorModal';
 import { Helmet } from 'react-helmet-async';
+import { Error } from 'types/types';
 
 interface Props {
   setToken: (newToken: string) => void;
@@ -30,7 +31,7 @@ export function NewPasswordPage(props: Props) {
   const [submitted, setSubmitted] = useState<boolean>(false);
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [password, setPassword] = useState<string>('');
-  const [error, setError] = useState<boolean>(false);
+  const [error, setError] = useState<Error>();
   const [loading, setLoading] = useState<boolean>(false);
 
   const onShowPassword = () => {
@@ -68,13 +69,18 @@ export function NewPasswordPage(props: Props) {
       setLoading(false);
 
       if (!response.ok) {
-        setError(true);
+        setError({
+          errorCode: response.status,
+          errorMessage: response.statusText,
+        });
       }
       props.setToken(props.token!.substring(1, props.token!.length));
       setSubmitted(false);
-    } catch (e) {
+    } catch (e: any) {
       console.error(e);
-      setError(true);
+      setError({
+        errorMessage: e,
+      });
     }
   };
 
@@ -88,7 +94,7 @@ export function NewPasswordPage(props: Props) {
         />
       </Helmet>
       {error ? (
-        <ErrorModal open={error} />
+        <ErrorModal open={!!error} error={error} />
       ) : (
         <Div>
           <Form elevation={3}>

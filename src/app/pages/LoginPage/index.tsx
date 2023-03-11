@@ -25,6 +25,7 @@ import { LoginData } from 'types/types';
 import { SignUpPage } from '../SignUpPage/Loadable';
 import { ErrorModal } from 'app/components/ErrorModal';
 import { ForgotPasswordPage } from '../ForgotPasswordPage/Loadable';
+import { Error } from 'types/types';
 import jwt_decode from 'jwt-decode';
 
 interface Props {
@@ -42,7 +43,7 @@ export function LoginPage(props: Props) {
   });
   const [incorrect, setIncorrect] = useState<boolean>(false);
   const [showSignUp, setShowSignUp] = useState<boolean>(false);
-  const [error, setError] = useState<boolean>(false);
+  const [error, setError] = useState<Error>();
   const [loading, setLoading] = useState<boolean>(false);
   const [forgotPassword, setForgotPassword] = useState<boolean>(false);
   const [googleResponse, setGoogleResponse] = useState<any>({});
@@ -136,12 +137,18 @@ export function LoginPage(props: Props) {
         setShowSignUp(true);
         return;
       }
-      if (response.status === 401 || response.status === 422) {
+      if (
+        response.status === 401 ||
+        response.status === 422 ||
+        response.status === 400
+      ) {
         setIncorrect(true);
         return;
       } else if (!response.ok) {
-        console.log(formData);
-        setError(true);
+        setError({
+          errorCode: response.status,
+          errorMessage: response.statusText,
+        });
         return;
       }
       setIncorrect(false);
@@ -152,7 +159,9 @@ export function LoginPage(props: Props) {
       setSubmitted(false);
     } catch (e: any) {
       console.error(e);
-      setError(true);
+      setError({
+        errorMessage: e,
+      });
     }
   };
   if (showSignUp) {
@@ -179,7 +188,7 @@ export function LoginPage(props: Props) {
         <meta name="description" content="Login page for PlexTech finance" />
       </Helmet>
       {error ? (
-        <ErrorModal open={error} />
+        <ErrorModal open={!!error} error={error} />
       ) : (
         <Div>
           <Form elevation={3}>
