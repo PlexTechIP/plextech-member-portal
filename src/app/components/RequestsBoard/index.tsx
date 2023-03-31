@@ -79,6 +79,7 @@ export function RequestsBoard(props: Props) {
                       props.requests[statusKey].map(
                         (request: Request, index: number) => (
                           <RequestCard
+                            token={props.token}
                             request={request}
                             key={index}
                             index={index}

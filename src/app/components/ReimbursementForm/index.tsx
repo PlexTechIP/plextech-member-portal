@@ -43,7 +43,7 @@ interface Props {
   onClose: () => void;
   request: Request | null;
   onSubmit: (newRequest: Request, remove?: boolean) => void;
-  onError: (response: Response) => void;
+  onError: (response: Response | { status: null; statusText: string }) => void;
   token: string | null;
   canEdit: boolean;
   userName: { firstName: string; lastName: string };
@@ -67,6 +67,8 @@ export function ReimbursementForm(props: Props) {
   const [imageLoading, setImageLoading] = useState<boolean>(false);
   const [showImageModal, setShowImageModal] = useState<boolean>(false);
   const [comment, setComment] = useState<string>('');
+  const [images, setImages] = useState<Image[]>([]);
+  const [imagesLoading, setImagesLoading] = useState<boolean>(false);
 
   useEffect(() => {
     const f = async () => {
@@ -88,6 +90,9 @@ export function ReimbursementForm(props: Props) {
         }),
       });
       const res = await response.json();
+      if (!response.ok) {
+        props.onError(response);
+      }
       if (props.request) {
         setFormData({
           ...props.request,
@@ -164,7 +169,10 @@ export function ReimbursementForm(props: Props) {
           }
         },
         error(err) {
-          console.error(err.message);
+          props.onError({
+            status: null,
+            statusText: 'Image compression failed',
+          });
         },
       });
     });
@@ -336,6 +344,35 @@ export function ReimbursementForm(props: Props) {
     setComment('');
   };
 
+  const openImageModal = async () => {
+    setImagesLoading(true);
+    setShowImageModal(true);
+    const url = `${process.env.REACT_APP_BACKEND_URL}/requests/`;
+    const response = await fetch(url, {
+      method: 'PUT',
+      mode: 'cors',
+      cache: 'no-cache',
+      credentials: 'omit',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: 'Bearer ' + props.token,
+      },
+      redirect: 'follow',
+      referrerPolicy: 'no-referrer',
+      body: JSON.stringify({
+        images: true,
+        request_id: props.request?._id,
+      }),
+    });
+    const res = await response.json();
+
+    if (!response.ok) {
+      props.onError(response);
+    }
+    setImages(res.images);
+    setImagesLoading(false);
+  };
+
   return (
     <Form elevation={3}>
       <DeleteDialog
@@ -344,11 +381,11 @@ export function ReimbursementForm(props: Props) {
         onDelete={onDelete}
         item="request"
       />
-
       <ImageModal
+        loading={imagesLoading}
         open={showImageModal}
         onClose={() => setShowImageModal(false)}
-        images={props.request?.images}
+        images={images}
         itemDescription={props.request?.itemDescription}
       />
       <form>
@@ -482,7 +519,7 @@ export function ReimbursementForm(props: Props) {
               <StyledButton
                 variant="contained"
                 startIcon={React.cloneElement(<ImageIcon />)}
-                onClick={() => setShowImageModal(true)}
+                onClick={openImageModal}
               >
                 View Receipt(s)
               </StyledButton>

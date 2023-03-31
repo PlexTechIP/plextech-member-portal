@@ -10,6 +10,7 @@ import {
   Paper,
   Modal,
   Stack,
+  CircularProgress,
 } from '@mui/material';
 import * as React from 'react';
 import styled from 'styled-components/macro';
@@ -23,46 +24,51 @@ interface Props {
   onClose: () => void;
   open: boolean;
   itemDescription: string | undefined;
+  loading: boolean;
 }
 
 export function ImageModal(props: Props) {
   return (
     <StyledModal open={props.open} onClose={props.onClose}>
-      <>
-        <StyledPaper>
-          <StyledStack
-            direction="row"
-            alignItems="center"
-            justifyContent="space-between"
-          >
-            <H1>Receipts for {props.itemDescription}</H1>
-            <IconButton onClick={props.onClose}>
-              <CloseIcon />
-            </IconButton>
-          </StyledStack>
-          {props.images && (
-            <ImageList cols={3} rowHeight={300} style={{ height: '100%' }}>
-              {props.images!.map((image: Image) => (
-                <ImageListItem key={image.name} cols={1}>
-                  <a download={image.name} href={image.data as string}>
-                    <Img
-                      src={image.data as string}
-                      alt="receipt"
-                      loading="lazy"
-                    />
-                  </a>
-                </ImageListItem>
-              ))}
-            </ImageList>
-          )}
-          <Div>
-            <Stack direction="row" alignItems="center" spacing={1}>
-              <StyledInfoOutlinedIcon />
-              <P>Click on an image to download it.</P>
-            </Stack>
-          </Div>
-        </StyledPaper>
-      </>
+      <StyledPaper>
+        <StyledStack
+          direction="row"
+          alignItems="center"
+          justifyContent="space-between"
+        >
+          <H1>Receipts for {props.itemDescription}</H1>
+          <IconButton onClick={props.onClose}>
+            <CloseIcon />
+          </IconButton>
+        </StyledStack>
+        {props.loading ? (
+          <StyledCircularProgress />
+        ) : (
+          <>
+            {props.images && (
+              <ImageList cols={3} rowHeight={300} style={{ height: '100%' }}>
+                {props.images!.map((image: Image) => (
+                  <ImageListItem key={image.name} cols={1}>
+                    <a download={image.name} href={image.data as string}>
+                      <Img
+                        src={image.data as string}
+                        alt="receipt"
+                        loading="lazy"
+                      />
+                    </a>
+                  </ImageListItem>
+                ))}
+              </ImageList>
+            )}
+          </>
+        )}
+        <Div>
+          <Stack direction="row" alignItems="center" spacing={1}>
+            <StyledInfoOutlinedIcon />
+            <P>Click on an image to download it.</P>
+          </Stack>
+        </Div>
+      </StyledPaper>
     </StyledModal>
   );
 }
@@ -126,4 +132,8 @@ const H1 = styled.h1`
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
+`;
+
+const StyledCircularProgress = muiStyled(CircularProgress)`
+  color: rgb(255, 138, 0);
 `;

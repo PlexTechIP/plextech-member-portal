@@ -92,11 +92,19 @@ export function HomePage(props: Props) {
     setShowModal(false);
   };
 
-  const onError = (response: Response) => {
-    setError({
-      errorCode: response.status,
-      errorMessage: response.statusText,
-    });
+  const onError = (
+    response: Response | { status: null; statusText: string },
+  ) => {
+    if (response.status) {
+      setError({
+        errorCode: response.status,
+        errorMessage: response.statusText,
+      });
+    } else {
+      setError({
+        errorMessage: response.statusText,
+      });
+    }
   };
 
   const onRequest = () => {

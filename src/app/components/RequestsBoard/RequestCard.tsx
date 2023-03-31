@@ -1,7 +1,7 @@
 import { Stack, Button, Card } from '@mui/material';
 import * as React from 'react';
 import styled from 'styled-components/macro';
-import { Request } from '../../../types/types';
+import { Error, Image, Request } from '../../../types/types';
 import EditIcon from '@mui/icons-material/Edit';
 import ImageIcon from '@mui/icons-material/Image';
 import { useState } from 'react';
@@ -9,23 +9,56 @@ import { styled as muiStyled } from '@mui/system';
 import { Visibility } from '@mui/icons-material';
 import { ImageModal } from './ImageModal';
 import { Draggable } from 'react-beautiful-dnd';
+import { ErrorModal } from '../ErrorModal';
 
 interface Props {
   request: Request;
   onEdit: (mine: boolean) => void;
   mine: boolean;
+  token: string | null;
   index: number;
 }
 
 export function RequestCard(props: Props) {
   const [showModal, setShowModal] = useState<boolean>(false);
+  const [images, setImages] = useState<Image[]>([]);
+  const [error, setError] = useState<Error>();
+  const [loading, setLoading] = useState<boolean>(false);
 
   const onClose = () => {
     setShowModal(false);
   };
 
-  const onClick = () => {
+  const onClick = async () => {
+    setLoading(true);
     setShowModal(true);
+    const url = `${process.env.REACT_APP_BACKEND_URL}/requests/`;
+    const response = await fetch(url, {
+      method: 'PUT',
+      mode: 'cors',
+      cache: 'no-cache',
+      credentials: 'omit',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: 'Bearer ' + props.token,
+      },
+      redirect: 'follow',
+      referrerPolicy: 'no-referrer',
+      body: JSON.stringify({
+        images: true,
+        request_id: props.request._id,
+      }),
+    });
+    const res = await response.json();
+
+    if (!response.ok) {
+      setError({
+        errorCode: response.status,
+        errorMessage: response.statusText,
+      });
+    }
+    setImages(res.images);
+    setLoading(false);
   };
 
   return (
@@ -38,12 +71,14 @@ export function RequestCard(props: Props) {
           {...provided.dragHandleProps}
           ref={provided.innerRef}
         >
+          {error && <ErrorModal open={!!error} error={error} />}
           {showModal && (
             <ImageModal
-              images={props.request.images}
+              images={images}
               onClose={onClose}
               open={showModal}
               itemDescription={props.request.itemDescription}
+              loading={loading}
             />
           )}
           <Stack spacing={1}>
