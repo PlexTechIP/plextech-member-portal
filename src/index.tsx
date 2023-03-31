@@ -35,9 +35,9 @@ const root = ReactDOM.createRoot(
 root.render(
   <Provider store={store}>
     <HelmetProvider>
-      <React.StrictMode>
-        <App />
-      </React.StrictMode>
+      {/* <React.StrictMode> */} {/* Commented for drag and drop */}
+      <App />
+      {/* </React.StrictMode> */}
     </HelmetProvider>
   </Provider>,
 );

@@ -135,8 +135,7 @@ const StyledCard = muiStyled(Card)`
   display: flex;
   flex-direction: column;
   border-radius: 16px;
-  width: 0;
-  min-width: 100%;
+  width: 100%;
 `;
 
 const H3 = styled.h3`

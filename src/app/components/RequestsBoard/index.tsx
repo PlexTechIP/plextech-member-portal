@@ -12,6 +12,7 @@ import { AllRequests, Request } from '../../../types/types';
 import AddIcon from '@mui/icons-material/Add';
 import { DragDropContext, Droppable } from 'react-beautiful-dnd';
 import jwt_decode from 'jwt-decode';
+import { useState } from 'react';
 
 interface Props {
   requests: AllRequests | null;
@@ -30,12 +31,19 @@ const statuses = [
 ];
 
 export function RequestsBoard(props: Props) {
+  const [dragFrom, setDragFrom] = useState<string | null>(null);
+
   const onDragEnd = (event: any) => {
-    event.preventDefault();
+    // event.preventDefault();
+    setDragFrom(null);
+  };
+
+  const onDragStart = (start: any) => {
+    setDragFrom(start.source.droppableId);
   };
 
   return (
-    <DragDropContext onDragEnd={onDragEnd}>
+    <DragDropContext onDragEnd={onDragEnd} onDragStart={onDragStart}>
       <Stack direction="row" spacing={1}>
         {statuses.map((statusKey: string) => {
           const regex = statusKey.replace(/([A-Z])/g, ' $1');
@@ -51,7 +59,7 @@ export function RequestsBoard(props: Props) {
           return (
             <Section key={statusKey}>
               <Droppable droppableId={statusKey}>
-                {(provided: any) => (
+                {(provided: any, snapshot: any) => (
                   <Stack
                     spacing={1}
                     elevation={2}
@@ -74,7 +82,7 @@ export function RequestsBoard(props: Props) {
                         Request Reimbursement
                       </StyledButton>
                     )}
-                    {provided.placeholder}
+                    {dragFrom !== statusKey && provided.placeholder}
                     {props.requests &&
                       props.requests[statusKey].map(
                         (request: Request, index: number) => (
@@ -106,7 +114,7 @@ export function RequestsBoard(props: Props) {
 }
 
 const Section = muiStyled(Paper)`
-  width: 100%;
+  width: calc(20% - 8px);
   height: 100%;
   padding: 32px;
   text-align: center;
