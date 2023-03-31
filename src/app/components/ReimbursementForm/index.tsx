@@ -72,6 +72,7 @@ export function ReimbursementForm(props: Props) {
 
   useEffect(() => {
     const f = async () => {
+      setImagesLoading(true);
       const url = `${process.env.REACT_APP_BACKEND_URL}/requests/`;
       const response = await fetch(url, {
         method: 'PUT',
@@ -93,6 +94,7 @@ export function ReimbursementForm(props: Props) {
       if (!response.ok) {
         props.onError(response);
       }
+      setImagesLoading(false);
       if (props.request) {
         setFormData({
           ...props.request,
@@ -101,7 +103,9 @@ export function ReimbursementForm(props: Props) {
             ...comment,
             date: dayjs(comment.date),
           })),
+          images: [],
         });
+        await loadImages();
       } else {
         handleReset();
       }
@@ -347,6 +351,11 @@ export function ReimbursementForm(props: Props) {
   const openImageModal = async () => {
     setImagesLoading(true);
     setShowImageModal(true);
+    await loadImages();
+    setImagesLoading(false);
+  };
+
+  const loadImages = async () => {
     const url = `${process.env.REACT_APP_BACKEND_URL}/requests/`;
     const response = await fetch(url, {
       method: 'PUT',
@@ -368,9 +377,9 @@ export function ReimbursementForm(props: Props) {
 
     if (!response.ok) {
       props.onError(response);
+      return;
     }
     setImages(res.images);
-    setImagesLoading(false);
   };
 
   return (
@@ -388,216 +397,221 @@ export function ReimbursementForm(props: Props) {
         images={images}
         itemDescription={props.request?.itemDescription}
       />
-      <form>
-        <Stack spacing={3} alignItems="flex-start">
-          <StyledStack
-            direction="row"
-            justifyContent="space-between"
-            alignItems="center"
-            style={{ marginBottom: '16px' }}
-          >
-            <H1>Reimbursement Request Form</H1>
-            {props.canEdit && props.request ? (
-              <IconButton onClick={onShowDeleteModal}>
-                <DeleteIcon fontSize="large" />
-              </IconButton>
-            ) : (
-              <P>* = required</P>
-            )}
-          </StyledStack>
+      <StyledStack
+        direction="row"
+        justifyContent="space-between"
+        alignItems="center"
+        style={{ marginBottom: '16px' }}
+      >
+        <H1>Reimbursement Request Form</H1>
+        {props.canEdit && props.request ? (
+          <IconButton onClick={onShowDeleteModal}>
+            <DeleteIcon fontSize="large" />
+          </IconButton>
+        ) : (
+          <P>* = required</P>
+        )}
+      </StyledStack>
+      {imagesLoading ? (
+        <StyledCircularProgress size={20} />
+      ) : (
+        <form>
+          <Stack spacing={3} alignItems="flex-start">
+            {/* Item Description Field */}
+            <StyledTextField
+              variant="outlined"
+              onChange={onItemDescriptionChange}
+              value={formData.itemDescription}
+              label={'Item Description'}
+              required
+              error={submitted && formData.itemDescription === ''}
+              helperText={
+                submitted && formData.itemDescription === '' && 'Required'
+              }
+              disabled={!props.canEdit}
+            />
 
-          {/* Item Description Field */}
-          <StyledTextField
-            variant="outlined"
-            onChange={onItemDescriptionChange}
-            value={formData.itemDescription}
-            label={'Item Description'}
-            required
-            error={submitted && formData.itemDescription === ''}
-            helperText={
-              submitted && formData.itemDescription === '' && 'Required'
-            }
-            disabled={!props.canEdit}
-          />
-
-          {/* Amount Field */}
-          <TextField
-            variant="outlined"
-            onChange={onAmountChange}
-            type="number"
-            value={formData.amount}
-            label="Amount"
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">$</InputAdornment>
-              ),
-            }}
-            required
-            error={submitted && formData.amount === ''}
-            helperText={submitted && formData.amount === '' && 'Required'}
-            disabled={!props.canEdit}
-          />
-
-          <Divider />
-
-          {/* Team Budget Select */}
-          <FormControl>
-            <FormLabel disabled={!props.canEdit}>Team Budget?</FormLabel>
-            <RadioGroup
-              row
-              aria-labelledby="demo-row-radio-buttons-group-label"
-              name="row-radio-buttons-group"
-              defaultValue="No budget"
-              onChange={onTeamBudgetChange}
-            >
-              <FormControlLabel
-                value="No budget"
-                control={<Radio disabled={!props.canEdit} />}
-                label="No budget"
-              />
-              <FormControlLabel
-                value="NMEP"
-                control={<Radio disabled={!props.canEdit} />}
-                label="NMEP"
-              />
-              {props.teams.map(team => (
-                <FormControlLabel
-                  key={team}
-                  value={team}
-                  control={<Radio disabled={!props.canEdit} />}
-                  label={team}
-                  disabled={!props.canEdit}
-                />
-              ))}
-            </RadioGroup>
-          </FormControl>
-
-          {/* Is Food? */}
-          {formData.teamBudget !== 'No budget' && (
-            <Stack spacing={1} direction="row" alignItems="center">
-              <FormLabel disabled={!props.canEdit}>Food?</FormLabel>
-              <Checkbox
-                disabled={!props.canEdit}
-                checked={formData.isFood}
-                onChange={onIsFoodChange}
-              />
-            </Stack>
-          )}
-
-          <StyledDivider variant="middle" light />
-
-          {/* Receipt Upload */}
-          <Stack spacing={1} alignItems="flex-start">
-            {props.canEdit ? (
-              <Button
-                variant="contained"
-                component="label"
-                style={{
-                  backgroundColor: 'white',
-                  color:
-                    submitted && formData.images.length === 0
-                      ? 'red'
-                      : 'rgb(255, 138, 0)',
-                  fontWeight: 'bold',
-                }}
-                startIcon={React.cloneElement(<ImageIcon />)}
-              >
-                {imageLoading ? (
-                  <StyledCircularProgress size={20} />
-                ) : (
-                  'Upload Receipt(s) *'
-                )}
-                <input
-                  accept="image/*,application/pdf"
-                  onChange={handleFileUpload}
-                  type="file"
-                  multiple
-                  hidden
-                />
-              </Button>
-            ) : (
-              <StyledButton
-                variant="contained"
-                startIcon={React.cloneElement(<ImageIcon />)}
-                onClick={openImageModal}
-              >
-                View Receipt(s)
-              </StyledButton>
-            )}
-            <Divider />
-            {props.canEdit &&
-              formData.images.map((image: any, index: number) => (
-                <Stack
-                  direction="row"
-                  alignItems="center"
-                  spacing={1}
-                  key={index}
-                >
-                  <ImageIcon />
-                  <p>
-                    {image.name.length > 20
-                      ? `${image.name.substring(0, 20)}...`
-                      : image.name}
-                  </p>
-                  <IconButton onClick={() => onDeleteImage(index)}>
-                    <CloseIcon />
-                  </IconButton>
-                </Stack>
-              ))}
-          </Stack>
-
-          <StyledDivider variant="middle" light />
-
-          {formData.comments.length === 0 || (
-            <>
-              <H2>Comments</H2>
-              {formData.comments
-                .map((comment: Comment) => (
-                  <CommentCard
-                    key={comment.date.toString()}
-                    id={(jwt_decode(props.token!) as { sub: string }).sub}
-                    comment={comment}
-                  />
-                ))
-                .sort()}
-              <StyledDivider variant="middle" light />
-            </>
-          )}
-          <CommentForm
-            comment={comment}
-            onChange={setComment}
-            onSubmit={onCommentSubmit}
-            message="Add Comment (optional)"
-          />
-
-          <StyledStack direction="row" justifyContent="space-between">
-            <Stack spacing={1} direction="row">
-              {/* Submit Button */}
-              <StyledButton
-                variant="contained"
-                onClick={onSubmit}
-                type="submit"
-              >
-                {isLoading ? <StyledCircularProgress size={20} /> : 'Submit'}
-              </StyledButton>
-
-              {/* Reset Button */}
-              <StyledButton variant="contained" onClick={handleReset}>
-                Reset
-              </StyledButton>
-            </Stack>
-            <StyledButton
-              variant="contained"
-              onClick={() => {
-                handleReset();
-                props.onClose();
+            {/* Amount Field */}
+            <TextField
+              variant="outlined"
+              onChange={onAmountChange}
+              type="number"
+              value={formData.amount}
+              label="Amount"
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">$</InputAdornment>
+                ),
               }}
-            >
-              Cancel
-            </StyledButton>
-          </StyledStack>
-        </Stack>
-      </form>
+              required
+              error={submitted && formData.amount === ''}
+              helperText={submitted && formData.amount === '' && 'Required'}
+              disabled={!props.canEdit}
+            />
+
+            <Divider />
+
+            {/* Team Budget Select */}
+            <FormControl>
+              <FormLabel disabled={!props.canEdit}>Team Budget?</FormLabel>
+              <RadioGroup
+                row
+                aria-labelledby="demo-row-radio-buttons-group-label"
+                name="row-radio-buttons-group"
+                defaultValue="No budget"
+                onChange={onTeamBudgetChange}
+              >
+                <FormControlLabel
+                  value="No budget"
+                  control={<Radio disabled={!props.canEdit} />}
+                  label="No budget"
+                />
+                <FormControlLabel
+                  value="NMEP"
+                  control={<Radio disabled={!props.canEdit} />}
+                  label="NMEP"
+                />
+                {props.teams.map(team => (
+                  <FormControlLabel
+                    key={team}
+                    value={team}
+                    control={<Radio disabled={!props.canEdit} />}
+                    label={team}
+                    disabled={!props.canEdit}
+                  />
+                ))}
+              </RadioGroup>
+            </FormControl>
+
+            {/* Is Food? */}
+            {formData.teamBudget !== 'No budget' && (
+              <Stack spacing={1} direction="row" alignItems="center">
+                <FormLabel disabled={!props.canEdit}>Food?</FormLabel>
+                <Checkbox
+                  disabled={!props.canEdit}
+                  checked={formData.isFood}
+                  onChange={onIsFoodChange}
+                />
+              </Stack>
+            )}
+
+            <StyledDivider variant="middle" light />
+
+            {/* Receipt Upload */}
+            <Stack spacing={1} alignItems="flex-start">
+              {props.canEdit ? (
+                <Button
+                  variant="contained"
+                  component="label"
+                  style={{
+                    backgroundColor: 'white',
+                    color:
+                      submitted && formData.images.length === 0
+                        ? 'red'
+                        : 'rgb(255, 138, 0)',
+                    fontWeight: 'bold',
+                  }}
+                  startIcon={React.cloneElement(<ImageIcon />)}
+                >
+                  {imageLoading ? (
+                    <StyledCircularProgress size={20} />
+                  ) : (
+                    'Upload Receipt(s) *'
+                  )}
+                  <input
+                    accept="image/*,application/pdf"
+                    onChange={handleFileUpload}
+                    type="file"
+                    multiple
+                    hidden
+                  />
+                </Button>
+              ) : (
+                <StyledButton
+                  variant="contained"
+                  startIcon={React.cloneElement(<ImageIcon />)}
+                  onClick={openImageModal}
+                >
+                  View Receipt(s)
+                </StyledButton>
+              )}
+              <Divider />
+              {props.canEdit &&
+                [...images, ...formData.images].map(
+                  (image: any, index: number) => (
+                    <Stack
+                      direction="row"
+                      alignItems="center"
+                      spacing={1}
+                      key={index}
+                    >
+                      <ImageIcon />
+                      <p>
+                        {image.name.length > 20
+                          ? `${image.name.substring(0, 20)}...`
+                          : image.name}
+                      </p>
+                      <IconButton onClick={() => onDeleteImage(index)}>
+                        <CloseIcon />
+                      </IconButton>
+                    </Stack>
+                  ),
+                )}
+            </Stack>
+
+            <StyledDivider variant="middle" light />
+
+            {formData.comments.length === 0 || (
+              <>
+                <H2>Comments</H2>
+                {formData.comments
+                  .map((comment: Comment) => (
+                    <CommentCard
+                      key={comment.date.toString()}
+                      id={(jwt_decode(props.token!) as { sub: string }).sub}
+                      comment={comment}
+                    />
+                  ))
+                  .sort()}
+                <StyledDivider variant="middle" light />
+              </>
+            )}
+            <CommentForm
+              comment={comment}
+              onChange={setComment}
+              onSubmit={onCommentSubmit}
+              message="Add Comment (optional)"
+            />
+
+            <StyledStack direction="row" justifyContent="space-between">
+              <Stack spacing={1} direction="row">
+                {/* Submit Button */}
+                <StyledButton
+                  variant="contained"
+                  onClick={onSubmit}
+                  type="submit"
+                >
+                  {isLoading ? <StyledCircularProgress size={20} /> : 'Submit'}
+                </StyledButton>
+
+                {/* Reset Button */}
+                <StyledButton variant="contained" onClick={handleReset}>
+                  Reset
+                </StyledButton>
+              </Stack>
+              <StyledButton
+                variant="contained"
+                onClick={() => {
+                  handleReset();
+                  props.onClose();
+                }}
+              >
+                Cancel
+              </StyledButton>
+            </StyledStack>
+          </Stack>
+        </form>
+      )}
     </Form>
   );
 }
