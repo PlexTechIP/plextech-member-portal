@@ -71,6 +71,10 @@ export function ReimbursementForm(props: Props) {
   const [imagesLoading, setImagesLoading] = useState<boolean>(false);
 
   useEffect(() => {
+    if (!props.request) {
+      handleReset();
+      return;
+    }
     const f = async () => {
       setImagesLoading(true);
       const url = `${process.env.REACT_APP_BACKEND_URL}/requests/`;
@@ -95,20 +99,16 @@ export function ReimbursementForm(props: Props) {
         props.onError(response);
       }
       setImagesLoading(false);
-      if (props.request) {
-        setFormData({
-          ...props.request,
-          amount: props.request.amount.toString(),
-          comments: res.comments.map((comment: any) => ({
-            ...comment,
-            date: dayjs(comment.date),
-          })),
-          images: [],
-        });
-        await loadImages();
-      } else {
-        handleReset();
-      }
+      setFormData({
+        ...props.request!,
+        amount: props.request!.amount.toString(),
+        comments: res.comments.map((comment: any) => ({
+          ...comment,
+          date: dayjs(comment.date),
+        })),
+        images: [],
+      });
+      await loadImages();
     };
     f();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -412,26 +412,24 @@ export function ReimbursementForm(props: Props) {
           <P>* = required</P>
         )}
       </StyledStack>
-      {imagesLoading ? (
-        <StyledCircularProgress size={20} />
-      ) : (
-        <form>
-          <Stack spacing={3} alignItems="flex-start">
-            {/* Item Description Field */}
-            <StyledTextField
-              variant="outlined"
-              onChange={onItemDescriptionChange}
-              value={formData.itemDescription}
-              label={'Item Description'}
-              required
-              error={submitted && formData.itemDescription === ''}
-              helperText={
-                submitted && formData.itemDescription === '' && 'Required'
-              }
-              disabled={!props.canEdit}
-            />
+      <form>
+        <Stack spacing={3} alignItems="flex-start">
+          {/* Item Description Field */}
+          <StyledTextField
+            variant="outlined"
+            onChange={onItemDescriptionChange}
+            value={formData.itemDescription}
+            label={'Item Description'}
+            required
+            error={submitted && formData.itemDescription === ''}
+            helperText={
+              submitted && formData.itemDescription === '' && 'Required'
+            }
+            disabled={!props.canEdit}
+          />
 
-            {/* Amount Field */}
+          {/* Amount Field */}
+          <Stack direction="row" spacing={3} alignItems="center">
             <TextField
               variant="outlined"
               onChange={onAmountChange}
@@ -448,170 +446,170 @@ export function ReimbursementForm(props: Props) {
               helperText={submitted && formData.amount === '' && 'Required'}
               disabled={!props.canEdit}
             />
+            {imagesLoading && <StyledCircularProgress />}
+          </Stack>
+          <Divider />
 
-            <Divider />
-
-            {/* Team Budget Select */}
-            <FormControl>
-              <FormLabel disabled={!props.canEdit}>Team Budget?</FormLabel>
-              <RadioGroup
-                row
-                aria-labelledby="demo-row-radio-buttons-group-label"
-                name="row-radio-buttons-group"
-                defaultValue="No budget"
-                onChange={onTeamBudgetChange}
-              >
+          {/* Team Budget Select */}
+          <FormControl>
+            <FormLabel disabled={!props.canEdit}>Team Budget?</FormLabel>
+            <RadioGroup
+              row
+              aria-labelledby="demo-row-radio-buttons-group-label"
+              name="row-radio-buttons-group"
+              defaultValue="No budget"
+              onChange={onTeamBudgetChange}
+            >
+              <FormControlLabel
+                value="No budget"
+                control={<Radio disabled={!props.canEdit} />}
+                label="No budget"
+              />
+              <FormControlLabel
+                value="NMEP"
+                control={<Radio disabled={!props.canEdit} />}
+                label="NMEP"
+              />
+              {props.teams.map(team => (
                 <FormControlLabel
-                  value="No budget"
+                  key={team}
+                  value={team}
                   control={<Radio disabled={!props.canEdit} />}
-                  label="No budget"
-                />
-                <FormControlLabel
-                  value="NMEP"
-                  control={<Radio disabled={!props.canEdit} />}
-                  label="NMEP"
-                />
-                {props.teams.map(team => (
-                  <FormControlLabel
-                    key={team}
-                    value={team}
-                    control={<Radio disabled={!props.canEdit} />}
-                    label={team}
-                    disabled={!props.canEdit}
-                  />
-                ))}
-              </RadioGroup>
-            </FormControl>
-
-            {/* Is Food? */}
-            {formData.teamBudget !== 'No budget' && (
-              <Stack spacing={1} direction="row" alignItems="center">
-                <FormLabel disabled={!props.canEdit}>Food?</FormLabel>
-                <Checkbox
+                  label={team}
                   disabled={!props.canEdit}
-                  checked={formData.isFood}
-                  onChange={onIsFoodChange}
                 />
-              </Stack>
-            )}
+              ))}
+            </RadioGroup>
+          </FormControl>
 
-            <StyledDivider variant="middle" light />
-
-            {/* Receipt Upload */}
-            <Stack spacing={1} alignItems="flex-start">
-              {props.canEdit ? (
-                <Button
-                  variant="contained"
-                  component="label"
-                  style={{
-                    backgroundColor: 'white',
-                    color:
-                      submitted && formData.images.length === 0
-                        ? 'red'
-                        : 'rgb(255, 138, 0)',
-                    fontWeight: 'bold',
-                  }}
-                  startIcon={React.cloneElement(<ImageIcon />)}
-                >
-                  {imageLoading ? (
-                    <StyledCircularProgress size={20} />
-                  ) : (
-                    'Upload Receipt(s) *'
-                  )}
-                  <input
-                    accept="image/*,application/pdf"
-                    onChange={handleFileUpload}
-                    type="file"
-                    multiple
-                    hidden
-                  />
-                </Button>
-              ) : (
-                <StyledButton
-                  variant="contained"
-                  startIcon={React.cloneElement(<ImageIcon />)}
-                  onClick={openImageModal}
-                >
-                  View Receipt(s)
-                </StyledButton>
-              )}
-              <Divider />
-              {props.canEdit &&
-                [...images, ...formData.images].map(
-                  (image: any, index: number) => (
-                    <Stack
-                      direction="row"
-                      alignItems="center"
-                      spacing={1}
-                      key={index}
-                    >
-                      <ImageIcon />
-                      <p>
-                        {image.name.length > 20
-                          ? `${image.name.substring(0, 20)}...`
-                          : image.name}
-                      </p>
-                      <IconButton onClick={() => onDeleteImage(index)}>
-                        <CloseIcon />
-                      </IconButton>
-                    </Stack>
-                  ),
-                )}
+          {/* Is Food? */}
+          {formData.teamBudget !== 'No budget' && (
+            <Stack spacing={1} direction="row" alignItems="center">
+              <FormLabel disabled={!props.canEdit}>Food?</FormLabel>
+              <Checkbox
+                disabled={!props.canEdit}
+                checked={formData.isFood}
+                onChange={onIsFoodChange}
+              />
             </Stack>
+          )}
 
-            <StyledDivider variant="middle" light />
+          <StyledDivider variant="middle" light />
 
-            {formData.comments.length === 0 || (
-              <>
-                <H2>Comments</H2>
-                {formData.comments
-                  .map((comment: Comment) => (
-                    <CommentCard
-                      key={comment.date.toString()}
-                      id={(jwt_decode(props.token!) as { sub: string }).sub}
-                      comment={comment}
-                    />
-                  ))
-                  .sort()}
-                <StyledDivider variant="middle" light />
-              </>
-            )}
-            <CommentForm
-              comment={comment}
-              onChange={setComment}
-              onSubmit={onCommentSubmit}
-              message="Add Comment (optional)"
-            />
-
-            <StyledStack direction="row" justifyContent="space-between">
-              <Stack spacing={1} direction="row">
-                {/* Submit Button */}
-                <StyledButton
-                  variant="contained"
-                  onClick={onSubmit}
-                  type="submit"
-                >
-                  {isLoading ? <StyledCircularProgress size={20} /> : 'Submit'}
-                </StyledButton>
-
-                {/* Reset Button */}
-                <StyledButton variant="contained" onClick={handleReset}>
-                  Reset
-                </StyledButton>
-              </Stack>
+          {/* Receipt Upload */}
+          <Stack spacing={1} alignItems="flex-start">
+            {props.canEdit ? (
+              <Button
+                variant="contained"
+                component="label"
+                style={{
+                  backgroundColor: 'white',
+                  color:
+                    submitted && formData.images.length === 0
+                      ? 'red'
+                      : 'rgb(255, 138, 0)',
+                  fontWeight: 'bold',
+                }}
+                startIcon={React.cloneElement(<ImageIcon />)}
+              >
+                {imageLoading ? (
+                  <StyledCircularProgress size={20} />
+                ) : (
+                  'Upload Receipt(s) *'
+                )}
+                <input
+                  accept="image/*,application/pdf"
+                  onChange={handleFileUpload}
+                  type="file"
+                  multiple
+                  hidden
+                />
+              </Button>
+            ) : (
               <StyledButton
                 variant="contained"
-                onClick={() => {
-                  handleReset();
-                  props.onClose();
-                }}
+                startIcon={React.cloneElement(<ImageIcon />)}
+                onClick={openImageModal}
               >
-                Cancel
+                View Receipt(s)
               </StyledButton>
-            </StyledStack>
+            )}
+            <Divider />
+            {props.canEdit &&
+              [...images, ...formData.images].map(
+                (image: any, index: number) => (
+                  <Stack
+                    direction="row"
+                    alignItems="center"
+                    spacing={1}
+                    key={index}
+                  >
+                    <ImageIcon />
+                    <p>
+                      {image.name.length > 20
+                        ? `${image.name.substring(0, 20)}...`
+                        : image.name}
+                    </p>
+                    <IconButton onClick={() => onDeleteImage(index)}>
+                      <CloseIcon />
+                    </IconButton>
+                  </Stack>
+                ),
+              )}
           </Stack>
-        </form>
-      )}
+
+          <StyledDivider variant="middle" light />
+
+          {formData.comments.length === 0 || (
+            <>
+              <H2>Comments</H2>
+              {formData.comments
+                .map((comment: Comment) => (
+                  <CommentCard
+                    key={comment.date.toString()}
+                    id={(jwt_decode(props.token!) as { sub: string }).sub}
+                    comment={comment}
+                  />
+                ))
+                .sort()}
+              <StyledDivider variant="middle" light />
+            </>
+          )}
+          <CommentForm
+            comment={comment}
+            onChange={setComment}
+            onSubmit={onCommentSubmit}
+            message="Add Comment (optional)"
+          />
+
+          <StyledStack direction="row" justifyContent="space-between">
+            <Stack spacing={1} direction="row">
+              {/* Submit Button */}
+              <StyledButton
+                variant="contained"
+                onClick={onSubmit}
+                type="submit"
+              >
+                {isLoading ? <StyledCircularProgress size={20} /> : 'Submit'}
+              </StyledButton>
+
+              {/* Reset Button */}
+              <StyledButton variant="contained" onClick={handleReset}>
+                Reset
+              </StyledButton>
+            </Stack>
+            <StyledButton
+              variant="contained"
+              onClick={() => {
+                handleReset();
+                props.onClose();
+              }}
+            >
+              Cancel
+            </StyledButton>
+          </StyledStack>
+        </Stack>
+      </form>
     </Form>
   );
 }

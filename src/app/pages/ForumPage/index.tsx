@@ -21,14 +21,12 @@ interface Props {
 }
 
 export function ForumPage(props: Props) {
-  const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<Error>();
   const [posts, setPosts] = useState<Post[]>([]);
   const [showForm, setShowForm] = useState<boolean>(false);
 
   useEffect(() => {
     const f = async () => {
-      setLoading(true);
       const url = `${process.env.REACT_APP_BACKEND_URL}/forum/`;
       try {
         const response = await fetch(url, {
@@ -43,7 +41,6 @@ export function ForumPage(props: Props) {
           redirect: 'follow',
           referrerPolicy: 'no-referrer',
         });
-        setLoading(false);
 
         if (response.status === 401 || response.status === 422) {
           props.removeToken();
