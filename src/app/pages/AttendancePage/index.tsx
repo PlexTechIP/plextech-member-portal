@@ -200,9 +200,9 @@ export function AttendancePage(props: Props) {
               {loading ? (
                 <StyledCircularProgress />
               ) : (
-                <StyledButton onClick={onPrint} variant="contained">
+                <Button onClick={onPrint} variant="contained">
                   Log Report
-                </StyledButton>
+                </Button>
               )}
             </StyledStack>
             <TextField
@@ -274,10 +274,4 @@ const StyledStack = styled(Stack)`
 
 const StyledCircularProgress = muiStyled(CircularProgress)`
   color: rgb(255, 138, 0);
-`;
-
-const StyledButton = muiStyled(Button)`
-  background-color: white;
-  color: rgb(255, 138, 0);
-  font-weight: bold;
 `;

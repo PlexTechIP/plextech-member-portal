@@ -252,25 +252,21 @@ export function LoginPage(props: Props) {
                   />
                 </StyledStack>
                 <Stack direction="row" spacing={3}>
-                  <StyledButton
-                    variant="contained"
-                    onClick={onSubmit}
-                    type="submit"
-                  >
+                  <Button variant="contained" onClick={onSubmit} type="submit">
                     {loading ? <StyledCircularProgress size={20} /> : 'Log In'}
-                  </StyledButton>
-                  <StyledButton variant="text" onClick={onForgotPassword}>
+                  </Button>
+                  <Button variant="text" onClick={onForgotPassword}>
                     Forgot Password?
-                  </StyledButton>
+                  </Button>
                 </Stack>
 
                 <StyledDivider variant="middle" light>
                   or
                 </StyledDivider>
                 <div id="google-signin" />
-                <StyledButton variant="contained" onClick={onSignUpClick}>
+                <Button variant="contained" onClick={onSignUpClick}>
                   Don't have an account yet?
-                </StyledButton>
+                </Button>
               </Stack>
             </form>
           </Form>
@@ -311,12 +307,6 @@ const Img = styled.img`
 const Div = styled.div`
   padding-top: 64px;
   height: 100%;
-`;
-
-const StyledButton = muiStyled(Button)`
-  background-color: white;
-  color: rgb(255, 138, 0);
-  font-weight: bold;
 `;
 
 const StyledCircularProgress = muiStyled(CircularProgress)`

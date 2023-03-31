@@ -503,12 +503,10 @@ export function ReimbursementForm(props: Props) {
                 variant="contained"
                 component="label"
                 style={{
-                  backgroundColor: 'white',
                   color:
                     submitted && formData.images.length === 0
                       ? 'red'
                       : 'rgb(255, 138, 0)',
-                  fontWeight: 'bold',
                 }}
                 startIcon={React.cloneElement(<ImageIcon />)}
               >
@@ -526,13 +524,13 @@ export function ReimbursementForm(props: Props) {
                 />
               </Button>
             ) : (
-              <StyledButton
+              <Button
                 variant="contained"
                 startIcon={React.cloneElement(<ImageIcon />)}
                 onClick={openImageModal}
               >
-                View Receipt(s)
-              </StyledButton>
+                Receipt(s)
+              </Button>
             )}
             <Divider />
             {props.canEdit &&
@@ -585,20 +583,16 @@ export function ReimbursementForm(props: Props) {
           <StyledStack direction="row" justifyContent="space-between">
             <Stack spacing={1} direction="row">
               {/* Submit Button */}
-              <StyledButton
-                variant="contained"
-                onClick={onSubmit}
-                type="submit"
-              >
+              <Button variant="contained" onClick={onSubmit} type="submit">
                 {isLoading ? <StyledCircularProgress size={20} /> : 'Submit'}
-              </StyledButton>
+              </Button>
 
               {/* Reset Button */}
-              <StyledButton variant="contained" onClick={handleReset}>
+              <Button variant="contained" onClick={handleReset}>
                 Reset
-              </StyledButton>
+              </Button>
             </Stack>
-            <StyledButton
+            <Button
               variant="contained"
               onClick={() => {
                 handleReset();
@@ -606,7 +600,7 @@ export function ReimbursementForm(props: Props) {
               }}
             >
               Cancel
-            </StyledButton>
+            </Button>
           </StyledStack>
         </Stack>
       </form>
@@ -638,12 +632,6 @@ const P = styled.p`
 
 const StyledTextField = styled(TextField)`
   width: 100%;
-`;
-
-const StyledButton = muiStyled(Button)`
-  background-color: white;
-  color: rgb(255, 138, 0);
-  font-weight: bold;
 `;
 
 const StyledCircularProgress = muiStyled(CircularProgress)`

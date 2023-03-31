@@ -119,16 +119,13 @@ export function ForgotPasswordPage(props: Props) {
                   justifyContent="space-between"
                   alignItems="flex-start"
                 >
-                  <StyledButton
-                    variant="contained"
-                    style={{ visibility: 'hidden' }}
-                  >
+                  <Button variant="contained" style={{ visibility: 'hidden' }}>
                     Back to login
-                  </StyledButton>
+                  </Button>
                   <Img src={PlexTechLogo} alt="PlexTech logo" />
-                  <StyledButton variant="contained" onClick={props.onBack}>
+                  <Button variant="contained" onClick={props.onBack}>
                     Back to login
-                  </StyledButton>
+                  </Button>
                 </StyledStack>
                 <H1>Forgot Password</H1>
                 <p>
@@ -153,13 +150,9 @@ export function ForgotPasswordPage(props: Props) {
                   />
                 </StyledStack>
 
-                <StyledButton
-                  variant="contained"
-                  onClick={onSubmit}
-                  type="submit"
-                >
+                <Button variant="contained" onClick={onSubmit} type="submit">
                   {loading ? <StyledCircularProgress size={20} /> : 'Submit'}
-                </StyledButton>
+                </Button>
               </Stack>
             </form>
           </Form>
@@ -196,12 +189,6 @@ const Img = styled.img`
 const Div = styled.div`
   padding-top: 64px;
   height: 100%;
-`;
-
-const StyledButton = muiStyled(Button)`
-  background-color: white;
-  color: rgb(255, 138, 0);
-  font-weight: bold;
 `;
 
 const StyledCircularProgress = muiStyled(CircularProgress)`

@@ -220,16 +220,13 @@ export function SignUpPage(props: Props) {
                   justifyContent="space-between"
                   alignItems="flex-start"
                 >
-                  <StyledButton
-                    variant="contained"
-                    style={{ visibility: 'hidden' }}
-                  >
+                  <Button variant="contained" style={{ visibility: 'hidden' }}>
                     Back to login
-                  </StyledButton>
+                  </Button>
                   <Img src={PlexTechLogo} alt="PlexTech logo" />
-                  <StyledButton variant="contained" onClick={onBackClick}>
+                  <Button variant="contained" onClick={onBackClick}>
                     Back to login
-                  </StyledButton>
+                  </Button>
                 </StyledStack>
                 <H1>Sign Up</H1>
                 {formData.google && <p>Signed in with Google.</p>}
@@ -263,9 +260,9 @@ export function SignUpPage(props: Props) {
                 </StyledStack>
                 <StyledDivider variant="middle" light />
                 {formData.google ? (
-                  <StyledButton variant="contained" onClick={onSubmit}>
+                  <Button variant="contained" onClick={onSubmit}>
                     Sign Up
-                  </StyledButton>
+                  </Button>
                 ) : (
                   <>
                     <div id="google-signup" />
@@ -379,7 +376,7 @@ export function SignUpPage(props: Props) {
                       />
                     </StyledStack>
                     <div />
-                    <StyledButton
+                    <Button
                       variant="contained"
                       onClick={onSubmit}
                       type="submit"
@@ -389,7 +386,7 @@ export function SignUpPage(props: Props) {
                       ) : (
                         'Sign Up'
                       )}
-                    </StyledButton>
+                    </Button>
                   </>
                 )}
               </Stack>
@@ -413,12 +410,6 @@ const Form = muiStyled(Paper)`
 
 const StyledStack = styled(Stack)`
   width: 100%;
-`;
-
-const StyledButton = muiStyled(Button)`
-  background-color: white;
-  color: rgb(255, 138, 0);
-  font-weight: bold;
 `;
 
 const Img = styled.img`

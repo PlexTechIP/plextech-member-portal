@@ -16,6 +16,7 @@ import {
   ListItemIcon,
   ListItemText,
   Divider,
+  useTheme,
 } from '@mui/material';
 import * as React from 'react';
 import styled from 'styled-components/macro';
@@ -28,12 +29,16 @@ import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import ForumIcon from '@mui/icons-material/Forum';
 import LogoutIcon from '@mui/icons-material/Logout';
 import { useEffect, useState } from 'react';
+import Brightness4 from '@mui/icons-material/Brightness4';
+import Brightness7 from '@mui/icons-material/Brightness7';
 
 interface Props {
   open: boolean;
   setOpen: (newOpen: boolean) => void;
   token: string | null;
   removeToken: () => void;
+  isDarkMode: boolean;
+  setIsDarkMode: (newMode: boolean) => void;
 }
 
 const iconMap = {
@@ -82,9 +87,16 @@ export function TopBar(props: Props) {
     f();
   }, [props, props.token]);
 
+  const theme = useTheme();
+
   return (
     <AppBar position="sticky" elevation={0}>
-      <StyledToolbar>
+      <Toolbar
+        style={{
+          backgroundColor:
+            theme.palette.mode === 'dark' ? '#333333' : '#cccccc',
+        }}
+      >
         <StyledStack direction="row" alignItems="center" spacing={2}>
           <IconButton
             aria-label="menu"
@@ -95,9 +107,18 @@ export function TopBar(props: Props) {
             <MenuIcon />
           </IconButton>
           <Img src={PlexTechLogo} />
-          <StyledStack direction="row" justifyContent="space-between">
-            <H1>PlexTech Member Portal</H1>
-            <H1>{page || 'Profile'}</H1>
+          <StyledStack direction="row" alignItems="center" spacing={1}>
+            <StyledStack direction="row" justifyContent="space-between">
+              <H1 style={{ color: theme.palette.text.primary }}>
+                PlexTech Member Portal
+              </H1>
+              <H1 style={{ color: theme.palette.text.primary }}>
+                {page || 'Profile'}
+              </H1>
+            </StyledStack>
+            <IconButton onClick={() => props.setIsDarkMode(!props.isDarkMode)}>
+              {props.isDarkMode ? <Brightness7 /> : <Brightness4 />}
+            </IconButton>
           </StyledStack>
           <Drawer
             anchor="left"
@@ -155,21 +176,16 @@ export function TopBar(props: Props) {
             </Box>
           </Drawer>
         </StyledStack>
-      </StyledToolbar>
+      </Toolbar>
     </AppBar>
   );
 }
-
-const StyledToolbar = styled(Toolbar)`
-  background-color: #eeeeee;
-`;
 
 const Img = styled.img`
   height: 24px;
 `;
 
 const H1 = styled.h2`
-  color: black;
   margin: 0px;
   padding-left: 8px;
 `;

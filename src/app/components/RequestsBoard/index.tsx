@@ -75,12 +75,12 @@ export function RequestsBoard(props: Props) {
                       </H2>
                     )}
                     {statusKey === 'pendingReview' && props.requests !== null && (
-                      <StyledButton
+                      <Button
                         startIcon={React.cloneElement(<AddIcon />)}
                         onClick={props.onRequest}
                       >
                         Request Reimbursement
-                      </StyledButton>
+                      </Button>
                     )}
                     {dragFrom !== statusKey && provided.placeholder}
                     {props.requests &&
@@ -124,9 +124,4 @@ const Section = muiStyled(Paper)`
 const H2 = styled.h2`
   margin: 0px;
   padding-bottom: 16px;
-`;
-
-const StyledButton = muiStyled(Button)`
-  color: rgb(255, 138, 0);
-  font-weight: bold;
 `;

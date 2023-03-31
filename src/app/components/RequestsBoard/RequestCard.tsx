@@ -1,4 +1,4 @@
-import { Stack, Button, Card } from '@mui/material';
+import { Stack, Button, Card, useTheme } from '@mui/material';
 import * as React from 'react';
 import styled from 'styled-components/macro';
 import { Error, Image, Request } from '../../../types/types';
@@ -61,6 +61,8 @@ export function RequestCard(props: Props) {
     setLoading(false);
   };
 
+  const theme = useTheme();
+
   return (
     <Draggable draggableId={props.request._id} index={props.index}>
       {(provided: any) => (
@@ -98,17 +100,19 @@ export function RequestCard(props: Props) {
               alignItems="center"
             >
               {props.mine ? (
-                <StyledButton
+                <Button
                   size="small"
                   startIcon={React.cloneElement(<ImageIcon />)}
                   onClick={onClick}
+                  style={{ color: theme.palette.text.primary }}
                 >
-                  View Receipt(s)
-                </StyledButton>
+                  Receipt(s)
+                </Button>
               ) : (
                 <P>{props.request.firstName}</P>
               )}
-              <StyledButton
+              <Button
+                style={{ color: theme.palette.text.primary }}
                 size="small"
                 startIcon={React.cloneElement(
                   props.mine ? <EditIcon /> : <Visibility />,
@@ -120,7 +124,7 @@ export function RequestCard(props: Props) {
                 }
               >
                 {props.mine ? 'Edit' : 'View'}
-              </StyledButton>
+              </Button>
             </Stack>
           </Stack>
         </StyledCard>
@@ -143,14 +147,6 @@ const H3 = styled.h3`
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
-`;
-
-const StyledButton = muiStyled(Button)`
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  background-color: white;
-  color: black;
 `;
 
 const StyledStack = styled(Stack)`

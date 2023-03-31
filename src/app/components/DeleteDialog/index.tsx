@@ -1,4 +1,3 @@
-import { styled as muiStyled } from '@mui/system';
 import { Button, Dialog, DialogActions, DialogTitle } from '@mui/material';
 import React from 'react';
 
@@ -22,17 +21,11 @@ export function DeleteDialog(props: Props) {
         Are you sure you want to delete this {props.item}?
       </DialogTitle>
       <DialogActions>
-        <StyledButton onClick={props.onClose}>Cancel</StyledButton>
-        <StyledButton onClick={props.onDelete} variant="contained">
+        <Button onClick={props.onClose}>Cancel</Button>
+        <Button onClick={props.onDelete} variant="contained">
           Delete
-        </StyledButton>
+        </Button>
       </DialogActions>
     </Dialog>
   );
 }
-
-const StyledButton = muiStyled(Button)`
-    background-color: white;
-    color: rgb(255, 138, 0);
-    font-weight: bold;
-`;

@@ -16,22 +16,53 @@ import { HomePage } from './pages/ReimbursementsPage/Loadable';
 import { NotFoundPage } from './components/NotFoundPage/Loadable';
 import { useTranslation } from 'react-i18next';
 import { LoginPage } from './pages/LoginPage/Loadable';
-import { createTheme, ThemeProvider } from '@mui/material/styles';
-import Background from '../shapes-background.png';
+import LightBackground from '../shapes-background.png';
+import DarkBackground from '../shapes-background-dark.png';
 import styled from 'styled-components';
 import useToken from 'useToken';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { TopBar } from './components/TopBar';
 import { AttendancePage } from './pages/AttendancePage/Loadable';
 import { ProfilePage } from './pages/ProfilePage/Loadable';
 import { ForumPage } from './pages/ForumPage/Loadable';
+import { createTheme, ThemeProvider } from '@mui/material';
+import createPalette from '@mui/material/styles/createPalette';
 
 export function App() {
   const { i18n } = useTranslation();
 
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(
+    localStorage.getItem('isDarkMode') === 'true',
+  );
+
+  useEffect(() => {
+    localStorage.setItem('isDarkMode', isDarkMode.toString());
+  }, [isDarkMode]);
+
+  const palette = createPalette({
+    mode: isDarkMode ? 'dark' : 'light',
+  });
+
   const theme = createTheme({
+    palette: palette,
     typography: {
       fontFamily: ['"DM Sans"'].join(','),
+    },
+    components: {
+      MuiButton: {
+        styleOverrides: {
+          // Name of the slot
+          root: {
+            // Some CSS
+            backgroundColor: 'transparent',
+            color: 'rgb(255, 138, 0)',
+            fontWeight: 'bold',
+            '&:hover': {
+              backgroundColor: 'transparent',
+            },
+          },
+        },
+      },
     },
   });
 
@@ -49,7 +80,14 @@ export function App() {
         >
           <meta name="description" content="PlexTech Member Portal" />
         </Helmet>
-        <Div>
+        <Div
+          style={{
+            backgroundImage:
+              theme.palette.mode === 'dark'
+                ? `url(${DarkBackground})`
+                : `url(${LightBackground})`,
+          }}
+        >
           {(!token && token !== '' && token !== undefined) ||
           token === 'undefined' ||
           token?.charAt(0) === 'ƒ' ? (
@@ -61,6 +99,8 @@ export function App() {
                 setOpen={setOpen}
                 token={token}
                 removeToken={removeToken}
+                isDarkMode={isDarkMode}
+                setIsDarkMode={setIsDarkMode}
               />
               <Routes>
                 <Route
@@ -97,7 +137,6 @@ export function App() {
 }
 
 const Div = styled.div`
-  background-image: url(${Background});
   background-repeat: repeat;
   min-height: 100vh;
   padding-bottom: 24px;
