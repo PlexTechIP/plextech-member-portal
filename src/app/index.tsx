@@ -58,7 +58,7 @@ export function App() {
             color: 'rgb(255, 138, 0)',
             fontWeight: 'bold',
             '&:hover': {
-              backgroundColor: 'transparent',
+              backgroundColor: palette.mode === 'dark' ? '#333333' : '#eeeeee',
             },
           },
         },

@@ -3,7 +3,7 @@
  * ForumPage
  *
  */
-import { Button, Modal, Stack } from '@mui/material';
+import { Button, Modal, Stack, useTheme } from '@mui/material';
 import { ErrorModal } from 'app/components/ErrorModal';
 import { ForumPostCard } from 'app/components/ForumPostCard';
 import dayjs from 'dayjs';
@@ -71,6 +71,8 @@ export function ForumPage(props: Props) {
     f();
   }, [props]);
 
+  const theme = useTheme();
+
   return (
     <>
       <Helmet>
@@ -91,7 +93,7 @@ export function ForumPage(props: Props) {
             startIcon={React.cloneElement(<AddIcon />)}
             fullWidth
             variant="contained"
-            style={{ backgroundColor: 'white', color: 'rgb(255, 138, 0)' }}
+            style={{ backgroundColor: theme.palette.background.default }}
           >
             Create Post
           </Button>

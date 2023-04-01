@@ -3,8 +3,7 @@
  * ErrorModal
  *
  */
-import { IconButton } from '@material-ui/core';
-import { Modal, Stack, Paper } from '@mui/material';
+import { Modal, Stack, Paper, IconButton } from '@mui/material';
 import * as React from 'react';
 import { styled as muiStyled } from '@mui/system';
 import styled from 'styled-components/macro';
