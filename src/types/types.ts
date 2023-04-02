@@ -53,7 +53,6 @@ export interface SignUpData {
   lastName: string;
   email: string;
   password: string;
-  venmo: string;
   google?: boolean;
   teams: string[];
 }
@@ -64,13 +63,20 @@ export interface LoginData {
   google: boolean;
 }
 
+export interface VenmoProfile {
+  display_name: string;
+  profile_picture_url: string;
+  username: string;
+  id: string;
+}
+
 export interface User {
   email: string;
   _id: string;
   firstName: string;
   lastName: string;
   registered: boolean;
-  venmo: string;
+  venmo?: VenmoProfile;
   strikes: Dayjs[];
   tardies: Dayjs[];
   absences: Dayjs[];

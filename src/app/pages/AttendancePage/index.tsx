@@ -87,7 +87,7 @@ export function AttendancePage(props: Props) {
         );
       } catch (e: any) {
         setError({
-          errorMessage: e,
+          errorMessage: e.toString(),
         });
         console.error(e);
       }
@@ -146,7 +146,7 @@ export function AttendancePage(props: Props) {
       setAddUsers('');
     } catch (e: any) {
       setError({
-        errorMessage: e,
+        errorMessage: e.toString(),
       });
       console.error(e);
     }

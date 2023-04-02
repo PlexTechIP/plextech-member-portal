@@ -8,7 +8,7 @@ import * as React from 'react';
 import { styled as muiStyled } from '@mui/system';
 import styled from 'styled-components/macro';
 import RefreshIcon from '@mui/icons-material/Refresh';
-import ErrorImage from '../../../error.webp';
+import ErrorImage from '../../../error.png';
 import { Error } from 'types/types';
 
 interface Props {
@@ -16,12 +16,10 @@ interface Props {
   error: Error;
 }
 
-const onRefresh = () => {
-  window.location.reload();
-};
-
 export function ErrorModal(props: Props) {
-  const { errorCode, errorMessage } = props.error;
+  const onRefresh = () => {
+    window.location.reload();
+  };
 
   return (
     <StyledModal open={props.open}>
@@ -33,7 +31,8 @@ export function ErrorModal(props: Props) {
             justifyContent="space-between"
           >
             <H1>
-              Error{errorCode && ` ${errorCode}`}: {errorMessage}
+              Error{props.error.errorCode && ` ${props.error.errorCode}`}:{' '}
+              {props.error.errorMessage}
             </H1>
             <IconButton onClick={onRefresh}>
               <RefreshIcon />

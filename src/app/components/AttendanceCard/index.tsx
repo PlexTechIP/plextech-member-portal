@@ -106,11 +106,11 @@ export function AttendanceCard(props: Props) {
 }
 
 const StyledCard = muiStyled(Card)`
-  padding: 32px;
+  padding: 48px;
   text-align: left;
   display: flex;
   flex-direction: column;
-  border-radius: 16px;
+  border-radius: 32px;
   width: max-content;  
 `;
 

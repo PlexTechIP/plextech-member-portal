@@ -63,7 +63,7 @@ export function ForumPage(props: Props) {
         );
       } catch (e: any) {
         setError({
-          errorMessage: e,
+          errorMessage: e.toString(),
         });
         console.error(e);
       }

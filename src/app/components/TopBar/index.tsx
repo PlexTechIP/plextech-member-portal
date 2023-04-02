@@ -55,6 +55,8 @@ page =
   page.charAt(0).toUpperCase() +
   (page.indexOf('?') === -1 ? page.slice(1) : page.slice(1, page.indexOf('?')));
 
+if (page === '?') page = '';
+
 export function TopBar(props: Props) {
   const [isTreasurer, setIsTreasurer] = useState<boolean>(false);
 

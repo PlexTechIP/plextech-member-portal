@@ -18,6 +18,7 @@ import {
   Paper,
   TextField,
   CircularProgress,
+  useTheme,
 } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
@@ -48,6 +49,8 @@ export function LoginPage(props: Props) {
   const [forgotPassword, setForgotPassword] = useState<boolean>(false);
   const [googleResponse, setGoogleResponse] = useState<any>({});
 
+  const theme = useTheme();
+
   useEffect(() => {
     google.accounts.id.initialize({
       client_id: process.env.REACT_APP_GOOGLE_CLIENT_ID,
@@ -55,7 +58,7 @@ export function LoginPage(props: Props) {
     });
 
     google.accounts.id.renderButton(document.getElementById('google-signin'), {
-      theme: 'outline',
+      theme: theme.palette.mode === 'dark' ? 'filled_black' : 'outline',
       size: 'large',
     });
   }, [showSignUp]);
@@ -160,7 +163,7 @@ export function LoginPage(props: Props) {
     } catch (e: any) {
       console.error(e);
       setError({
-        errorMessage: e,
+        errorMessage: e.toString(),
       });
     }
   };

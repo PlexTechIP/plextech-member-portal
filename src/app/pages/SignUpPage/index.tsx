@@ -51,7 +51,6 @@ export function SignUpPage(props: Props) {
     lastName: '',
     email: '',
     password: '',
-    venmo: '',
     teams: [],
   });
   const [error, setError] = useState<Error>();
@@ -129,24 +128,16 @@ export function SignUpPage(props: Props) {
     }));
   };
 
-  const onVenmoChange = ({ target }) => {
-    setFormData((prevState: SignUpData) => ({
-      ...prevState,
-      venmo: target.value,
-    }));
-  };
-
   const onSubmit = async (event: any) => {
     if (event.preventDefault) {
       event.preventDefault();
     }
     if (
-      formData.venmo === '' ||
-      (!formData.google &&
-        (formData.firstName === '' ||
-          formData.lastName === '' ||
-          formData.email === '' ||
-          formData.password.length < 8))
+      !formData.google &&
+      (formData.firstName === '' ||
+        formData.lastName === '' ||
+        formData.email === '' ||
+        formData.password.length < 8)
     ) {
       setSubmitted(true);
       return;
@@ -187,7 +178,7 @@ export function SignUpPage(props: Props) {
     } catch (e: any) {
       console.error(e);
       setError({
-        errorMessage: e,
+        errorMessage: e.toString(),
       });
     }
   };
@@ -230,20 +221,6 @@ export function SignUpPage(props: Props) {
                 </StyledStack>
                 <H1>Sign Up</H1>
                 {formData.google && <p>Signed in with Google.</p>}
-                <StyledStack>
-                  <p>Venmo Username</p>
-                  <TextField
-                    variant="outlined"
-                    required
-                    size="small"
-                    value={formData.venmo}
-                    onChange={onVenmoChange}
-                    error={submitted && formData.venmo === ''}
-                    helperText={
-                      submitted && formData.venmo === '' && 'Required'
-                    }
-                  />
-                </StyledStack>
                 <StyledStack>
                   <p>Project/Curriculum Team</p>
                   <Select

@@ -70,7 +70,7 @@ export default function Row(props: Props) {
       }
     } catch (e: any) {
       setError({
-        errorMessage: e,
+        errorMessage: e.toString(),
       });
       console.error(e);
     }
@@ -123,7 +123,7 @@ export default function Row(props: Props) {
       }
     } catch (e: any) {
       setError({
-        errorMessage: e,
+        errorMessage: e.toString(),
       });
       console.error(e);
     }
@@ -168,7 +168,7 @@ export default function Row(props: Props) {
       }
     } catch (e: any) {
       setError({
-        errorMessage: e,
+        errorMessage: e.toString(),
       });
       console.error(e);
     }

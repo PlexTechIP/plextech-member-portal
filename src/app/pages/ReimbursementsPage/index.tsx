@@ -78,7 +78,7 @@ export function HomePage(props: Props) {
         setIsLoading(false);
       } catch (e: any) {
         setError({
-          errorMessage: e,
+          errorMessage: e.toString(),
         });
         console.error(e);
         return;
@@ -184,6 +184,7 @@ export function HomePage(props: Props) {
               onRequest={onRequest}
               isTreasurer={isTreasurer}
               token={props.token}
+              userName={userName}
             />
           </StyledStack>
         </>

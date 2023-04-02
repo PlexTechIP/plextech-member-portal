@@ -95,7 +95,7 @@ export function PasswordResetPage(props: Props) {
     } catch (e: any) {
       console.error(e);
       setError({
-        errorMessage: e,
+        errorMessage: e.toString(),
       });
       return;
     }

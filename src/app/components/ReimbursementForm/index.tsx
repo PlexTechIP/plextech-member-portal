@@ -583,12 +583,21 @@ export function ReimbursementForm(props: Props) {
           <StyledStack direction="row" justifyContent="space-between">
             <Stack spacing={1} direction="row">
               {/* Submit Button */}
-              <Button variant="contained" onClick={onSubmit} type="submit">
+              <Button
+                variant="contained"
+                onClick={onSubmit}
+                type="submit"
+                disabled={!props.canEdit}
+              >
                 {isLoading ? <StyledCircularProgress size={20} /> : 'Submit'}
               </Button>
 
               {/* Reset Button */}
-              <Button variant="contained" onClick={handleReset}>
+              <Button
+                variant="contained"
+                onClick={handleReset}
+                disabled={!props.canEdit}
+              >
                 Reset
               </Button>
             </Stack>
