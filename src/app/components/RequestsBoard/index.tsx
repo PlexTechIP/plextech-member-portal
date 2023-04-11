@@ -247,8 +247,11 @@ export function RequestsBoard(props: Props) {
                         {...provided.droppableProps}
                       >
                         {props.requests &&
-                          props.requests[statusKey].map(
-                            (request: Request, index: number) => (
+                          props.requests[statusKey]
+                            .sort(
+                              (a: Request, b: Request) => b.amount - a.amount,
+                            )
+                            .map((request: Request, index: number) => (
                               <RequestCard
                                 token={props.token}
                                 request={request}
@@ -263,8 +266,7 @@ export function RequestsBoard(props: Props) {
                                     (jwt_decode(props.token!) as any).sub
                                 }
                               />
-                            ),
-                          )}
+                            ))}
                         {provided.placeholder}
                       </Stack>
                     )}

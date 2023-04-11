@@ -14,6 +14,7 @@ import styled from 'styled-components/macro';
 import { Error, Post } from 'types/types';
 import AddIcon from '@mui/icons-material/Add';
 import { ForumPostForm } from 'app/components/ForumPostForm';
+import jwt_decode from 'jwt-decode';
 
 interface Props {
   token: string | null;
@@ -24,6 +25,47 @@ export function ForumPage(props: Props) {
   const [error, setError] = useState<Error>();
   const [posts, setPosts] = useState<Post[]>([]);
   const [showForm, setShowForm] = useState<boolean>(false);
+
+  const onVote = async (param: {
+    removeFromDownvote: boolean;
+    removeFromUpvote: boolean;
+    addToDownvote: boolean;
+    addToUpvote: boolean;
+    postId: string;
+  }) => {
+    const url = `${process.env.REACT_APP_BACKEND_URL}/forum/`;
+    try {
+      const response = await fetch(url, {
+        method: 'PUT',
+        mode: 'cors',
+        cache: 'no-cache',
+        credentials: 'omit',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer ' + props.token,
+        },
+        redirect: 'follow',
+        referrerPolicy: 'no-referrer',
+        body: JSON.stringify(param),
+      });
+
+      if (response.status === 401 || response.status === 422) {
+        props.removeToken();
+        return;
+      } else if (!response.ok) {
+        setError({
+          errorCode: response.status,
+          errorMessage: response.statusText,
+        });
+        console.error(response);
+      }
+    } catch (e: any) {
+      setError({
+        errorMessage: e.toString(),
+      });
+      console.error(e);
+    }
+  };
 
   useEffect(() => {
     const f = async () => {
@@ -71,6 +113,37 @@ export function ForumPage(props: Props) {
     f();
   }, [props]);
 
+  const [isTreasurer, setIsTreasurer] = useState<boolean>(false);
+
+  useEffect(() => {
+    const f = async () => {
+      const url = `${process.env.REACT_APP_BACKEND_URL}/profile/`;
+      const response = await fetch(url, {
+        method: 'GET',
+        mode: 'cors',
+        cache: 'no-cache',
+        credentials: 'omit',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer ' + props.token,
+        },
+        redirect: 'follow',
+        referrerPolicy: 'no-referrer',
+      });
+
+      if (response.status === 401 || response.status === 422) {
+        props.removeToken();
+        return;
+      }
+
+      const res = await response.json();
+
+      setIsTreasurer(res.treasurer);
+    };
+
+    f();
+  }, [props, props.token]);
+
   const theme = useTheme();
 
   return (
@@ -97,9 +170,17 @@ export function ForumPage(props: Props) {
           >
             Create Post
           </Button>
-          {posts.map((post: Post) => (
-            <ForumPostCard key={post._id} post={post} />
-          ))}
+          {posts
+            .filter((post: Post) => !post.private || isTreasurer)
+            .map((post: Post) => (
+              <ForumPostCard
+                isTreasurer={isTreasurer}
+                key={post._id}
+                post={post}
+                userId={(jwt_decode(props.token!) as any).sub}
+                onVote={onVote}
+              />
+            ))}
         </Stack>
       </Div>
     </>

@@ -94,6 +94,8 @@ export interface Post {
   images: Image[];
   anonymous: boolean;
   private: boolean;
+  upvotes: string[];
+  downvotes: string[];
 }
 
 export interface Error {

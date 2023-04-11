@@ -11,11 +11,20 @@ import { Divider, IconButton, Modal, Paper, Stack } from '@mui/material';
 import { CommentForm } from '../CommentForm';
 import { useState } from 'react';
 import CloseIcon from '@mui/icons-material/Close';
+import { VotingButtons } from '../VotingButtons';
 
 interface Props {
   post: Post;
   open: boolean;
   onClose: () => void;
+  userId: string;
+  onVote: (param: {
+    removeFromDownvote: boolean;
+    removeFromUpvote: boolean;
+    addToDownvote: boolean;
+    addToUpvote: boolean;
+    postId: string;
+  }) => void;
 }
 
 export function PostModal(props: Props) {
@@ -37,18 +46,6 @@ export function PostModal(props: Props) {
                 <CloseIcon fontSize="large" />
               </IconButton>
             </StyledStack>
-            <StyledStack
-              direction="row"
-              justifyContent="space-between"
-              alignItems="center"
-            >
-              <P>
-                {post.anonymous
-                  ? 'Anonymous'
-                  : `${post.firstName} ${post.lastName}`}
-              </P>
-              <P>{post.date.format('MM/DD/YYYY')}</P>
-            </StyledStack>
           </Stack>
           <Divider />
           <P>{post.body}</P>
@@ -61,6 +58,23 @@ export function PostModal(props: Props) {
             }}
             message="Add Comment"
           />
+          <StyledStack
+            direction="row"
+            justifyContent="space-between"
+            alignItems="center"
+          >
+            <H4>
+              {props.post.anonymous
+                ? 'Anonymous'
+                : `${props.post.firstName} ${props.post.lastName}`}
+            </H4>
+            <H4>{post.date.format('MM/DD/YYYY')}</H4>
+            <VotingButtons
+              post={props.post}
+              onVote={props.onVote}
+              userId={props.userId}
+            />
+          </StyledStack>
         </Stack>
       </StyledPaper>
     </StyledModal>
@@ -97,5 +111,9 @@ const H1 = styled.h1`
 `;
 
 const P = styled.p`
+  margin: 0;
+`;
+
+const H4 = styled.h4`
   margin: 0;
 `;
