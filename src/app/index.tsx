@@ -28,6 +28,8 @@ import { ForumPage } from './pages/ForumPage/Loadable';
 import { createTheme, ThemeProvider } from '@mui/material';
 import createPalette from '@mui/material/styles/createPalette';
 
+import { Analytics } from '@vercel/analytics/react';
+
 export function App() {
   const { i18n } = useTranslation();
 
@@ -71,68 +73,73 @@ export function App() {
   const { token, removeToken, setToken } = useToken();
 
   return (
-    <ThemeProvider theme={theme}>
-      <BrowserRouter>
-        <Helmet
-          titleTemplate="%s - PlexTech Member Portal"
-          defaultTitle="PlexTech Member Portal"
-          htmlAttributes={{ lang: i18n.language }}
-        >
-          <meta name="description" content="PlexTech Member Portal" />
-        </Helmet>
-        <Div
-          style={{
-            backgroundImage:
-              theme.palette.mode === 'dark'
-                ? `url(${DarkBackground})`
-                : `url(${LightBackground})`,
-          }}
-        >
-          {(!token && token !== '' && token !== undefined) ||
-          token === 'undefined' ||
-          token?.charAt(0) === 'ƒ' ? (
-            <LoginPage setToken={setToken} token={token} />
-          ) : (
-            <>
-              <TopBar
-                open={open}
-                setOpen={setOpen}
-                token={token}
-                removeToken={removeToken}
-                isDarkMode={isDarkMode}
-                setIsDarkMode={setIsDarkMode}
-              />
-              <Routes>
-                <Route
-                  path="/"
-                  element={
-                    <ProfilePage token={token} removeToken={removeToken} />
-                  }
+    <>
+      <ThemeProvider theme={theme}>
+        <BrowserRouter>
+          <Helmet
+            titleTemplate="%s - PlexTech Member Portal"
+            defaultTitle="PlexTech Member Portal"
+            htmlAttributes={{ lang: i18n.language }}
+          >
+            <meta name="description" content="PlexTech Member Portal" />
+          </Helmet>
+          <Div
+            style={{
+              backgroundImage:
+                theme.palette.mode === 'dark'
+                  ? `url(${DarkBackground})`
+                  : `url(${LightBackground})`,
+            }}
+          >
+            {(!token && token !== '' && token !== undefined) ||
+            token === 'undefined' ||
+            token?.charAt(0) === 'ƒ' ? (
+              <LoginPage setToken={setToken} token={token} />
+            ) : (
+              <>
+                <TopBar
+                  open={open}
+                  setOpen={setOpen}
+                  token={token}
+                  removeToken={removeToken}
+                  isDarkMode={isDarkMode}
+                  setIsDarkMode={setIsDarkMode}
                 />
-                <Route
-                  path="/reimbursements"
-                  element={<HomePage token={token} removeToken={removeToken} />}
-                />
-                <Route
-                  path="/attendance"
-                  element={
-                    <AttendancePage token={token} removeToken={removeToken} />
-                  }
-                />
-                <Route
-                  path="/forum"
-                  element={
-                    <ForumPage token={token} removeToken={removeToken} />
-                  }
-                />
-                <Route path="*" element={<NotFoundPage />} />
-              </Routes>
-            </>
-          )}
-        </Div>
-        <GlobalStyle />
-      </BrowserRouter>
-    </ThemeProvider>
+                <Routes>
+                  <Route
+                    path="/"
+                    element={
+                      <ProfilePage token={token} removeToken={removeToken} />
+                    }
+                  />
+                  <Route
+                    path="/reimbursements"
+                    element={
+                      <HomePage token={token} removeToken={removeToken} />
+                    }
+                  />
+                  <Route
+                    path="/attendance"
+                    element={
+                      <AttendancePage token={token} removeToken={removeToken} />
+                    }
+                  />
+                  <Route
+                    path="/forum"
+                    element={
+                      <ForumPage token={token} removeToken={removeToken} />
+                    }
+                  />
+                  <Route path="*" element={<NotFoundPage />} />
+                </Routes>
+              </>
+            )}
+          </Div>
+          <GlobalStyle />
+        </BrowserRouter>
+      </ThemeProvider>
+      <Analytics />
+    </>
   );
 }
 
