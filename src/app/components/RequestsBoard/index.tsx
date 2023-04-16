@@ -82,7 +82,7 @@ export function RequestsBoard(props: Props) {
     if (
       destination === null ||
       destination.droppableId === source.droppableId ||
-      source.droppableId === 'approved' ||
+      // source.droppableId === 'approved' ||
       !props.isTreasurer
     ) {
       return;

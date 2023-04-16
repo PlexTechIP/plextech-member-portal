@@ -112,16 +112,13 @@ export function RequestCard(props: Props) {
                 <P>{props.request.firstName}</P>
               )}
               <Button
-                style={{ color: theme.palette.text.primary }}
+                style={{ color: theme.palette.text.primary, zIndex: 999 }}
                 size="small"
                 startIcon={React.cloneElement(
                   props.mine ? <EditIcon /> : <Visibility />,
                 )}
                 onClick={() => props.onEdit(props.mine)}
-                disabled={
-                  props.request.status === 'underReview' ||
-                  props.request.status === 'approved'
-                }
+                disabled={false}
               >
                 {props.mine ? 'Edit' : 'View'}
               </Button>
