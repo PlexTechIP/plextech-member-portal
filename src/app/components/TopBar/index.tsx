@@ -55,7 +55,7 @@ page =
   page.charAt(0).toUpperCase() +
   (page.indexOf('?') === -1 ? page.slice(1) : page.slice(1, page.indexOf('?')));
 
-if (page === '?') page = '';
+if (page === '?' || !(page in iconMap)) page = '';
 
 export function TopBar(props: Props) {
   const [isTreasurer, setIsTreasurer] = useState<boolean>(false);
@@ -111,7 +111,7 @@ export function TopBar(props: Props) {
           <Img src={PlexTechLogo} />
           <StyledStack direction="row" alignItems="center" spacing={1}>
             <StyledStack direction="row" justifyContent="space-between">
-              <A href="/">
+              <A href="/members">
                 <H1 style={{ color: theme.palette.text.primary }}>
                   PlexTech Member Portal
                 </H1>
@@ -148,7 +148,7 @@ export function TopBar(props: Props) {
                   .map((text: string) => (
                     <ListItem key={text}>
                       <ListItemButton
-                        href={`/${
+                        href={`/members/${
                           text !== 'Profile' ? text.toLowerCase() : ''
                         }`}
                       >
