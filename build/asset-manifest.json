@@ -1,0 +1,31 @@
+{
+  "files": {
+    "main.css": "/static/css/main.f51d5156.css",
+    "main.js": "/static/js/main.6234f262.js",
+    "static/js/953.f61d709b.chunk.js": "/static/js/953.f61d709b.chunk.js",
+    "static/js/129.fd40ef44.chunk.js": "/static/js/129.fd40ef44.chunk.js",
+    "static/js/964.1be871ea.chunk.js": "/static/js/964.1be871ea.chunk.js",
+    "static/js/211.20f0671b.chunk.js": "/static/js/211.20f0671b.chunk.js",
+    "static/js/377.38ac39fd.chunk.js": "/static/js/377.38ac39fd.chunk.js",
+    "static/js/770.76284b1e.chunk.js": "/static/js/770.76284b1e.chunk.js",
+    "static/js/27.4671a68d.chunk.js": "/static/js/27.4671a68d.chunk.js",
+    "static/js/10.aea27800.chunk.js": "/static/js/10.aea27800.chunk.js",
+    "static/js/12.57718a55.chunk.js": "/static/js/12.57718a55.chunk.js",
+    "static/js/7.e248894f.chunk.js": "/static/js/7.e248894f.chunk.js",
+    "static/js/898.2b8a9577.chunk.js": "/static/js/898.2b8a9577.chunk.js",
+    "static/js/292.837b18ab.chunk.js": "/static/js/292.837b18ab.chunk.js",
+    "static/js/101.caee0037.chunk.js": "/static/js/101.caee0037.chunk.js",
+    "static/js/332.d737952b.chunk.js": "/static/js/332.d737952b.chunk.js",
+    "static/js/981.67d58b24.chunk.js": "/static/js/981.67d58b24.chunk.js",
+    "static/js/29.70e995cf.chunk.js": "/static/js/29.70e995cf.chunk.js",
+    "static/media/PlexTechLogo.png": "/static/media/PlexTechLogo.3540a87a02bdb6d64e0a.png",
+    "static/media/error.png": "/static/media/error.062a662df0ebdd9a7227.png",
+    "static/media/shapes-background-dark.png": "/static/media/shapes-background-dark.ad8abcf3364d1e209520.png",
+    "static/media/shapes-background.png": "/static/media/shapes-background.03da34c10cfbbe45de27.png",
+    "index.html": "/index.html"
+  },
+  "entrypoints": [
+    "static/css/main.f51d5156.css",
+    "static/js/main.6234f262.js"
+  ]
+}
