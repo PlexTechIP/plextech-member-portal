@@ -72,7 +72,7 @@ export function App() {
 
   return (
     <ThemeProvider theme={theme}>
-      <BrowserRouter basename="/members">
+      <BrowserRouter>
         <Helmet
           titleTemplate="%s - PlexTech Member Portal"
           defaultTitle="PlexTech Member Portal"
