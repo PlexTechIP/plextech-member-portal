@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { Helmet } from 'react-helmet-async';
 import styled from 'styled-components';
-import { Stack, Modal, CircularProgress } from '@mui/material';
+import { Stack, Modal, CircularProgress, Button } from '@mui/material';
 import { RequestsBoard } from 'app/components/RequestsBoard';
 import { useEffect, useState } from 'react';
 import { ReimbursementForm } from 'app/components/ReimbursementForm';
@@ -9,6 +9,7 @@ import { AllRequests, Error, Request } from 'types/types';
 import { ErrorModal } from 'app/components/ErrorModal';
 import { styled as muiStyled } from '@mui/system';
 import dayjs from 'dayjs';
+import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 
 interface Props {
   token: string | null;
@@ -34,6 +35,21 @@ export function HomePage(props: Props) {
     firstName: string;
     lastName: string;
   }>({ firstName: '', lastName: '' });
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    const toggleVisibility = () => {
+      if (window.pageYOffset > 300) {
+        setIsVisible(true);
+      } else {
+        setIsVisible(false);
+      }
+    };
+
+    window.addEventListener('scroll', toggleVisibility);
+
+    return () => window.removeEventListener('scroll', toggleVisibility);
+  }, []);
 
   useEffect(() => {
     const f = async () => {
@@ -209,6 +225,27 @@ export function HomePage(props: Props) {
               userName={userName}
             />
           </StyledStack>
+          <StyledButton
+            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+            startIcon={<KeyboardArrowUpIcon />}
+            disableElevation
+            disableFocusRipple
+            disableRipple
+            TouchRippleProps={{ style: { display: 'none' } }}
+            sx={{
+              transform: `translateX(-50%) ${
+                isVisible ? 'translateY(0%)' : 'translateY(100%)'
+              }`,
+              transition: isVisible
+                ? 'transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)'
+                : 'transform 0.3s cubic-bezier(0.6, -0.28, 0.735, 0.045)',
+              '&:hover': {
+                background: 'transparent',
+              },
+            }}
+          >
+            Back to Top
+          </StyledButton>
         </>
       )}
     </>
@@ -221,6 +258,14 @@ const StyledStack = styled(Stack)`
   padding-top: 24px;
   padding-left: 48px;
   padding-right: 48px;
+`;
+
+const StyledButton = muiStyled(Button)`
+  position: fixed;
+  bottom: 8px;
+  margin: auto;
+  left: 50%;
+  transition: transform 0.3s ease-in-out;
 `;
 
 const StyledModal = styled(Modal)`
