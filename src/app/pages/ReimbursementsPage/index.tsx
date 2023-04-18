@@ -8,6 +8,7 @@ import { ReimbursementForm } from 'app/components/ReimbursementForm';
 import { AllRequests, Error, Request } from 'types/types';
 import { ErrorModal } from 'app/components/ErrorModal';
 import { styled as muiStyled } from '@mui/system';
+import dayjs from 'dayjs';
 
 interface Props {
   token: string | null;
@@ -74,7 +75,28 @@ export function HomePage(props: Props) {
         delete res.teams;
         delete res.firstName;
         delete res.lastName;
-        setRequests(res);
+        setRequests({
+          pendingReview: res.pendingReview.map((request: Request) => ({
+            ...request,
+            date: dayjs(request.date),
+          })),
+          underReview: res.underReview.map((request: Request) => ({
+            ...request,
+            date: dayjs(request.date),
+          })),
+          errors: res.errors.map((request: Request) => ({
+            ...request,
+            date: dayjs(request.date),
+          })),
+          declined: res.declined.map((request: Request) => ({
+            ...request,
+            date: dayjs(request.date),
+          })),
+          approved: res.approved.map((request: Request) => ({
+            ...request,
+            date: dayjs(request.date),
+          })),
+        });
         setIsLoading(false);
       } catch (e: any) {
         setError({

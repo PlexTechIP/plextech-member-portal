@@ -409,7 +409,7 @@ export function ReimbursementForm(props: Props) {
             <DeleteIcon fontSize="large" />
           </IconButton>
         ) : (
-          <P>* = required</P>
+          <P>*required</P>
         )}
       </StyledStack>
       <form>
@@ -498,40 +498,50 @@ export function ReimbursementForm(props: Props) {
 
           {/* Receipt Upload */}
           <Stack spacing={1} alignItems="flex-start">
-            {props.canEdit ? (
-              <Button
-                variant="contained"
-                component="label"
-                style={{
-                  color:
-                    submitted && formData.images.length === 0
-                      ? 'red'
-                      : 'rgb(255, 138, 0)',
-                }}
-                startIcon={React.cloneElement(<ImageIcon />)}
-              >
-                {imageLoading ? (
-                  <StyledCircularProgress size={20} />
-                ) : (
-                  'Upload Receipt(s) *'
-                )}
-                <input
-                  accept="image/*,application/pdf"
-                  onChange={handleFileUpload}
-                  type="file"
-                  multiple
-                  hidden
-                />
-              </Button>
-            ) : (
-              <Button
-                variant="contained"
-                startIcon={React.cloneElement(<ImageIcon />)}
-                onClick={openImageModal}
-              >
-                Receipt(s)
-              </Button>
-            )}
+            <Stack direction="row" alignItems="center" spacing={3}>
+              {props.canEdit ? (
+                <Button
+                  variant="contained"
+                  component="label"
+                  style={{
+                    color:
+                      submitted && formData.images.length === 0
+                        ? 'red'
+                        : 'rgb(255, 138, 0)',
+                  }}
+                  startIcon={React.cloneElement(<ImageIcon />)}
+                >
+                  {imageLoading ? (
+                    <StyledCircularProgress size={20} />
+                  ) : (
+                    'Upload Receipt(s) *'
+                  )}
+                  <input
+                    accept="image/*,application/pdf"
+                    onChange={handleFileUpload}
+                    type="file"
+                    multiple
+                    hidden
+                  />
+                </Button>
+              ) : (
+                <Button
+                  variant="contained"
+                  startIcon={React.cloneElement(<ImageIcon />)}
+                  onClick={openImageModal}
+                >
+                  Receipt(s)
+                </Button>
+              )}
+              {
+                <p>
+                  Submitted{' '}
+                  {props.request
+                    ? props.request.date.format('MM/DD/YYYY')
+                    : dayjs().format('MM/DD/YYYY')}
+                </p>
+              }
+            </Stack>
             <Divider />
             {props.canEdit &&
               [...images, ...formData.images].map(
