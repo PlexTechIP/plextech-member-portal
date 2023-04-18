@@ -36,6 +36,8 @@ import dayjs from 'dayjs';
 import jwt_decode from 'jwt-decode';
 import { CommentCard } from '../CommentCard';
 import { CommentForm } from '../CommentForm';
+import { apiRequest } from 'utils/apiRequest';
+import { Error } from '../../../types/types';
 
 interface Props {
   teams: string[];
@@ -43,7 +45,7 @@ interface Props {
   onClose: () => void;
   request: Request | null;
   onSubmit: (newRequest: Request, remove?: boolean) => void;
-  onError: (response: Response | { status: null; statusText: string }) => void;
+  onError: (error: Error) => void;
   token: string | null;
   canEdit: boolean;
   userName: { firstName: string; lastName: string };
@@ -77,27 +79,22 @@ export function ReimbursementForm(props: Props) {
     }
     const f = async () => {
       setImagesLoading(true);
-      const url = `${process.env.REACT_APP_BACKEND_URL}/requests/`;
-      const response = await fetch(url, {
-        method: 'PUT',
-        mode: 'cors',
-        cache: 'no-cache',
-        credentials: 'omit',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: 'Bearer ' + props.token,
-        },
-        redirect: 'follow',
-        referrerPolicy: 'no-referrer',
-        body: JSON.stringify({
+      const [success, res] = await apiRequest(
+        '/requests/',
+        'PUT',
+        props.token,
+        undefined,
+        {
           comment: true,
           request_id: props.request ? props.request._id : null,
-        }),
-      });
-      const res = await response.json();
-      if (!response.ok) {
-        props.onError(response);
+        },
+      );
+
+      if (!success) {
+        props.onError(res.error);
+        return;
       }
+
       setImagesLoading(false);
       setFormData({
         ...props.request!,
@@ -174,8 +171,7 @@ export function ReimbursementForm(props: Props) {
         },
         error(err) {
           props.onError({
-            status: null,
-            statusText: 'Image compression failed',
+            errorMessage: 'Image compression failed',
           });
         },
       });
@@ -189,21 +185,9 @@ export function ReimbursementForm(props: Props) {
 
   const onDelete = async () => {
     setDeleteModal(false);
-    const url = `${process.env.REACT_APP_BACKEND_URL}/requests/`;
-    await fetch(url, {
-      method: 'DELETE',
-      mode: 'cors',
-      cache: 'no-cache',
-      credentials: 'omit',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: 'Bearer ' + props.token,
-      },
-      redirect: 'follow',
-      referrerPolicy: 'no-referrer',
-      body: JSON.stringify({ _id: props.request!._id }),
+    apiRequest('/requests/', 'DELETE', props.token, undefined, {
+      _id: props.request!._id,
     });
-
     props.onClose();
     props.onSubmit(props.request!, true);
   };
@@ -265,31 +249,23 @@ export function ReimbursementForm(props: Props) {
       amount: parseFloat(formData.amount),
     };
 
-    const url = `${process.env.REACT_APP_BACKEND_URL}/requests/`;
-    const response = await fetch(url, {
-      method: props.request ? 'PUT' : 'POST',
-      mode: 'cors',
-      cache: 'no-cache',
-      credentials: 'omit',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: 'Bearer ' + props.token,
-      },
-      redirect: 'follow',
-      referrerPolicy: 'no-referrer',
-      body: JSON.stringify({
+    const [success, res] = await apiRequest(
+      '/requests/',
+      props.request ? 'PUT' : 'POST',
+      props.token,
+      undefined,
+      {
         ...bodyData,
         date: dayjs(),
         ...props.userName,
         request_id: props.request ? props.request._id : null,
-      }),
-    });
+      },
+    );
 
-    if (!response.ok) {
-      props.onError(response);
+    if (!success) {
+      props.onError(res.error);
+      return;
     }
-
-    const res = await response.json();
 
     handleReset();
     setSubmitted(false);
@@ -327,22 +303,9 @@ export function ReimbursementForm(props: Props) {
     };
     formData.comments.push(commentObj);
     if (props.request) {
-      const url = `${process.env.REACT_APP_BACKEND_URL}/requests/`;
-      await fetch(url, {
-        method: 'POST',
-        mode: 'cors',
-        cache: 'no-cache',
-        credentials: 'omit',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: 'Bearer ' + props.token,
-        },
-        redirect: 'follow',
-        referrerPolicy: 'no-referrer',
-        body: JSON.stringify({
-          comment: commentObj,
-          request_id: props.request!._id,
-        }),
+      apiRequest('/requests/', 'POST', props.token, undefined, {
+        comment: commentObj,
+        request_id: props.request!._id,
       });
     }
     setComment('');
@@ -356,27 +319,18 @@ export function ReimbursementForm(props: Props) {
   };
 
   const loadImages = async () => {
-    const url = `${process.env.REACT_APP_BACKEND_URL}/requests/`;
-    const response = await fetch(url, {
-      method: 'PUT',
-      mode: 'cors',
-      cache: 'no-cache',
-      credentials: 'omit',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: 'Bearer ' + props.token,
-      },
-      redirect: 'follow',
-      referrerPolicy: 'no-referrer',
-      body: JSON.stringify({
+    const [success, res] = await apiRequest(
+      '/requests/',
+      'PUT',
+      props.token,
+      undefined,
+      {
         images: true,
         request_id: props.request?._id,
-      }),
-    });
-    const res = await response.json();
-
-    if (!response.ok) {
-      props.onError(response);
+      },
+    );
+    if (!success) {
+      props.onError(res.error);
       return;
     }
     setImages(res.images);

@@ -19,6 +19,7 @@ import { styled as muiStyled } from '@mui/system';
 import PlexTechLogo from '../../../PlexTechLogo.png';
 import { NewPasswordPage } from '../NewPasswordPage/Loadable';
 import { Error } from 'types/types';
+import { apiRequest } from 'utils/apiRequest';
 
 interface Props {
   onBack: () => void;
@@ -48,57 +49,38 @@ export function PasswordResetPage(props: Props) {
     }
     setLoading(true);
 
-    const url = `${process.env.REACT_APP_BACKEND_URL}/users/`;
+    const [success, res] = await apiRequest(
+      '/users/',
+      'POST',
+      props.token!.substring(1, props.token!.length),
+      undefined,
+      {
+        email: props.email,
+        code,
+        method: 'checkResetPasswordCode',
+      },
+    );
 
-    try {
-      const response = await fetch(url, {
-        method: 'POST',
-        mode: 'cors',
-        cache: 'no-cache',
-        credentials: 'omit',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        redirect: 'follow',
-        referrerPolicy: 'no-referrer',
-        body: JSON.stringify({
-          email: props.email,
-          code,
-          method: 'checkResetPasswordCode',
-        }),
-      });
-      setLoading(false);
+    setLoading(false);
 
-      if (!response.ok) {
-        if (response.status === 401) {
-          setIncorrect(true);
-          return;
-        }
-        if (response.status === 498) {
-          setExpired(true);
-          return;
-        }
-        console.error(response);
-        setError({
-          errorCode: response.status,
-          errorMessage: response.statusText,
-        });
+    if (!success) {
+      if (res.error.errorCode === 401) {
+        setIncorrect(true);
         return;
       }
-      const res = await response.json();
-
-      props.setToken('ƒ' + res.access_token);
-      setSuccess(true);
-      setExpired(false);
-      setIncorrect(false);
-      setSubmitted(false);
-    } catch (e: any) {
-      console.error(e);
-      setError({
-        errorMessage: e.toString(),
-      });
+      if (res.error.errorCode === 498) {
+        setExpired(true);
+        return;
+      }
+      setError(res.error);
       return;
     }
+
+    props.setToken('ƒ' + res.access_token);
+    setSuccess(true);
+    setExpired(false);
+    setIncorrect(false);
+    setSubmitted(false);
   };
 
   if (success) {

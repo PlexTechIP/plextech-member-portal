@@ -31,6 +31,7 @@ import LogoutIcon from '@mui/icons-material/Logout';
 import { useEffect, useState } from 'react';
 import Brightness4 from '@mui/icons-material/Brightness4';
 import Brightness7 from '@mui/icons-material/Brightness7';
+import { apiRequest } from 'utils/apiRequest';
 
 interface Props {
   open: boolean;
@@ -62,27 +63,12 @@ export function TopBar(props: Props) {
 
   useEffect(() => {
     const f = async () => {
-      const url = `${process.env.REACT_APP_BACKEND_URL}/profile/`;
-      const response = await fetch(url, {
-        method: 'GET',
-        mode: 'cors',
-        cache: 'no-cache',
-        credentials: 'omit',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: 'Bearer ' + props.token,
-        },
-        redirect: 'follow',
-        referrerPolicy: 'no-referrer',
-      });
-
-      if (response.status === 401 || response.status === 422) {
-        props.removeToken();
-        return;
-      }
-
-      const res = await response.json();
-
+      const [, res] = await apiRequest(
+        '/profile/',
+        'GET',
+        props.token,
+        props.removeToken,
+      );
       setIsTreasurer(res.treasurer);
     };
 

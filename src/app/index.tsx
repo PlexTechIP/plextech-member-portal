@@ -130,6 +130,12 @@ export function App() {
                       <ForumPage token={token} removeToken={removeToken} />
                     }
                   />
+                  <Route
+                    path="/scan/:attendanceCode"
+                    element={
+                      <AttendancePage token={token} removeToken={removeToken} />
+                    }
+                  />
                   <Route path="*" element={<NotFoundPage />} />
                 </Routes>
               </>

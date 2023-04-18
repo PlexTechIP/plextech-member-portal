@@ -21,6 +21,7 @@ import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { ErrorModal } from 'app/components/ErrorModal';
 import { Helmet } from 'react-helmet-async';
 import { Error } from 'types/types';
+import { apiRequest } from 'utils/apiRequest';
 
 interface Props {
   setToken: (newToken: string) => void;
@@ -50,38 +51,21 @@ export function NewPasswordPage(props: Props) {
     }
     setLoading(true);
 
-    try {
-      const url = `${process.env.REACT_APP_BACKEND_URL}/profile/`;
-      const response = await fetch(url, {
-        method: 'PUT',
-        mode: 'cors',
-        cache: 'no-cache',
-        credentials: 'omit',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization:
-            'Bearer ' + props.token!.substring(1, props.token!.length),
-        },
-        redirect: 'follow',
-        referrerPolicy: 'no-referrer',
-        body: JSON.stringify({ password }),
-      });
-      setLoading(false);
+    const [success, res] = await apiRequest(
+      '/profile/',
+      'PUT',
+      props.token!.substring(1, props.token!.length),
+      undefined,
+      { password },
+    );
 
-      if (!response.ok) {
-        setError({
-          errorCode: response.status,
-          errorMessage: response.statusText,
-        });
-      }
-      props.setToken(props.token!.substring(1, props.token!.length));
-      setSubmitted(false);
-    } catch (e: any) {
-      console.error(e);
-      setError({
-        errorMessage: e.toString(),
-      });
+    setLoading(false);
+
+    if (!success) {
+      setError(res.error);
     }
+    props.setToken(props.token!.substring(1, props.token!.length));
+    setSubmitted(false);
   };
 
   return (

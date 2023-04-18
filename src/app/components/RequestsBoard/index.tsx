@@ -3,7 +3,7 @@
  * RequestsBoard
  *
  */
-import { Stack, Paper, Button, Divider } from '@mui/material';
+import { Stack, Paper, Button } from '@mui/material';
 import * as React from 'react';
 import styled from 'styled-components/macro';
 import { styled as muiStyled } from '@mui/system';
@@ -15,6 +15,7 @@ import jwt_decode from 'jwt-decode';
 import { useEffect, useState } from 'react';
 import { ErrorModal } from '../ErrorModal';
 import { ApproveModal } from './ApproveModal';
+import { apiRequest } from 'utils/apiRequest';
 
 interface Props {
   requests: AllRequests | null;
@@ -115,76 +116,36 @@ export function RequestsBoard(props: Props) {
         prevState[destination.droppableId] + request.amount,
     }));
 
-    try {
-      const url = `${process.env.REACT_APP_BACKEND_URL}/approval/${request._id}/`;
-      const response = await fetch(url, {
-        method: 'PUT',
-        mode: 'cors',
-        cache: 'no-cache',
-        credentials: 'omit',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: 'Bearer ' + props.token,
-        },
-        redirect: 'follow',
-        referrerPolicy: 'no-referrer',
-        body: JSON.stringify({ status: destination.droppableId, comments: [] }),
-      });
+    const [success, res] = await apiRequest(
+      `/approval/${request._id}/`,
+      'PUT',
+      props.token,
+      undefined,
+      { status: destination.droppableId, comments: [] },
+    );
 
-      if (!response.ok) {
-        setError({
-          errorCode: response.status,
-          errorMessage: response.statusText,
-        });
-        console.error(response);
-      }
-    } catch (e: any) {
-      console.error(e);
-      setError({
-        errorMessage: e.toString(),
-      });
+    if (!success) {
+      setError(res.error);
+      return;
     }
   };
 
   const onApprove = async (comments: Comment[], amount: number) => {
-    try {
-      const url = `${process.env.REACT_APP_BACKEND_URL}/approval/${approveId}/`;
-      const response = await fetch(url, {
-        method: 'PUT',
-        mode: 'cors',
-        cache: 'no-cache',
-        credentials: 'omit',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: 'Bearer ' + props.token,
-        },
-        redirect: 'follow',
-        referrerPolicy: 'no-referrer',
-        body: JSON.stringify({
-          status: 'approved',
-          comments: comments,
-          amount: amount,
-        }),
-      });
+    const [success, res] = await apiRequest(
+      `/approval/${approveId}/`,
+      'PUT',
+      props.token,
+      undefined,
+      {
+        status: 'approved',
+        comments: comments,
+        amount: amount,
+      },
+    );
 
-      if (response.status === 407) {
-        setError({
-          errorMessage: 'No Venmo ID found.',
-        });
-      }
-
-      if (!response.ok) {
-        setError({
-          errorCode: response.status,
-          errorMessage: response.statusText,
-        });
-        console.error(response);
-      }
-    } catch (e: any) {
-      console.error(e);
-      setError({
-        errorMessage: e.toString(),
-      });
+    if (!success) {
+      setError(res.error);
+      return;
     }
 
     const request: Request = props.requests![sourceStatus].splice(
