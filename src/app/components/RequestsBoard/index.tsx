@@ -180,12 +180,14 @@ export function RequestsBoard(props: Props) {
             errorMessage: response.statusText,
           });
           console.error(response);
+          return;
         }
       } catch (e: any) {
         console.error(e);
         setError({
           errorMessage: e.toString(),
         });
+        return;
       }
     }
 
