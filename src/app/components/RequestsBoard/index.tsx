@@ -147,44 +147,46 @@ export function RequestsBoard(props: Props) {
   };
 
   const onApprove = async (comments: Comment[], amount: number) => {
-    try {
-      const url = `${process.env.REACT_APP_BACKEND_URL}/approval/${approveId}/`;
-      const response = await fetch(url, {
-        method: 'PUT',
-        mode: 'cors',
-        cache: 'no-cache',
-        credentials: 'omit',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: 'Bearer ' + props.token,
-        },
-        redirect: 'follow',
-        referrerPolicy: 'no-referrer',
-        body: JSON.stringify({
-          status: 'approved',
-          comments: comments,
-          amount: amount,
-        }),
-      });
+    if (amount > 0) {
+      try {
+        const url = `${process.env.REACT_APP_BACKEND_URL}/approval/${approveId}/`;
+        const response = await fetch(url, {
+          method: 'PUT',
+          mode: 'cors',
+          cache: 'no-cache',
+          credentials: 'omit',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: 'Bearer ' + props.token,
+          },
+          redirect: 'follow',
+          referrerPolicy: 'no-referrer',
+          body: JSON.stringify({
+            status: 'approved',
+            comments: comments,
+            amount: amount,
+          }),
+        });
 
-      if (response.status === 407) {
+        if (response.status === 407) {
+          setError({
+            errorMessage: 'No Venmo ID found.',
+          });
+        }
+
+        if (!response.ok) {
+          setError({
+            errorCode: response.status,
+            errorMessage: response.statusText,
+          });
+          console.error(response);
+        }
+      } catch (e: any) {
+        console.error(e);
         setError({
-          errorMessage: 'No Venmo ID found.',
+          errorMessage: e.toString(),
         });
       }
-
-      if (!response.ok) {
-        setError({
-          errorCode: response.status,
-          errorMessage: response.statusText,
-        });
-        console.error(response);
-      }
-    } catch (e: any) {
-      console.error(e);
-      setError({
-        errorMessage: e.toString(),
-      });
     }
 
     const request: Request = props.requests![sourceStatus].splice(
