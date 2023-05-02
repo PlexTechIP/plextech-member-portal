@@ -131,21 +131,23 @@ export function RequestsBoard(props: Props) {
   };
 
   const onApprove = async (comments: Comment[], amount: number) => {
-    const [success, res] = await apiRequest(
-      `/approval/${approveId}/`,
-      'PUT',
-      props.token,
-      undefined,
-      {
-        status: 'approved',
-        comments: comments,
-        amount: amount,
-      },
-    );
+    if (amount > 0) {
+      const [success, res] = await apiRequest(
+        `/approval/${approveId}/`,
+        'PUT',
+        props.token,
+        undefined,
+        {
+          status: 'approved',
+          comments: comments,
+          amount: amount,
+        },
+      );
 
-    if (!success) {
-      setError(res.error);
-      return;
+      if (!success) {
+        setError(res.error);
+        return;
+      }
     }
 
     const request: Request = props.requests![sourceStatus].splice(

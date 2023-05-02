@@ -44,8 +44,6 @@ export function AttendancePage(props: Props) {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<Error>();
 
-  const { attendanceCode } = useParams();
-
   useEffect(() => {
     const f = async () => {
       setIsLoading(true);
