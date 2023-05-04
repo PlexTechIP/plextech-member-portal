@@ -3,7 +3,7 @@
  * RequestsBoard
  *
  */
-import { Stack, Paper, Button, Divider } from '@mui/material';
+import { Stack, Paper, Button } from '@mui/material';
 import * as React from 'react';
 import styled from 'styled-components/macro';
 import { styled as muiStyled } from '@mui/system';
@@ -147,48 +147,46 @@ export function RequestsBoard(props: Props) {
   };
 
   const onApprove = async (comments: Comment[], amount: number) => {
-    if (amount > 0) {
-      try {
-        const url = `${process.env.REACT_APP_BACKEND_URL}/approval/${approveId}/`;
-        const response = await fetch(url, {
-          method: 'PUT',
-          mode: 'cors',
-          cache: 'no-cache',
-          credentials: 'omit',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: 'Bearer ' + props.token,
-          },
-          redirect: 'follow',
-          referrerPolicy: 'no-referrer',
-          body: JSON.stringify({
-            status: 'approved',
-            comments: comments,
-            amount: amount,
-          }),
-        });
+    try {
+      const url = `${process.env.REACT_APP_BACKEND_URL}/approval/${approveId}/`;
+      const response = await fetch(url, {
+        method: 'PUT',
+        mode: 'cors',
+        cache: 'no-cache',
+        credentials: 'omit',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer ' + props.token,
+        },
+        redirect: 'follow',
+        referrerPolicy: 'no-referrer',
+        body: JSON.stringify({
+          status: 'approved',
+          comments: comments,
+          amount: amount,
+        }),
+      });
 
-        if (response.status === 407) {
-          setError({
-            errorMessage: 'No Venmo ID found.',
-          });
-        }
-
-        if (!response.ok) {
-          setError({
-            errorCode: response.status,
-            errorMessage: response.statusText,
-          });
-          console.error(response);
-          return;
-        }
-      } catch (e: any) {
-        console.error(e);
+      if (response.status === 407) {
         setError({
-          errorMessage: e.toString(),
+          errorMessage: 'No Venmo ID found.',
         });
+      }
+
+      if (!response.ok) {
+        setError({
+          errorCode: response.status,
+          errorMessage: response.statusText,
+        });
+        console.error(response);
         return;
       }
+    } catch (e: any) {
+      console.error(e);
+      setError({
+        errorMessage: e.toString(),
+      });
+      return;
     }
 
     const request: Request = props.requests![sourceStatus].splice(
