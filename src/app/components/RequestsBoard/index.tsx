@@ -25,20 +25,14 @@ interface Props {
   userName: { firstName: string; lastName: string };
 }
 
-const statuses = [
-  'pendingReview',
-  'underReview',
-  'errors',
-  'approved',
-  'declined',
-];
+const statuses = ['pendingReview', 'underReview', 'errors', 'approved', 'paid'];
 
 interface Sums {
   pendingReview: number;
   underReview: number;
   errors: number;
   approved: number;
-  declined: number;
+  paid: number;
 }
 
 export function RequestsBoard(props: Props) {
@@ -47,7 +41,7 @@ export function RequestsBoard(props: Props) {
     underReview: 0,
     errors: 0,
     approved: 0,
-    declined: 0,
+    paid: 0,
   });
   const [error, setError] = useState<Error>();
   const [showApproveModal, setShowApproveModal] = useState<boolean>(false);
@@ -63,7 +57,7 @@ export function RequestsBoard(props: Props) {
       underReview: 0,
       errors: 0,
       approved: 0,
-      declined: 0,
+      paid: 0,
     };
     if (props.requests) {
       statuses.forEach((statusKey: string) => {
