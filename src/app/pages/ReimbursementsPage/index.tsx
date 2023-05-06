@@ -23,7 +23,7 @@ export function HomePage(props: Props) {
     underReview: [],
     errors: [],
     approved: [],
-    declined: [],
+    paid: [],
   });
   const [showModal, setShowModal] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -63,22 +63,27 @@ export function HomePage(props: Props) {
       setRequests({
         pendingReview: res.pendingReview.map((request: Request) => ({
           ...request,
+          amount: request.amount.toFixed(2),
           date: dayjs(request.date),
         })),
         underReview: res.underReview.map((request: Request) => ({
           ...request,
+          amount: request.amount.toFixed(2),
           date: dayjs(request.date),
         })),
         errors: res.errors.map((request: Request) => ({
           ...request,
-          date: dayjs(request.date),
-        })),
-        declined: res.declined.map((request: Request) => ({
-          ...request,
+          amount: request.amount.toFixed(2),
           date: dayjs(request.date),
         })),
         approved: res.approved.map((request: Request) => ({
           ...request,
+          amount: request.amount.toFixed(2),
+          date: dayjs(request.date),
+        })),
+        paid: res.paid.map((request: Request) => ({
+          ...request,
+          amount: request.amount.toFixed(2),
           date: dayjs(request.date),
         })),
       });
@@ -173,6 +178,7 @@ export function HomePage(props: Props) {
               onRequest={onRequest}
               isTreasurer={isTreasurer}
               token={props.token}
+              removeToken={props.removeToken}
               userName={userName}
             />
           </StyledStack>

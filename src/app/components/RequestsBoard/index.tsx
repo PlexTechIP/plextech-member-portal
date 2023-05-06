@@ -23,6 +23,7 @@ interface Props {
   onRequest: () => void;
   isTreasurer: boolean;
   token: string | null;
+  removeToken: () => void;
   userName: { firstName: string; lastName: string };
 }
 
@@ -62,9 +63,9 @@ export function RequestsBoard(props: Props) {
     };
     if (props.requests) {
       statuses.forEach((statusKey: string) => {
-        props.requests![statusKey].forEach((request: Request) => {
-          tempSums[statusKey] += request.amount;
-        });
+        props.requests![statusKey].forEach(
+          (request: any) => (tempSums[statusKey] += parseFloat(request.amount)),
+        );
       });
 
       setSums(tempSums);
@@ -83,7 +84,7 @@ export function RequestsBoard(props: Props) {
       return;
     }
 
-    const request: Request = props.requests![source.droppableId][source.index];
+    const request: any = props.requests![source.droppableId][source.index];
 
     if (destination.droppableId === 'approved') {
       setShowApproveModal(true);
@@ -105,16 +106,17 @@ export function RequestsBoard(props: Props) {
 
     setSums((prevState: Sums) => ({
       ...prevState,
-      [source.droppableId]: prevState[source.droppableId] - request.amount,
+      [source.droppableId]:
+        prevState[source.droppableId] - parseFloat(request.amount),
       [destination.droppableId]:
-        prevState[destination.droppableId] + request.amount,
+        prevState[destination.droppableId] + parseFloat(request.amount),
     }));
 
     const [success, res] = await apiRequest(
       `/approval/${request._id}/`,
       'PUT',
       props.token,
-      undefined,
+      props.removeToken,
       { status: destination.droppableId, comments: [] },
     );
 
@@ -124,7 +126,7 @@ export function RequestsBoard(props: Props) {
     }
   };
 
-  const onApprove = async (comments: Comment[], amount: number) => {
+  const onApprove = async (comments: Comment[], amount: any) => {
     const [success, res] = await apiRequest(
       `/approval/${approveId}/`,
       'PUT',
@@ -142,7 +144,7 @@ export function RequestsBoard(props: Props) {
       return;
     }
 
-    const request: Request = props.requests![sourceStatus].splice(
+    const request: any = props.requests![sourceStatus].splice(
       sourceIndex,
       1,
     )[0];
@@ -151,8 +153,8 @@ export function RequestsBoard(props: Props) {
 
     setSums((prevState: Sums) => ({
       ...prevState,
-      [sourceStatus]: prevState[sourceStatus] - request.amount,
-      approved: prevState.approved + amount,
+      [sourceStatus]: prevState[sourceStatus] - parseFloat(request.amount),
+      approved: prevState.approved + parseFloat(amount),
     }));
 
     setShowApproveModal(false);

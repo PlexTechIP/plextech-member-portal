@@ -171,7 +171,7 @@ const StyledTextField = styled(TextField)`
 
 const StyledModal = styled(Modal)`
   width: 50%;
-  height: 100%;
+  min-height: 100%;
   position: absolute;
   top: 0;
   bottom: 0;
@@ -184,7 +184,7 @@ const StyledModal = styled(Modal)`
 const StyledPaper = muiStyled(Paper)`
   padding: 48px;
   border-radius: 48px;
-  height: 100%;
+  min-height: 100%;
 `;
 
 const H1 = styled.h1`

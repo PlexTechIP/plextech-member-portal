@@ -34,7 +34,7 @@ export interface AllRequests {
   underReview: Request[];
   errors: Request[];
   approved: Request[];
-  declined: Request[];
+  paid: Request[];
 }
 
 export interface FormData {
