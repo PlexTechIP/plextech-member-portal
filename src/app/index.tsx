@@ -69,10 +69,6 @@ export function App() {
     },
   });
 
-  useEffect(() => {
-    console.log(process.env.NODE_ENV);
-  }, []);
-
   const [open, setOpen] = useState<boolean>(false);
 
   const { token, removeToken, setToken } = useToken();
