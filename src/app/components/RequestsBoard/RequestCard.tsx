@@ -10,6 +10,7 @@ import { Visibility } from '@mui/icons-material';
 import { ImageModal } from './ImageModal';
 import { Draggable } from 'react-beautiful-dnd';
 import { ErrorModal } from '../ErrorModal';
+import { apiRequest } from 'utils/apiRequest';
 
 interface Props {
   request: Request;
@@ -32,30 +33,19 @@ export function RequestCard(props: Props) {
   const onClick = async () => {
     setLoading(true);
     setShowModal(true);
-    const url = `${process.env.REACT_APP_BACKEND_URL}/requests/`;
-    const response = await fetch(url, {
-      method: 'PUT',
-      mode: 'cors',
-      cache: 'no-cache',
-      credentials: 'omit',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: 'Bearer ' + props.token,
-      },
-      redirect: 'follow',
-      referrerPolicy: 'no-referrer',
-      body: JSON.stringify({
+    const [success, res] = await apiRequest(
+      '/requests/',
+      'PUT',
+      props.token,
+      undefined,
+      {
         images: true,
         request_id: props.request._id,
-      }),
-    });
-    const res = await response.json();
-
-    if (!response.ok) {
-      setError({
-        errorCode: response.status,
-        errorMessage: response.statusText,
-      });
+      },
+    );
+    if (!success) {
+      setError(res.error);
+      return;
     }
     setImages(res.images);
     setLoading(false);

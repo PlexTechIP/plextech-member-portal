@@ -28,6 +28,7 @@ import { ErrorModal } from 'app/components/ErrorModal';
 import { ForgotPasswordPage } from '../ForgotPasswordPage/Loadable';
 import { Error } from 'types/types';
 import jwt_decode from 'jwt-decode';
+import { apiRequest } from 'utils/apiRequest';
 
 interface Props {
   setToken: (token: string) => void;
@@ -119,54 +120,30 @@ export function LoginPage(props: Props) {
       return;
     }
     setLoading(true);
-    try {
-      const url = `${process.env.REACT_APP_BACKEND_URL}/users/`;
-      const response = await fetch(url, {
-        method: 'POST',
-        mode: 'cors',
-        cache: 'no-cache',
-        credentials: 'omit',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        redirect: 'follow',
-        referrerPolicy: 'no-referrer',
-        body: JSON.stringify({ ...formData, method: 'login' }),
-      });
+    const [success, res] = await apiRequest(
+      '/users/',
+      'POST',
+      props.token,
+      () => setIncorrect(true),
+      { ...formData, method: 'login' },
+    );
 
-      setLoading(false);
+    setLoading(false);
 
-      if (response.status === 404) {
+    if (!success) {
+      if (res.error.errorCode === 404) {
         setShowSignUp(true);
-        return;
+      } else {
+        setError(res.error);
       }
-      if (
-        response.status === 401 ||
-        response.status === 422 ||
-        response.status === 400
-      ) {
-        setIncorrect(true);
-        return;
-      } else if (!response.ok) {
-        setError({
-          errorCode: response.status,
-          errorMessage: response.statusText,
-        });
-        return;
-      }
-      setIncorrect(false);
-
-      const res = await response.json();
-
-      props.setToken(res.access_token);
-      setSubmitted(false);
-    } catch (e: any) {
-      console.error(e);
-      setError({
-        errorMessage: e.toString(),
-      });
+      return;
     }
+    setIncorrect(false);
+
+    props.setToken(res.access_token);
+    setSubmitted(false);
   };
+
   if (showSignUp) {
     return (
       <SignUpPage
@@ -175,6 +152,7 @@ export function LoginPage(props: Props) {
       />
     );
   }
+
   if (forgotPassword) {
     return (
       <ForgotPasswordPage
@@ -184,6 +162,7 @@ export function LoginPage(props: Props) {
       />
     );
   }
+
   return (
     <>
       <Helmet>

@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { Helmet } from 'react-helmet-async';
 import styled from 'styled-components';
-import { Stack, Modal, CircularProgress, Button } from '@mui/material';
+import { Stack, Modal, CircularProgress } from '@mui/material';
 import { RequestsBoard } from 'app/components/RequestsBoard';
 import { useEffect, useState } from 'react';
 import { ReimbursementForm } from 'app/components/ReimbursementForm';
@@ -10,6 +10,7 @@ import { ErrorModal } from 'app/components/ErrorModal';
 import { styled as muiStyled } from '@mui/system';
 import dayjs from 'dayjs';
 import { BackToTopButton } from 'app/components/BackToTopButton';
+import { apiRequest } from 'utils/apiRequest';
 
 interface Props {
   token: string | null;
@@ -39,73 +40,49 @@ export function HomePage(props: Props) {
   useEffect(() => {
     const f = async () => {
       setIsLoading(true);
-      try {
-        const url = `${process.env.REACT_APP_BACKEND_URL}/requests/`;
-        const response = await fetch(url, {
-          method: 'GET',
-          mode: 'cors',
-          cache: 'no-cache',
-          credentials: 'omit',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: 'Bearer ' + props.token,
-          },
-          redirect: 'follow',
-          referrerPolicy: 'no-referrer',
-        });
+      const [success, res] = await apiRequest(
+        `/requests/`,
+        'GET',
+        props.token,
+        props.removeToken,
+      );
 
-        if (response.status === 401 || response.status === 422) {
-          props.removeToken();
-        }
-
-        if (!response.ok) {
-          console.error(response);
-          setError({
-            errorCode: response.status,
-            errorMessage: response.statusText,
-          });
-          return;
-        }
-
-        const res = await response.json();
-        setIsTreasurer(res.treasurer);
-        setTeams(res.teams);
-        setUserName({ firstName: res.firstName, lastName: res.lastName });
-
-        delete res.treasurer;
-        delete res.teams;
-        delete res.firstName;
-        delete res.lastName;
-        setRequests({
-          pendingReview: res.pendingReview.map((request: Request) => ({
-            ...request,
-            date: dayjs(request.date),
-          })),
-          underReview: res.underReview.map((request: Request) => ({
-            ...request,
-            date: dayjs(request.date),
-          })),
-          errors: res.errors.map((request: Request) => ({
-            ...request,
-            date: dayjs(request.date),
-          })),
-          declined: res.declined.map((request: Request) => ({
-            ...request,
-            date: dayjs(request.date),
-          })),
-          approved: res.approved.map((request: Request) => ({
-            ...request,
-            date: dayjs(request.date),
-          })),
-        });
-        setIsLoading(false);
-      } catch (e: any) {
-        setError({
-          errorMessage: e.toString(),
-        });
-        console.error(e);
+      if (!success) {
+        setError(res.error);
         return;
       }
+
+      setIsTreasurer(res.treasurer);
+      setTeams(res.teams);
+      setUserName({ firstName: res.firstName, lastName: res.lastName });
+
+      delete res.treasurer;
+      delete res.teams;
+      delete res.firstName;
+      delete res.lastName;
+      setRequests({
+        pendingReview: res.pendingReview.map((request: Request) => ({
+          ...request,
+          date: dayjs(request.date),
+        })),
+        underReview: res.underReview.map((request: Request) => ({
+          ...request,
+          date: dayjs(request.date),
+        })),
+        errors: res.errors.map((request: Request) => ({
+          ...request,
+          date: dayjs(request.date),
+        })),
+        declined: res.declined.map((request: Request) => ({
+          ...request,
+          date: dayjs(request.date),
+        })),
+        approved: res.approved.map((request: Request) => ({
+          ...request,
+          date: dayjs(request.date),
+        })),
+      });
+      setIsLoading(false);
     };
 
     f();
@@ -115,19 +92,8 @@ export function HomePage(props: Props) {
     setShowModal(false);
   };
 
-  const onError = (
-    response: Response | { status: null; statusText: string },
-  ) => {
-    if (response.status) {
-      setError({
-        errorCode: response.status,
-        errorMessage: response.statusText,
-      });
-    } else {
-      setError({
-        errorMessage: response.statusText,
-      });
-    }
+  const onError = (error: Error) => {
+    setError(error);
   };
 
   const onRequest = () => {

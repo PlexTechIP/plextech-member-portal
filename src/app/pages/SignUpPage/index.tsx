@@ -27,6 +27,7 @@ import { SignUpData } from 'types/types';
 import { ErrorModal } from 'app/components/ErrorModal';
 import { Error } from 'types/types';
 import jwt_decode from 'jwt-decode';
+import { apiRequest } from 'utils/apiRequest';
 
 const possibleTeams = [
   'Exec',
@@ -142,45 +143,23 @@ export function SignUpPage(props: Props) {
       setSubmitted(true);
       return;
     }
-    try {
-      setLoading(true);
-      const url = `${process.env.REACT_APP_BACKEND_URL}/users/`;
-      const response = await fetch(url, {
-        method: 'POST',
-        mode: 'cors',
-        cache: 'no-cache',
-        credentials: 'omit',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        redirect: 'follow',
-        referrerPolicy: 'no-referrer',
-        body: JSON.stringify({ ...formData, method: 'signup' }),
-      });
-      setLoading(false);
+    setLoading(true);
+    const [success, res] = await apiRequest(
+      `/users/`,
+      'POST',
+      undefined,
+      () => setIncorrect(true),
+      { ...formData, method: 'signup' },
+    );
+    setLoading(false);
 
-      const res = await response.json();
-
-      if (response.status === 401) {
-        setIncorrect(true);
-        return;
-      } else if (!response.ok) {
-        setError({
-          errorCode: response.status,
-          errorMessage: response.statusText,
-        });
-        console.error(response);
-      }
-
-      props.setToken(res.access_token);
-
-      setSubmitted(false);
-    } catch (e: any) {
-      console.error(e);
-      setError({
-        errorMessage: e.toString(),
-      });
+    if (!success) {
+      setError(res.errpr);
     }
+
+    props.setToken(res.access_token);
+
+    setSubmitted(false);
   };
 
   const handleChange = event => {

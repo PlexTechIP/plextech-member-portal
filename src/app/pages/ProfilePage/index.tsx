@@ -25,6 +25,7 @@ import {
 } from '@mui/material';
 import { VenmoCard } from 'app/components/VenmoCard';
 import SearchIcon from '@mui/icons-material/Search';
+import { apiRequest } from 'utils/apiRequest';
 
 interface Props {
   token: string | null;
@@ -41,82 +42,40 @@ export function ProfilePage(props: Props) {
 
   useEffect(() => {
     const f = async () => {
-      const url = `${process.env.REACT_APP_BACKEND_URL}/profile/`;
-      try {
-        const response = await fetch(url, {
-          method: 'GET',
-          mode: 'cors',
-          cache: 'no-cache',
-          credentials: 'omit',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: 'Bearer ' + props.token,
-          },
-          redirect: 'follow',
-          referrerPolicy: 'no-referrer',
-        });
+      const [success, res] = await apiRequest(
+        '/profile/',
+        'GET',
+        props.token,
+        props.removeToken,
+      );
 
-        if (response.status === 401 || response.status === 422) {
-          props.removeToken();
-          return;
-        } else if (!response.ok) {
-          setError({
-            errorCode: response.status,
-            errorMessage: response.statusText,
-          });
-          console.error(response);
-        }
-
-        const res = await response.json();
-
-        setUser(res);
-        setCurProfile(res.venmo);
-      } catch (e: any) {
-        setError({
-          errorMessage: e.toString(),
-        });
-        console.error(e);
+      if (!success) {
+        setError(res.error);
+        return;
       }
+
+      setUser(res);
+      setCurProfile(res.venmo);
     };
     f();
   }, [props]);
 
   const onSelect = async (profile: VenmoProfile) => {
     setLoading(true);
-    const url = `${process.env.REACT_APP_BACKEND_URL}/venmo/_/`;
-    try {
-      const response = await fetch(url, {
-        method: 'PUT',
-        mode: 'cors',
-        cache: 'no-cache',
-        credentials: 'omit',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: 'Bearer ' + props.token,
-        },
-        redirect: 'follow',
-        referrerPolicy: 'no-referrer',
-        body: JSON.stringify(profile),
-      });
+    const [success, res] = await apiRequest(
+      '/venmo/_/',
+      'PUT',
+      props.token,
+      props.removeToken,
+      profile,
+    );
 
-      if (response.status === 401) {
-        props.removeToken();
-        return;
-      } else if (!response.ok) {
-        setError({
-          errorCode: response.status,
-          errorMessage: response.statusText,
-        });
-        console.error(response);
-      }
-
-      setCurProfile(profile);
-    } catch (e: any) {
-      setError({
-        errorMessage: e.toString(),
-      });
-      console.error(e);
+    if (!success) {
+      setError(res.error);
+      return;
     }
+
+    setCurProfile(profile);
     setLoading(false);
   };
 
@@ -130,43 +89,18 @@ export function ProfilePage(props: Props) {
     if (!username) {
       return;
     }
-    const url = `${
-      process.env.REACT_APP_BACKEND_URL
-    }/venmo/${encodeURIComponent(username)}/`;
-    try {
-      const response = await fetch(url, {
-        method: 'GET',
-        mode: 'cors',
-        cache: 'no-cache',
-        credentials: 'omit',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: 'Bearer ' + props.token,
-        },
-        redirect: 'follow',
-        referrerPolicy: 'no-referrer',
-      });
 
-      if (response.status === 401) {
-        props.removeToken();
-        return;
-      } else if (!response.ok) {
-        setError({
-          errorCode: response.status,
-          errorMessage: response.statusText,
-        });
-        console.error(response);
-      }
-
-      const res = await response.json();
-
-      setProfiles(res.users);
-    } catch (e: any) {
-      setError({
-        errorMessage: e.toString(),
-      });
-      console.error(e);
+    const [success, res] = await apiRequest(
+      `/venmo/${encodeURIComponent(username)}/`,
+      'GET',
+      props.token,
+      props.removeToken,
+    );
+    if (!success) {
+      setError(res.error);
     }
+
+    setProfiles(res.users);
     setLoading(false);
   };
 

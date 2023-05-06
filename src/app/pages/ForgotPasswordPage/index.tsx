@@ -19,6 +19,7 @@ import PlexTechLogo from '../../../PlexTechLogo.png';
 import { useState } from 'react';
 import { PasswordResetPage } from '../PasswordResetPage/Loadable';
 import { Error } from 'types/types';
+import { apiRequest } from 'utils/apiRequest';
 
 interface Props {
   onBack: () => void;
@@ -46,45 +47,22 @@ export function ForgotPasswordPage(props: Props) {
     }
     setLoading(true);
 
-    const url = `${process.env.REACT_APP_BACKEND_URL}/users/`;
+    const [success, res] = await apiRequest(
+      '/users/',
+      'PUT',
+      undefined,
+      () => setIncorrect(true),
+      { email, method: 'passwordCode' },
+    );
 
-    try {
-      const response = await fetch(url, {
-        method: 'PUT',
-        mode: 'cors',
-        cache: 'no-cache',
-        credentials: 'omit',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        redirect: 'follow',
-        referrerPolicy: 'no-referrer',
-        body: JSON.stringify({ email, method: 'passwordCode' }),
-      });
-
-      setLoading(false);
-
-      if (response.status === 401 || response.status === 422) {
-        console.error(response);
-        setIncorrect(true);
-        return;
-      }
-      if (!response.ok) {
-        setError({
-          errorCode: response.status,
-          errorMessage: response.statusText,
-        });
-        return;
-      }
-      setShowResetPage(true);
-      setIncorrect(false);
-      setSubmitted(false);
-    } catch (e: any) {
-      console.error(e);
-      setError({
-        errorMessage: e.toString(),
-      });
+    setLoading(false);
+    if (!success) {
+      setError(res.error);
+      return;
     }
+    setShowResetPage(true);
+    setIncorrect(false);
+    setSubmitted(false);
   };
 
   if (showResetPage) {

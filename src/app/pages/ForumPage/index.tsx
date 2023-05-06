@@ -15,6 +15,7 @@ import { Error, Post } from 'types/types';
 import AddIcon from '@mui/icons-material/Add';
 import { ForumPostForm } from 'app/components/ForumPostForm';
 import jwt_decode from 'jwt-decode';
+import { apiRequest } from 'utils/apiRequest';
 
 interface Props {
   token: string | null;
@@ -33,82 +34,42 @@ export function ForumPage(props: Props) {
     addToUpvote: boolean;
     postId: string;
   }) => {
-    const url = `${process.env.REACT_APP_BACKEND_URL}/forum/`;
-    try {
-      const response = await fetch(url, {
-        method: 'PUT',
-        mode: 'cors',
-        cache: 'no-cache',
-        credentials: 'omit',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: 'Bearer ' + props.token,
-        },
-        redirect: 'follow',
-        referrerPolicy: 'no-referrer',
-        body: JSON.stringify(param),
-      });
+    const [success, res] = await apiRequest(
+      '/forum/',
+      'PUT',
+      props.token,
+      props.removeToken,
+      param,
+    );
 
-      if (response.status === 401 || response.status === 422) {
-        props.removeToken();
-        return;
-      } else if (!response.ok) {
-        setError({
-          errorCode: response.status,
-          errorMessage: response.statusText,
-        });
-        console.error(response);
-      }
-    } catch (e: any) {
-      setError({
-        errorMessage: e.toString(),
-      });
-      console.error(e);
+    if (!success) {
+      setError(res.error);
     }
   };
 
   useEffect(() => {
     const f = async () => {
-      const url = `${process.env.REACT_APP_BACKEND_URL}/forum/`;
-      try {
-        const response = await fetch(url, {
-          method: 'GET',
-          mode: 'cors',
-          cache: 'no-cache',
-          credentials: 'omit',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: 'Bearer ' + props.token,
-          },
-          redirect: 'follow',
-          referrerPolicy: 'no-referrer',
-        });
+      const [success, res] = await apiRequest(
+        '/forum/',
+        'GET',
+        props.token,
+        props.removeToken,
+      );
 
-        if (response.status === 401 || response.status === 422) {
-          props.removeToken();
-          return;
-        } else if (!response.ok) {
-          setError({
-            errorCode: response.status,
-            errorMessage: response.statusText,
-          });
-          console.error(response);
-        }
-
-        const res = await response.json();
-
-        setPosts(
-          res.posts.map((post: any) => ({
-            ...post,
-            date: dayjs(post.date),
-          })),
-        );
-      } catch (e: any) {
-        setError({
-          errorMessage: e.toString(),
-        });
-        console.error(e);
+      if (!success) {
+        setError(res.error);
       }
+
+      if (!success) {
+        setError(res.error);
+      }
+
+      setPosts(
+        res.posts.map((post: any) => ({
+          ...post,
+          date: dayjs(post.date),
+        })),
+      );
     };
     f();
   }, [props]);
@@ -117,26 +78,16 @@ export function ForumPage(props: Props) {
 
   useEffect(() => {
     const f = async () => {
-      const url = `${process.env.REACT_APP_BACKEND_URL}/profile/`;
-      const response = await fetch(url, {
-        method: 'GET',
-        mode: 'cors',
-        cache: 'no-cache',
-        credentials: 'omit',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: 'Bearer ' + props.token,
-        },
-        redirect: 'follow',
-        referrerPolicy: 'no-referrer',
-      });
+      const [success, res] = await apiRequest(
+        '/profile/',
+        'GET',
+        props.token,
+        props.removeToken,
+      );
 
-      if (response.status === 401 || response.status === 422) {
-        props.removeToken();
-        return;
+      if (!success) {
+        setError(res.error);
       }
-
-      const res = await response.json();
 
       setIsTreasurer(res.treasurer);
     };
