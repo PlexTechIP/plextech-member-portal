@@ -131,7 +131,7 @@ export function RequestsBoard(props: Props) {
       `/approval/${approveId}/`,
       'PUT',
       props.token,
-      undefined,
+      props.removeToken,
       {
         status: 'approved',
         comments: comments,
@@ -140,6 +140,9 @@ export function RequestsBoard(props: Props) {
     );
 
     if (!success) {
+      if (res.status === 407) {
+        setError({ errorMessage: 'User has not set Venmo account.' });
+      }
       setError(res.error);
       return;
     }
