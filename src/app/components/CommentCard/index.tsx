@@ -23,6 +23,8 @@ export function CommentCard(props: Props) {
         alignSelf: id === comment.user_id ? 'flex-end' : 'flex-start',
         borderBottomLeftRadius: id === comment.user_id ? '24px' : '0',
         borderBottomRightRadius: id === comment.user_id ? '0' : '24px',
+        backgroundColor:
+          id === comment.user_id ? 'rgba(255, 138, 0, 0.3)' : 'white',
       }}
     >
       <Stack direction="row" justifyContent="space-between" alignItems="center">
