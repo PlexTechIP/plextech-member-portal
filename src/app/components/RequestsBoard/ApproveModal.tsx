@@ -145,7 +145,10 @@ export function ApproveModal(props: Props) {
             {/* Submit Button */}
             <Button
               variant="contained"
-              onClick={() => props.onSubmit(comments, amount)}
+              onClick={() => {
+                setComments([]);
+                props.onSubmit(comments, amount);
+              }}
               type="submit"
             >
               Approve
