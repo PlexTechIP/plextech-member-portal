@@ -86,6 +86,8 @@ export function App() {
       token?.charAt(0) === 'ƒ'
     ) {
       setSessionExpired(true);
+    } else {
+      setSessionExpired(false);
     }
   }, [token]);
 

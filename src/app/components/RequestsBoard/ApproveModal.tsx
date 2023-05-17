@@ -102,26 +102,27 @@ export function ApproveModal(props: Props) {
             }}
           />
           <Divider />
-          {[
-            ...comments,
-            {
-              message: `Request approved for $${amount} (${Math.round(
-                (amount / props.requestedAmount) * 100,
-              )}%)`,
-              date: dayjs(),
-              user_id: (jwt_decode(props.token!) as { sub: string }).sub,
-              firstName: props.userName.firstName,
-              lastName: props.userName.lastName,
-            },
-          ]
-            .map((comment: Comment, index: number) => (
-              <CommentCard
-                key={index}
-                id={(jwt_decode(props.token!) as { sub: string }).sub}
-                comment={comment}
-              />
-            ))
-            .sort()}
+          {props.token &&
+            [
+              ...comments,
+              {
+                message: `Request approved for $${amount} (${Math.round(
+                  (amount / props.requestedAmount) * 100,
+                )}%)`,
+                date: dayjs(),
+                user_id: (jwt_decode(props.token!) as { sub: string }).sub,
+                firstName: props.userName.firstName,
+                lastName: props.userName.lastName,
+              },
+            ]
+              .map((comment: Comment, index: number) => (
+                <CommentCard
+                  key={index}
+                  id={(jwt_decode(props.token!) as { sub: string }).sub}
+                  comment={comment}
+                />
+              ))
+              .sort()}
 
           <CommentForm
             comment={curComment}
