@@ -30,6 +30,7 @@ import createPalette from '@mui/material/styles/createPalette';
 
 import { Analytics } from '@vercel/analytics/react';
 import { QrLandingPage } from './pages/QrLandingPage';
+import { apiRequest } from 'utils/apiRequest';
 
 export function App() {
   const { i18n } = useTranslation();
@@ -70,8 +71,23 @@ export function App() {
   });
 
   const [open, setOpen] = useState<boolean>(false);
+  const [sessionExpired, setSessionExpired] = useState<boolean>(false);
 
   const { token, removeToken, setToken } = useToken();
+
+  setTimeout(() => {
+    apiRequest('/ping/', 'GET', token, () => setSessionExpired(true));
+  }, 1000 * 60 * 30);
+
+  useEffect(() => {
+    if (
+      (!token && token !== '' && token !== undefined) ||
+      token === 'undefined' ||
+      token?.charAt(0) === 'ƒ'
+    ) {
+      setSessionExpired(true);
+    }
+  }, [token]);
 
   return (
     <>
@@ -92,9 +108,7 @@ export function App() {
                   : `url(${LightBackground})`,
             }}
           >
-            {(!token && token !== '' && token !== undefined) ||
-            token === 'undefined' ||
-            token?.charAt(0) === 'ƒ' ? (
+            {sessionExpired ? (
               <LoginPage setToken={setToken} token={token} />
             ) : (
               <>
