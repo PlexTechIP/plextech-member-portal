@@ -26,6 +26,7 @@ import {
 import { VenmoCard } from 'app/components/VenmoCard';
 import SearchIcon from '@mui/icons-material/Search';
 import { apiRequest } from 'utils/apiRequest';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 
 interface Props {
   token: string | null;
@@ -136,32 +137,52 @@ export function ProfilePage(props: Props) {
           <Div>
             <AttendanceCard user={user} />
           </Div>
-          {user.bank || (
-            <Div>
-              <Form>
-                <Stack spacing={4}>
-                  <Stack direction="row" justifyContent="space-between">
-                    <H1>Bank Details</H1>
-                    <Button onClick={bankSubmit}>Submit</Button>
-                  </Stack>
-                  <TextField
-                    fullWidth
-                    label="Account Number"
-                    value={accountNumber}
-                    onChange={e => setAccountNumber(e.target.value)}
-                    error={!/^\d+$/.test(accountNumber)}
-                  />
-                  <TextField
-                    fullWidth
-                    label="Routing Number"
-                    value={routingNumber}
-                    onChange={e => setRoutingNumber(e.target.value)}
-                    error={!/^\d+$/.test(routingNumber)}
-                  />
+          <Div>
+            <Form>
+              <Stack spacing={4}>
+                <Stack
+                  direction="row"
+                  justifyContent="space-between"
+                  alignItems="center"
+                >
+                  <H1>Bank Details</H1>
+                  <Button
+                    onClick={bankSubmit}
+                    disabled={!!user.bank}
+                    variant="contained"
+                  >
+                    {user.bank ? 'Submitted' : 'Submit'}
+                  </Button>
                 </Stack>
-              </Form>
-            </Div>
-          )}
+                {user.bank || (
+                  <>
+                    <TextField
+                      fullWidth
+                      label="Account Number"
+                      onChange={e => setAccountNumber(e.target.value)}
+                      error={!/^\d+$/.test(accountNumber)}
+                    />
+                    <TextField
+                      fullWidth
+                      label="Routing Number"
+                      value={routingNumber}
+                      onChange={e => setRoutingNumber(e.target.value)}
+                      error={!/^\d+$/.test(routingNumber)}
+                    />
+                  </>
+                )}
+                <Stack
+                  direction="row"
+                  alignItems="center"
+                  spacing={1}
+                  justifyContent="flex-end"
+                >
+                  <StyledInfoOutlinedIcon />
+                  <P>Your information is securely encrypted with Fernet.</P>
+                </Stack>
+              </Stack>
+            </Form>
+          </Div>
           <Div>
             <Form>
               <Stack spacing={4}>
@@ -272,4 +293,14 @@ const H2 = styled.h2`
 
 const StyledCircularProgress = muiStyled(CircularProgress)`
   color: rgb(255, 138, 0);
+`;
+
+const P = styled.p`
+  margin: 0;
+  color: grey;
+`;
+
+const StyledInfoOutlinedIcon = muiStyled(InfoOutlinedIcon)`
+  color: grey;
+  font-size: small;
 `;
