@@ -39,8 +39,8 @@ export function ProfilePage(props: Props) {
   const [profiles, setProfiles] = useState<VenmoProfile[]>([]);
   const [curProfile, setCurProfile] = useState<VenmoProfile>();
   const [loading, setLoading] = useState<boolean>(false);
-  const [accountNumber, setAccountNumber] = useState<number>(0);
-  const [routingNumber, setRoutingNumber] = useState<number>(0);
+  const [accountNumber, setAccountNumber] = useState<string>('');
+  const [routingNumber, setRoutingNumber] = useState<string>('');
 
   useEffect(() => {
     const f = async () => {
@@ -136,28 +136,32 @@ export function ProfilePage(props: Props) {
           <Div>
             <AttendanceCard user={user} />
           </Div>
-          <Div>
-            <Form>
-              <Stack spacing={4}>
-                <Stack direction="row" justifyContent="space-between">
-                  <H1>Bank Details</H1>
-                  <Button onClick={bankSubmit}>Submit</Button>
+          {user.bank || (
+            <Div>
+              <Form>
+                <Stack spacing={4}>
+                  <Stack direction="row" justifyContent="space-between">
+                    <H1>Bank Details</H1>
+                    <Button onClick={bankSubmit}>Submit</Button>
+                  </Stack>
+                  <TextField
+                    fullWidth
+                    label="Account Number"
+                    value={accountNumber}
+                    onChange={e => setAccountNumber(e.target.value)}
+                    error={!/^\d+$/.test(accountNumber)}
+                  />
+                  <TextField
+                    fullWidth
+                    label="Routing Number"
+                    value={routingNumber}
+                    onChange={e => setRoutingNumber(e.target.value)}
+                    error={!/^\d+$/.test(routingNumber)}
+                  />
                 </Stack>
-                <TextField
-                  fullWidth
-                  label="Account Number"
-                  value={accountNumber}
-                  onChange={e => setAccountNumber(parseInt(e.target.value))}
-                />
-                <TextField
-                  fullWidth
-                  label="Routing Number"
-                  value={routingNumber}
-                  onChange={e => setRoutingNumber(parseInt(e.target.value))}
-                />
-              </Stack>
-            </Form>
-          </Div>
+              </Form>
+            </Div>
+          )}
           <Div>
             <Form>
               <Stack spacing={4}>
