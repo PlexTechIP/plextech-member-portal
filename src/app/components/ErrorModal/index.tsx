@@ -10,6 +10,7 @@ import styled from 'styled-components/macro';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import ErrorImage from '../../../error.png';
 import { Error } from 'types/types';
+import { useEffect } from 'react';
 
 interface Props {
   open: boolean;
@@ -20,6 +21,10 @@ export function ErrorModal(props: Props) {
   const onRefresh = () => {
     window.location.reload();
   };
+
+  useEffect(() => {
+    console.log(props.error);
+  });
 
   return (
     <StyledModal open={props.open}>

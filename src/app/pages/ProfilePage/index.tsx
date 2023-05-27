@@ -39,6 +39,8 @@ export function ProfilePage(props: Props) {
   const [profiles, setProfiles] = useState<VenmoProfile[]>([]);
   const [curProfile, setCurProfile] = useState<VenmoProfile>();
   const [loading, setLoading] = useState<boolean>(false);
+  const [accountNumber, setAccountNumber] = useState<number>(0);
+  const [routingNumber, setRoutingNumber] = useState<number>(0);
 
   useEffect(() => {
     const f = async () => {
@@ -104,6 +106,23 @@ export function ProfilePage(props: Props) {
     setLoading(false);
   };
 
+  const bankSubmit = async () => {
+    const [success, res] = await apiRequest(
+      '/bank/',
+      'PUT',
+      props.token,
+      props.removeToken,
+      { accountNumber, routingNumber },
+    );
+
+    if (!success) {
+      setError(res.error);
+      return;
+    }
+
+    setUser(res);
+  };
+
   return (
     <>
       <Helmet>
@@ -116,6 +135,28 @@ export function ProfilePage(props: Props) {
         <>
           <Div>
             <AttendanceCard user={user} />
+          </Div>
+          <Div>
+            <Form>
+              <Stack spacing={4}>
+                <Stack direction="row" justifyContent="space-between">
+                  <H1>Bank Details</H1>
+                  <Button onClick={bankSubmit}>Submit</Button>
+                </Stack>
+                <TextField
+                  fullWidth
+                  label="Account Number"
+                  value={accountNumber}
+                  onChange={e => setAccountNumber(parseInt(e.target.value))}
+                />
+                <TextField
+                  fullWidth
+                  label="Routing Number"
+                  value={routingNumber}
+                  onChange={e => setRoutingNumber(parseInt(e.target.value))}
+                />
+              </Stack>
+            </Form>
           </Div>
           <Div>
             <Form>

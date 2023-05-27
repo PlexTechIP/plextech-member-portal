@@ -31,7 +31,7 @@ import { styled as muiStyled } from '@mui/system';
 import { Error } from 'types/types';
 // import AddIcon from '@mui/icons-material/Add';
 import { QRCodeCanvas } from 'qrcode.react';
-import { useParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import { apiRequest } from 'utils/apiRequest';
 
 interface Props {
@@ -44,24 +44,38 @@ export function AttendancePage(props: Props) {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<Error>();
 
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const attendancecode = searchParams.get('attendancecode');
+
   useEffect(() => {
     const f = async () => {
-      setIsLoading(true);
-      const [success, res] = await apiRequest(
-        '/attendance/',
-        'POST',
-        props.token,
-        props.removeToken,
-      );
-      if (!success) {
-        setError(res.error);
-        return;
+      if (attendancecode) {
+        const [success, res] = await apiRequest(
+          '/attendance/',
+          'PUT',
+          props.token,
+          props.removeToken,
+          { attendancecode },
+        );
+      } else {
+        setIsLoading(true);
+        const [success, res] = await apiRequest(
+          '/attendance/',
+          'POST',
+          props.token,
+          props.removeToken,
+        );
+        if (!success) {
+          setError(res.error);
+          return;
+        }
+        setCode(res.code);
+        setIsLoading(false);
       }
-      setCode(res.code);
-      setIsLoading(false);
     };
     f();
-  }, [props]);
+  }, [attendancecode, props]);
 
   return (
     <>
@@ -69,19 +83,25 @@ export function AttendancePage(props: Props) {
         <title>Attendance</title>
         <meta name="description" content="Take attendance here" />
       </Helmet>
-      <Form>
-        {isLoading ? (
-          <StyledCircularProgress />
-        ) : (
-          <QRCodeCanvas
-            id="qrCode"
-            value={code}
-            size={300}
-            bgColor="#ffffff"
-            level="H"
-          />
-        )}
-      </Form>
+      {attendancecode ? (
+        <>
+          <h1>Attendance Code: {attendancecode}</h1>
+        </>
+      ) : (
+        <Form>
+          {isLoading ? (
+            <StyledCircularProgress />
+          ) : (
+            <QRCodeCanvas
+              id="qrCode"
+              value={window.location + '/' + code}
+              size={300}
+              bgColor="#ffffff"
+              level="H"
+            />
+          )}
+        </Form>
+      )}
       {error && <ErrorModal open={!!error} error={error} />}
     </>
   );

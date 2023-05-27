@@ -36,7 +36,7 @@ export const apiRequest = async (
     }
 
     if (!response.ok) {
-      console.error(response);
+      console.error(await response.text());
       return [
         false,
         {
