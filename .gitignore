@@ -31,3 +31,10 @@ generated-cra-app
 .cra-template-rb
 template
 .eslintcache
+
+# server
+server/__pycache__
+server/.buildt
+server/env/
+server/.env
+server/index.html
