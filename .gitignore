@@ -38,3 +38,6 @@ server/.buildt
 server/env/
 server/.env
 server/index.html
+
+.husky/
+.vscode/
