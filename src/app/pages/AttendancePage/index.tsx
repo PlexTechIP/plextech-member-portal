@@ -102,6 +102,9 @@ export function AttendancePage(props: Props) {
         setIsSessionActive(true);
         return;
       }
+      setCode('');
+      setMeetingId('');
+      setAttendees([]);
     }
     setIsLoading(false);
   };
