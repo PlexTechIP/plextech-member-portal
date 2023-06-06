@@ -17,7 +17,6 @@ from datetime import datetime, timedelta, timezone
 from time import time
 from pymongo.errors import BulkWriteError
 from random import randint
-from uuid import uuid4, UUID
 from cryptography.fernet import Fernet
 
 from send_email import gmail_send_message, send_comment_email
@@ -274,7 +273,7 @@ def attendance():
 
     # marking attendance by scanning qr code
     if request.method == "PUT":
-        code = UUID(request.json.get("attendancecode"))
+        code = ObjectId(request.json.get("attendancecode"))
 
         print(attendance["code"], code)
         if code == attendance["code"]:
@@ -316,7 +315,7 @@ def attendance():
         if "id" in form:
             aid = ObjectId(form.get("id"))
             attendance_info = db.Attendance.find_one({"_id": aid})
-            attendance_info["code"] = uuid4()
+            attendance_info["code"] = ObjectId()
             db.Attendance.replace_one({"_id": aid}, attendance_info)
         else:
             aid = ObjectId()
@@ -329,11 +328,11 @@ def attendance():
                 ),
                 "attendees": {},
             }
-            attendance_info["code"] = uuid4()
+            attendance_info["code"] = ObjectId()
             db.Attendance.insert_one(attendance_info)
 
         return {
-            "code": attendance_info["code"],
+            "code": str(attendance_info["code"]),
             "id": str(aid),
             "attendees": attendance_info["attendees"],
         }, 200
