@@ -40,9 +40,6 @@ jwt = JWTManager(app)
 key = getenv("FERNET_KEY")
 f = Fernet(key)
 
-attendance_infos = {}
-
-
 @app.after_request
 def after_request(response):
     # cors
@@ -284,7 +281,7 @@ def attendance():
             form = dict(request.json)
             if jwt:
                 id = ObjectId(get_jwt_identity())
-                attendance_info = attendance_infos[form["id"]]
+                attendance_info = db.Attendance.find_one({"_id": ObjectId(form["id"])})
 
                 if id not in attendance_info["attendees"]:
                     user = db.Users.find_one({"_id": id})
@@ -318,10 +315,13 @@ def attendance():
         form = dict(request.json)
         if "id" in form:
             aid = ObjectId(form.get("id"))
-            attendance_info = attendance_infos[aid]
+            attendance_info = db.Attendance.find_one({"_id": aid})
+            attendance_info["code"] = uuid4()
+            db.Attendance.replace_one({"_id": aid}, attendance_info)
         else:
             aid = ObjectId()
             attendance_info = {
+                '_id': aid,
                 "name": form.get("name"),
                 "meetingLeader": ObjectId(form.get("meetingLeader")),
                 "startTime": datetime.strptime(
@@ -329,9 +329,9 @@ def attendance():
                 ),
                 "attendees": {},
             }
-            attendance_infos[aid] = attendance_info
+            attendance_info["code"] = uuid4()
+            db.Attendance.insert_one(attendance_info)
 
-        attendance_info["code"] = uuid4()
         return {
             "code": attendance_info["code"],
             "id": str(aid),
@@ -356,13 +356,8 @@ def attendance():
         return {"users": res}, 200
 
     if request.method == "DELETE":
+        # TODO: implement stopping session if needed
         form = dict(request.json)
-        aid = ObjectId(form["id"])
-        attendance_info = attendance_infos[aid]
-        attendance_info["_id"] = aid
-        # db.Attendance.insert_one(attendance_infos[aid])
-        print(attendance_infos[aid])
-        attendance_infos.pop(aid)
         return {}, 200
 
 
