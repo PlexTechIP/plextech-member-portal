@@ -212,7 +212,7 @@ export function AttendancePage(props: Props) {
                   >
                     <QRCodeCanvas
                       id="qrCode"
-                      value={window.location + '/?attendance=' + code}
+                      value={window.location + '/?attendancecode=' + code}
                       size={300}
                       bgColor="#ffffff"
                       level="H"
