@@ -189,42 +189,59 @@ export function AttendancePage(props: Props) {
       ) : (
         <Stack spacing={2} alignItems="center">
           <Form>
-            {isLoading ? (
-              <StyledCircularProgress />
-            ) : (
-              <Stack spacing={3} alignItems="center">
-                {!isSessionActive ? (
-                  <Button
-                    variant="contained"
-                    onClick={handleSessionButtonClick}
+            <Stack spacing={3} alignItems="center">
+              {!isSessionActive ? (
+                <Button variant="contained" onClick={handleSessionButtonClick}>
+                  Start Session
+                </Button>
+              ) : (
+                <>
+                  <P>
+                    Code will change in {remainingTime} second
+                    {remainingTime !== 1 ? 's' : ''}
+                  </P>
+                  <div
+                    style={{
+                      position: 'relative',
+                      width: '300px',
+                      height: '300px',
+                    }}
                   >
-                    Start Session
-                  </Button>
-                ) : (
-                  <>
-                    <P>
-                      Code will change in {remainingTime} second
-                      {remainingTime !== 1 ? 's' : ''}
-                    </P>
                     <QRCodeCanvas
                       id="qrCode"
                       value={window.location + '/?attendance=' + code}
                       size={300}
                       bgColor="#ffffff"
                       level="H"
+                      style={{
+                        opacity: isLoading ? 0.5 : 1,
+                        transition: 'opacity 0.3s ease-in-out',
+                      }}
                     />
-                    <Button
-                      variant="contained"
-                      onClick={handleSessionButtonClick}
-                    >
-                      Stop Session
-                    </Button>
-                  </>
-                )}
+                    {isLoading && (
+                      <div
+                        style={{
+                          position: 'absolute',
+                          top: '50%',
+                          left: '50%',
+                          transform: 'translate(-50%, -50%)',
+                        }}
+                      >
+                        <StyledCircularProgress />
+                      </div>
+                    )}
+                  </div>
+                  <Button
+                    variant="contained"
+                    onClick={handleSessionButtonClick}
+                  >
+                    Stop Session
+                  </Button>
+                </>
+              )}
 
-                <P>Scan the QR code and log in to mark yourself present.</P>
-              </Stack>
-            )}
+              <P>Scan the QR code and log in to mark yourself present.</P>
+            </Stack>
           </Form>
           <div />
           <Form>
@@ -262,7 +279,9 @@ const Form = muiStyled(Paper)`
 
 const StyledCircularProgress = muiStyled(CircularProgress)`
   color: rgb(255, 138, 0);
-`;
+  width: 50px !important;
+  height: 50px !important;
+  `;
 
 const P = styled.p`
   margin: 0;
