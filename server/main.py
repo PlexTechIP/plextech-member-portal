@@ -288,6 +288,7 @@ def attendance():
                         time(),
                         f"{user['firstName']} {user['lastName']}",
                     )
+                    db.Attendance.replace_one({"_id": ObjectId(form["id"])}, attendance_info)
             else:
                 response = make_response(
                     redirect("https://plextech-member-portal.vercel.app/")
