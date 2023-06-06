@@ -134,9 +134,9 @@ export function ProfilePage(props: Props) {
       <Div />
       {user && (
         <>
-          <Div>
-            <AttendanceCard user={user} />
-          </Div>
+          {/* <Div>
+             <AttendanceCard user={user} /> 
+          </Div> */}
           <Div>
             <Form>
               <Stack spacing={4}>
