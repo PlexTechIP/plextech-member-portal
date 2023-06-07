@@ -8,17 +8,17 @@ import * as React from 'react';
 import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import styled from 'styled-components/macro';
-// import dayjs, { Dayjs } from 'dayjs';
-// import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-// import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-// import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import dayjs, { Dayjs } from 'dayjs';
+import { TimePicker } from '@mui/x-date-pickers/TimePicker';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import {
   Button,
+  Card,
   CircularProgress,
   Paper,
   Stack,
-  // Stack,
-  // TextField,
+  TextField,
   // Table,
   // TableBody,
   // TableCell,
@@ -52,6 +52,8 @@ export function AttendancePage(props: Props) {
   const [attendees, setAttendees] = useState<AttendeeData[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<Error>();
+  const [startTime, setStartTime] = useState<Dayjs | null>(dayjs());
+  const [meetingName, setMeetingName] = useState<string>('');
 
   const [isSessionActive, setIsSessionActive] = useState<boolean>(false);
   const [remainingTime, setRemainingTime] = useState<number>(10);
@@ -69,10 +71,13 @@ export function AttendancePage(props: Props) {
         props.token,
         props.removeToken,
         {
-          name: 'GM 0',
+          name: meetingName,
           meetingLeader: (jwt_decode(props.token!) as { sub: string }).sub,
-          startTime: new Date(),
+          startTime: startTime,
         },
+      );
+      console.log(
+        `${window.location}/?attendancecode=${res.code}&meetingid=${res.id}`,
       );
 
       if (!success) {
@@ -111,6 +116,7 @@ export function AttendancePage(props: Props) {
 
   const searchParams = new URLSearchParams(window.location.search);
   const attendancecode = searchParams.get('attendancecode');
+  const meetingIdUrl = searchParams.get('meetingid');
 
   useEffect(() => {
     if (!attendancecode) return;
@@ -121,7 +127,7 @@ export function AttendancePage(props: Props) {
         'PUT',
         props.token,
         props.removeToken,
-        { attendancecode },
+        { attendancecode, meetingId: meetingIdUrl },
       );
       if (!success) {
         setError(res.error);
@@ -130,7 +136,7 @@ export function AttendancePage(props: Props) {
       setIsLoading(false);
     };
     f();
-  }, [attendancecode, props]);
+  }, [attendancecode, meetingIdUrl, props]);
 
   useEffect(() => {
     let qrCodeUpdateInterval: NodeJS.Timeout | null = null;
@@ -148,6 +154,10 @@ export function AttendancePage(props: Props) {
         { id: meetingId },
       );
 
+      console.log(
+        `${window.location}/?attendancecode=${res.code}&meetingid=${meetingId}`,
+      );
+
       if (!success) {
         setError(res.error);
         setIsSessionActive(false);
@@ -163,14 +173,14 @@ export function AttendancePage(props: Props) {
 
     if (isSessionActive) {
       updateQRCode();
-      qrCodeUpdateInterval = setInterval(updateQRCode, 10000); // update every 10 seconds
+      qrCodeUpdateInterval = setInterval(updateQRCode, 10000); // update every 100 seconds
       timerUpdateInterval = setInterval(
         () =>
           setRemainingTime((prevTime: number) =>
             prevTime ? prevTime - 1 : prevTime,
           ),
         1000,
-      ); // update every 1 seconds
+      ); // update every 10 seconds
     }
 
     return () => {
@@ -193,6 +203,34 @@ export function AttendancePage(props: Props) {
         <Stack spacing={2} alignItems="center">
           <Form>
             <Stack spacing={3} alignItems="center">
+              <Stack
+                direction="row"
+                justifyContent="space-evenly"
+                alignItems="center"
+                style={{ width: '100%' }}
+              >
+                <TextField
+                  label="Meeting Name"
+                  disabled={isSessionActive}
+                  value={meetingName}
+                  onChange={(e: any) => {
+                    setMeetingName(e.target.value);
+                  }}
+                  error={!meetingName}
+                  required
+                />
+                <LocalizationProvider dateAdapter={AdapterDayjs}>
+                  <TimePicker
+                    label="Meeting Start Time"
+                    value={startTime}
+                    onChange={(newValue: Dayjs | null) => {
+                      setStartTime(newValue);
+                    }}
+                    renderInput={(params: any) => <TextField {...params} />}
+                    disabled={isSessionActive}
+                  />
+                </LocalizationProvider>
+              </Stack>
               {!isSessionActive ? (
                 <Button variant="contained" onClick={handleSessionButtonClick}>
                   Start Session
@@ -212,7 +250,7 @@ export function AttendancePage(props: Props) {
                   >
                     <QRCodeCanvas
                       id="qrCode"
-                      value={window.location + '/?attendancecode=' + code}
+                      value={`${window.location}/?attendancecode=${code}&meetingid=${meetingId}`}
                       size={300}
                       bgColor="#ffffff"
                       level="H"
@@ -242,22 +280,23 @@ export function AttendancePage(props: Props) {
                   </Button>
                 </>
               )}
-
-              <P>Scan the QR code and log in to mark yourself present.</P>
             </Stack>
           </Form>
           <div />
           <Form>
             <Stack spacing={3} alignItems="center">
-              <h1>Attendees</h1>
+              <H1>Attendees</H1>
               <Stack spacing={1} alignItems="center">
                 {Object.keys(attendees).map(id => (
-                  <P key={attendees[id].name}>
-                    {attendees[id].name} -{' '}
-                    {attendees[id].time.format('h:mm:ss a')}
-                  </P>
+                  <StyledCard key={attendees[id][1]}>
+                    <H3>
+                      {attendees[id][1]} - {attendees[id][0]}
+                    </H3>
+                  </StyledCard>
                 ))}
               </Stack>
+
+              <P>Scan the QR code and log in to mark yourself present.</P>
             </Stack>
           </Form>
         </Stack>
@@ -288,4 +327,19 @@ const StyledCircularProgress = muiStyled(CircularProgress)`
 
 const P = styled.p`
   margin: 0;
+  color: grey;
+`;
+
+const H1 = styled.h1`
+  margin: 0;
+`;
+
+const H3 = styled.h3`
+  margin: 0;
+`;
+
+const StyledCard = muiStyled(Card)`
+  padding: 24px;
+  border-radius: 24px;
+  width: 100%;
 `;

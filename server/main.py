@@ -39,6 +39,7 @@ jwt = JWTManager(app)
 key = getenv("FERNET_KEY")
 f = Fernet(key)
 
+
 @app.after_request
 def after_request(response):
     # cors
@@ -194,7 +195,7 @@ def login_signup_add_PIC():
                 response = make_response({"access_token": access_token})
 
                 if request.cookies.get("attendance"):
-                    attendance_info[request.cookies.get("attendance_id")] = (
+                    attendance_info['attendees'][request.cookies.get("attendance_id")] = (
                         request.cookies.get("attendance_time"),
                         f"{user['firstName']} {user['lastName']}",
                     )
@@ -274,30 +275,36 @@ def attendance():
     # marking attendance by scanning qr code
     if request.method == "PUT":
         code = ObjectId(request.json.get("attendancecode"))
+        aid = ObjectId(request.json.get("meetingId"))
 
-        print(attendance["code"], code)
-        if code == attendance["code"]:
+        attendance_info = db.Attendance.find_one({"_id": aid})
+
+        if code == attendance_info["code"]:
             form = dict(request.json)
             if jwt:
                 id = ObjectId(get_jwt_identity())
-                attendance_info = db.Attendance.find_one({"_id": ObjectId(form["id"])})
 
-                if id not in attendance_info["attendees"]:
+                if (
+                    str(id) not in attendance_info["attendees"]
+                    # and id != attendance_info["meetingLeader"]
+                ):
                     user = db.Users.find_one({"_id": id})
-                    attendance_info[id] = (
-                        time(),
+                    attendance_info['attendees'][str(id)] = (
+                        datetime.now().strftime('%I:%M:%S %p'),
                         f"{user['firstName']} {user['lastName']}",
                     )
-                    db.Attendance.replace_one({"_id": ObjectId(form["id"])}, attendance_info)
+                    db.Attendance.replace_one(
+                        {"_id": aid}, attendance_info
+                    )
             else:
                 response = make_response(
                     redirect("https://plextech-member-portal.vercel.app/")
                 )
                 response.set_cookie(
-                    "attendance_time", time(), httpOnly=True, secure=True
+                    "attendance_time", datetime.now().strftime('%I:%M:%S %p'), httpOnly=True, secure=True
                 )
                 response.set_cookie(
-                    "attendance_id", form["id"], httpOnly=True, secure=True
+                    "attendance_id", str(aid), httpOnly=True, secure=True
                 )
                 return response
         else:
@@ -321,7 +328,7 @@ def attendance():
         else:
             aid = ObjectId()
             attendance_info = {
-                '_id': aid,
+                "_id": aid,
                 "name": form.get("name"),
                 "meetingLeader": ObjectId(form.get("meetingLeader")),
                 "startTime": datetime.strptime(
@@ -331,6 +338,8 @@ def attendance():
             }
             attendance_info["code"] = ObjectId()
             db.Attendance.insert_one(attendance_info)
+
+            print(attendance_info)
 
         return {
             "code": str(attendance_info["code"]),

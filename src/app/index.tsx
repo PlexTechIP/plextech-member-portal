@@ -29,7 +29,6 @@ import { createTheme, ThemeProvider } from '@mui/material';
 import createPalette from '@mui/material/styles/createPalette';
 
 import { Analytics } from '@vercel/analytics/react';
-import { QrLandingPage } from './pages/QrLandingPage';
 import { apiRequest } from 'utils/apiRequest';
 
 export function App() {
@@ -145,12 +144,6 @@ export function App() {
                     path="/forum"
                     element={
                       <ForumPage token={token} removeToken={removeToken} />
-                    }
-                  />
-                  <Route
-                    path="/scan/:attendanceCode"
-                    element={
-                      <QrLandingPage token={token} removeToken={removeToken} />
                     }
                   />
                   <Route path="*" element={<NotFoundPage />} />
