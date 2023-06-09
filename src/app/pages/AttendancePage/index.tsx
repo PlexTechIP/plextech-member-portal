@@ -43,11 +43,6 @@ interface Props {
   removeToken: () => void;
 }
 
-interface AttendeeData {
-  name: string;
-  time: Date;
-}
-
 export function AttendancePage(props: Props) {
   const [code, setCode] = useState<string>('hi');
   const [meetingId, setMeetingId] = useState<string>('');
@@ -137,7 +132,8 @@ export function AttendancePage(props: Props) {
           time: dayjs().format('h:mm:ss A'),
         },
       );
-      if (!success) {
+
+      if (!success && res.error.errorCode !== 402) {
         setError(res.error);
         return;
       }
@@ -204,7 +200,10 @@ export function AttendancePage(props: Props) {
         <title>Attendance</title>
         <meta name="description" content="Take attendance here" />
       </Helmet>
-      {attendancecode && returnValue.attendanceTime && returnValue.startTime ? (
+      {(attendancecode &&
+        returnValue.attendanceTime &&
+        returnValue.startTime) ||
+      returnValue.error ? (
         <QRLandingPage {...returnValue} />
       ) : (
         <Stack spacing={2} alignItems="center">

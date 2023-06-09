@@ -5,14 +5,30 @@ import { styled as muiStyled } from '@mui/material';
 import dayjs, { Dayjs } from 'dayjs';
 import PErrorImage from './PError.png';
 import PRegularImage from './PRegular.png';
+import PColdImage from './PCold.png';
+import { Error } from 'types/types';
 
 interface Props {
   attendanceTime: string;
   startTime: string;
+  error?: Error;
 }
 
 export function QRLandingPage(props: Props) {
-  const { attendanceTime, startTime } = props;
+  if (props.error?.errorCode === 402) {
+    return (
+      <Form>
+        <Stack
+          direction="row"
+          alignItems="center"
+          justifyContent="space-between"
+        >
+          <H2>Sorry! This code is invalid, please try scanning it again.</H2>
+          <Img src={PColdImage} alt="Plexie cold" />
+        </Stack>
+      </Form>
+    );
+  }
 
   const parseTime = (time: string): Dayjs => {
     const [hours, minutes, seconds] = time.split(':');
@@ -24,7 +40,9 @@ export function QRLandingPage(props: Props) {
       .second(parseInt(seconds));
   };
 
-  const isLate = parseTime(attendanceTime).isAfter(parseTime(startTime));
+  const isLate = parseTime(props.attendanceTime).isAfter(
+    parseTime(props.startTime),
+  );
 
   return (
     <Form>
@@ -41,8 +59,8 @@ export function QRLandingPage(props: Props) {
               <H2 style={{ color: 'green' }}>You are on time!</H2>
             )}
 
-            <H2>Code scanned at: {attendanceTime}</H2>
-            <H2>Meeting start time: {startTime}</H2>
+            <H2>Code scanned at: {props.attendanceTime}</H2>
+            <H2>Meeting start time: {props.startTime}</H2>
           </Stack>
           {isLate ? (
             <Img src={PErrorImage} alt="Plexie sad" />
