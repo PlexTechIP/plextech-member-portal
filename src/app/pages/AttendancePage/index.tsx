@@ -35,6 +35,8 @@ import { Error } from 'types/types';
 import { QRCodeCanvas } from 'qrcode.react';
 import { apiRequest } from 'utils/apiRequest';
 import jwt_decode from 'jwt-decode';
+import { AttendeesDisplay } from './AttendeesDisplay';
+import { QRLandingPage } from './QRLandingPage';
 
 interface Props {
   token: string | null;
@@ -49,7 +51,7 @@ interface AttendeeData {
 export function AttendancePage(props: Props) {
   const [code, setCode] = useState<string>('hi');
   const [meetingId, setMeetingId] = useState<string>('');
-  const [attendees, setAttendees] = useState<AttendeeData[]>([]);
+  const [attendees, setAttendees] = useState<any>({});
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<Error>();
   const [startTime, setStartTime] = useState<Dayjs | null>(dayjs());
@@ -73,7 +75,7 @@ export function AttendancePage(props: Props) {
         {
           name: meetingName,
           meetingLeader: (jwt_decode(props.token!) as { sub: string }).sub,
-          startTime: startTime,
+          startTime: startTime?.format('h:mm:ss A'),
         },
       );
       console.log(
@@ -118,6 +120,8 @@ export function AttendancePage(props: Props) {
   const attendancecode = searchParams.get('attendancecode');
   const meetingIdUrl = searchParams.get('meetingid');
 
+  const [returnValue, setReturnValue] = useState<any>({});
+
   useEffect(() => {
     if (!attendancecode) return;
     const f = async () => {
@@ -127,13 +131,18 @@ export function AttendancePage(props: Props) {
         'PUT',
         props.token,
         props.removeToken,
-        { attendancecode, meetingId: meetingIdUrl },
+        {
+          attendancecode,
+          meetingId: meetingIdUrl,
+          time: dayjs().format('h:mm:ss A'),
+        },
       );
       if (!success) {
         setError(res.error);
         return;
       }
       setIsLoading(false);
+      setReturnValue(res);
     };
     f();
   }, [attendancecode, meetingIdUrl, props]);
@@ -195,19 +204,16 @@ export function AttendancePage(props: Props) {
         <title>Attendance</title>
         <meta name="description" content="Take attendance here" />
       </Helmet>
-      {attendancecode ? (
-        <>
-          <h1>Attendance Code: {attendancecode}</h1>
-        </>
+      {attendancecode && returnValue.attendanceTime && returnValue.startTime ? (
+        <QRLandingPage {...returnValue} />
       ) : (
         <Stack spacing={2} alignItems="center">
           <Form>
             <Stack spacing={3} alignItems="center">
-              <Stack
+              <StyledStack
                 direction="row"
                 justifyContent="space-evenly"
                 alignItems="center"
-                style={{ width: '100%' }}
               >
                 <TextField
                   label="Meeting Name"
@@ -230,7 +236,7 @@ export function AttendancePage(props: Props) {
                     disabled={isSessionActive}
                   />
                 </LocalizationProvider>
-              </Stack>
+              </StyledStack>
               {!isSessionActive ? (
                 <Button variant="contained" onClick={handleSessionButtonClick}>
                   Start Session
@@ -283,22 +289,9 @@ export function AttendancePage(props: Props) {
             </Stack>
           </Form>
           <div />
-          <Form>
-            <Stack spacing={3} alignItems="center">
-              <H1>Attendees</H1>
-              <Stack spacing={1} alignItems="center">
-                {Object.keys(attendees).map(id => (
-                  <StyledCard key={attendees[id][1]}>
-                    <H3>
-                      {attendees[id][1]} - {attendees[id][0]}
-                    </H3>
-                  </StyledCard>
-                ))}
-              </Stack>
-
-              <P>Scan the QR code and log in to mark yourself present.</P>
-            </Stack>
-          </Form>
+          {startTime && (
+            <AttendeesDisplay attendees={attendees} startTime={startTime!} />
+          )}
         </Stack>
       )}
       {error && <ErrorModal open={!!error} error={error} />}
@@ -313,11 +306,12 @@ const Form = muiStyled(Paper)`
   margin: auto;
   padding: 64px;
   border-radius: 48px;
+  margin-top: 32px;
 `;
 
-// const StyledStack = styled(Stack)`
-//   width: 100%;
-// `;
+const StyledStack = styled(Stack)`
+  width: 100%;
+`;
 
 const StyledCircularProgress = muiStyled(CircularProgress)`
   color: rgb(255, 138, 0);

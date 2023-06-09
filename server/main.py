@@ -192,14 +192,25 @@ def login_signup_add_PIC():
                 "google" in user and user["google"] and form["google"]
             ) or check_password(form["password"].encode("utf-8"), user["password"]):
                 access_token = create_access_token(identity=str(user["_id"]))
-                response = make_response({"access_token": access_token})
+                res = {"access_token": access_token}
 
-                if request.cookies.get("attendance"):
-                    attendance_info['attendees'][request.cookies.get("attendance_id")] = (
-                        request.cookies.get("attendance_time"),
-                        f"{user['firstName']} {user['lastName']}",
+                if request.cookies.get("attendanceId"):
+                    attendance_info = db.Attendance.find_one(
+                        {"_id": request.cookies.get("attendanceId")}
                     )
 
+                    attendance_info["attendees"][user["_id"]] = (
+                        request.cookies.get("attendanceTime"),
+                        f"{user['firstName']} {user['lastName']}",
+                    )
+                    res.update(
+                        {
+                            "startTime": attendance_info["startTime"],
+                            "attendanceTime": request.cookies.get("attendanceTime"),
+                        }
+                    )
+
+                response = make_response(res)
                 response.delete_cookie("attendance")
                 return response
             else:
@@ -285,26 +296,29 @@ def attendance():
                 id = ObjectId(get_jwt_identity())
 
                 if (
-                    str(id) not in attendance_info["attendees"]
+                    str(id)
+                    not in attendance_info["attendees"]
                     # and id != attendance_info["meetingLeader"]
                 ):
                     user = db.Users.find_one({"_id": id})
-                    attendance_info['attendees'][str(id)] = (
-                        datetime.now().strftime('%I:%M:%S %p'),
+                    attendance_info["attendees"][str(id)] = (
+                        form["time"],
                         f"{user['firstName']} {user['lastName']}",
                     )
-                    db.Attendance.replace_one(
-                        {"_id": aid}, attendance_info
-                    )
+                    db.Attendance.replace_one({"_id": aid}, attendance_info)
+                    return {
+                        "attendanceTime": form["time"],
+                        "startTime": attendance_info["startTime"],
+                    }
             else:
                 response = make_response(
                     redirect("https://plextech-member-portal.vercel.app/")
                 )
                 response.set_cookie(
-                    "attendance_time", datetime.now().strftime('%I:%M:%S %p'), httpOnly=True, secure=True
+                    "attendanceTime", form["time"], httpOnly=True, secure=True
                 )
                 response.set_cookie(
-                    "attendance_id", str(aid), httpOnly=True, secure=True
+                    "attendanceId", str(aid), httpOnly=True, secure=True
                 )
                 return response
         else:
@@ -331,9 +345,7 @@ def attendance():
                 "_id": aid,
                 "name": form.get("name"),
                 "meetingLeader": ObjectId(form.get("meetingLeader")),
-                "startTime": datetime.strptime(
-                    form.get("startTime"), "%Y-%m-%dT%H:%M:%S.%fZ"
-                ),
+                "startTime": form.get("startTime"),
                 "attendees": {},
             }
             attendance_info["code"] = ObjectId()
