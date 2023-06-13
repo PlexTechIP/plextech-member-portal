@@ -1,24 +1,6 @@
 
 
 import requests
-from flask import Flask, request
-from twilio.twiml.messaging_response import MessagingResponse
-
-app = Flask(__name__)
-
-@app.route("/sms", methods=['POST'])
-def sms_reply():
-    """Respond to incoming calls with a simple text message."""
-        
-    # Use this data in your application logic
-    from_number = request.form['From']
-    to_number = request.form['To']
-    body = request.form['Body']
-    print(body)
-
-if __name__ == "__main__":
-    app.run(debug=True)
-
 
 def bluevine_send_money(accountNumber=None, routingNumber=None, description=None):
     with requests.Session() as s:

@@ -723,6 +723,21 @@ def bank_details():
 
         return res, 200
 
+from twilio.twiml.messaging_response import MessagingResponse
+
+@app.route("/sms", methods=['POST'])
+def sms_reply():
+    """Respond to incoming calls with a simple text message."""
+        
+    # Use this data in your application logic
+    from_number = request.form['From']
+    to_number = request.form['To']
+    body = request.form['Body']
+    print(body)
+
+if __name__ == "__main__":
+    app.run(debug=True)
+
 
 if __name__ == "__main__":
     app.run(port=getenv("PORT"), host="0.0.0.0", debug=getenv("DEBUG"))
