@@ -19,7 +19,7 @@ from pymongo.errors import BulkWriteError
 from random import randint
 from cryptography.fernet import Fernet
 
-from send_email import gmail_send_message, send_comment_email
+from send_email import gmail_send_message, send_comment_email, send_email
 from venmo import request_money, send_money, search
 from bluevine import bluevine_send_money
 
@@ -38,6 +38,39 @@ jwt = JWTManager(app)
 
 key = getenv("FERNET_KEY")
 f = Fernet(key)
+
+# VENMO AUTO PAYMENT - DEPRECATED
+# from apscheduler.schedulers.background import BackgroundScheduler
+
+# interval = 60
+# def handle_payment_queue():
+#     global interval
+#     payment = db.PaymentQueue.find_one({})
+#     try:
+#         send_money(payment["venmo_id"], payment["amount"], 'PlexTech Reimbursement: ' + payment["subject"])
+#         print("Sent $" + str(payment["amount"]) + " to " + payment["venmo_id"] + " for " + payment["subject"])
+#         interval = 60
+#     except e:
+#         print("Error sending $" + str(payment["amount"]) + " to " + payment["venmo_id"] + " for " + payment["subject"])
+#         print(e)
+#         interval = 10000
+#         return
+
+#     try:
+#         db.Requests.find_one_and_update({"_id": payment["_id"]}, {'$set': {'status': 'paid'}})
+#         db.PaymentQueue.delete_one({"_id": payment["_id"]})
+#         interval = 60
+#     except e:
+#         print("Error updating payment status for " + payment["subject"])
+#         print(e)
+#         interval = 10000
+
+# scheduler = BackgroundScheduler()
+# scheduler.add_job(func=handle_payment_queue, trigger="interval", seconds=interval)
+# scheduler.start()
+
+# # Shut down the scheduler when exiting the app
+# atexit.register(lambda: scheduler.shutdown())
 
 
 @app.after_request
@@ -411,7 +444,22 @@ def approve_request(request_id):
         if form["status"] == "approved":
             user = db.Users.find_one({"_id": r["user_id"]})
             if "venmo" not in user:
+                r = db.Requests.find_one_and_update(
+                    {"_id": ObjectId(request_id)},
+                    {
+                        "$set": {"status": "errors"},
+                        "$push": {"comments": {"$each": form["comments"]}},
+                    },
+                )
                 return {"error": "Need to set venmo username"}, 407
+            if "bank" not in user:
+                send_email(
+                    user["email"],
+                    "PlexTech Reimbursement Error",
+                    f'Hello {user["firstName"]}',
+                    "You need to set your bank account information in order to be reimbursed. Please go to <a href=\"https://plextech-member-portal.vercel.app/reimbursements\">https://plextech-member-portal.vercel.app/reimbursements</a> to set your bank account information.",
+                )
+                return {"error": "Need to set bank info"}, 407
             # send_money(user['venmo']['id'], form['amount'],
             #             f'PlexTech Reimbursement: {r["itemDescription"]}')
             # db.PaymentQueue.insert_one({'_id': ObjectId(request_id), 'venmo_id': user['venmo']['id'], 'amount': float(
@@ -423,6 +471,13 @@ def approve_request(request_id):
                 form["amount"],
                 r["itemDescription"],
             )
+            # r = db.Requests.find_one_and_update(
+            #     {"_id": ObjectId(request_id)},
+            #     {
+            #         "$set": {"status": "paid"},
+            #         "$push": {"comments": {"$each": form["comments"]}},
+            #     },
+            # )
 
         return {}, 200
 

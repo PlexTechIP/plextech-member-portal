@@ -203,7 +203,7 @@ export function AttendancePage(props: Props) {
       {(attendancecode &&
         returnValue.attendanceTime &&
         returnValue.startTime) ||
-      returnValue.error ? (
+      (returnValue && returnValue.error) ? (
         <QRLandingPage {...returnValue} />
       ) : (
         <Stack spacing={2} alignItems="center">

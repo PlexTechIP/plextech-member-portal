@@ -76,12 +76,12 @@
             style="width: 64px; margin-bottom: 15px"
           />
         </a>
-        <div class="header">Hello {request_user['firstName']},</div>
+        <div class="header">Hello {{receiver_first_name}},</div>
         <div class="content">
-          {user['firstName']} {user['lastName']} has commented on your
-          reimbursement request for "{req['itemDescription']}", with:
+          {{sender_first_name]}} {{sender_last_name}} has commented on your
+          reimbursement request for "{{item_description}}", with:
           <br /><br />
-          <blockquote>{form['comment']['message']}</blockquote>
+          <blockquote>{{message}}</blockquote>
           <br />
           To see your request, go to
           <a href="https://plextech-member-portal.vercel.app/reimbursements"
