@@ -725,7 +725,7 @@ def bank_details():
 
 from twilio.twiml.messaging_response import MessagingResponse
 
-@app.route("/sms", methods=['POST'])
+@app.route("/sms/", methods=['POST'])
 def sms_reply():
     """Respond to incoming calls with a simple text message."""
         
