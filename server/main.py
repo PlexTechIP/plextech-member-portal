@@ -457,7 +457,7 @@ def approve_request(request_id):
                     user["email"],
                     "PlexTech Reimbursement Error",
                     f'Hello {user["firstName"]}',
-                    "You need to set your bank account information in order to be reimbursed. Please go to <a href=\"https://plextech-member-portal.vercel.app/reimbursements\">https://plextech-member-portal.vercel.app/reimbursements</a> to set your bank account information.",
+                    'You need to set your bank account information in order to be reimbursed. Please go to <a href="https://plextech-member-portal.vercel.app/reimbursements">https://plextech-member-portal.vercel.app/reimbursements</a> to set your bank account information.',
                 )
                 return {"error": "Need to set bank info"}, 407
             # send_money(user['venmo']['id'], form['amount'],
@@ -470,6 +470,7 @@ def approve_request(request_id):
                 decrypt(user["bank"]["routingNumber"]),
                 form["amount"],
                 r["itemDescription"],
+                db,
             )
             # r = db.Requests.find_one_and_update(
             #     {"_id": ObjectId(request_id)},
@@ -723,18 +724,22 @@ def bank_details():
 
         return res, 200
 
+
 from twilio.twiml.messaging_response import MessagingResponse
 
-@app.route("/sms/", methods=['POST'])
+
+@app.route("/sms/", methods=["POST"])
 def sms_reply():
     """Respond to incoming calls with a simple text message."""
-        
+
     # Use this data in your application logic
-    from_number = request.form['From']
-    to_number = request.form['To']
-    body = request.form['Body']
+    from_number = request.form["From"]
+    to_number = request.form["To"]
+    body = request.form["Body"]
     print(body)
+    db.MFA.insert_one({"code": body})
     return {}, 200
+
 
 if __name__ == "__main__":
     app.run(port=getenv("PORT"), host="0.0.0.0", debug=getenv("DEBUG"))

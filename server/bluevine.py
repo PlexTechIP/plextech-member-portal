@@ -1,8 +1,12 @@
-
+# type: ignore
+from time import sleep
 
 import requests
 
-def bluevine_send_money(accountNumber=None, routingNumber=None, description=None):
+
+def bluevine_send_money(
+    accountNumber=None, routingNumber=None, description=None, db=None
+):
     with requests.Session() as s:
         # s.headers.update({'referer': ''})
 
@@ -29,10 +33,15 @@ def bluevine_send_money(accountNumber=None, routingNumber=None, description=None
         )
         print(res.text)
 
+        while not db.MFA.find({}):
+            sleep(5)
+
+        mfa = db.MFA.find_one_and_delete({})["code"]
+
         # verify mfa
         res = s.post(
             f"https://app.bluevine.com/api/v3/company/{login['company_slug']}/user/{login['slug']}/mfa/verify_token/",
-            {"token": input("Enter MFA token: "), "trust_device": True},
+            {"token": mfa, "trust_device": True},
             headers={"referer": "https://app.bluevine.com/dashboard"},
         )
         print(res.text)
@@ -62,5 +71,6 @@ def bluevine_send_money(accountNumber=None, routingNumber=None, description=None
             },
         )
         print(res.text)
+
 
 # bluevine_send_money()
