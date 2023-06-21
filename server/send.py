@@ -19,13 +19,14 @@ Please aim to fill out the form by the end of this week. We're eager to gather y
 '''
 # email, subject, header, message
 with app.app_context():
-    with open('templates/emails.txt') as f:
+    # with open('templates/emails.txt') as f:
         # lines = f.read().splitlines()
         # emails = [line.split(', ')[0] for line in lines]
         # names = [line.split(', ')[1] for line in lines]
-        emails = ['shamith09@berkeley.edu']
-        names = ['Shamith']
         
+    emails = ['shamith09@berkeley.edu']
+    names = ['Shamith']
+    
     for (name, email) in zip(names, emails):
         send_email(email, 'PlexTech Continuation Fall 2023', f'Hi {name},', Markup(message))
         # print(email, name)
