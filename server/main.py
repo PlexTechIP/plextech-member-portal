@@ -20,7 +20,7 @@ from random import randint
 from cryptography.fernet import Fernet
 
 from send_email import gmail_send_message, send_comment_email, send_email
-from venmo import request_money, send_money, search
+# from venmo import request_money, send_money, search
 from bluevine import bluevine_send_money
 
 import time
