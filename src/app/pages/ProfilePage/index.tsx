@@ -11,7 +11,7 @@ import { Error, User, VenmoProfile } from 'types/types';
 import { Helmet } from 'react-helmet-async';
 import { ErrorModal } from 'app/components/ErrorModal';
 import { styled as muiStyled } from '@mui/system';
-import { AttendanceCard } from 'app/components/AttendanceCard';
+// import { AttendanceCard } from 'app/components/AttendanceCard';
 import {
   Box,
   Button,
@@ -22,7 +22,9 @@ import {
   InputAdornment,
   Stack,
   TextField,
+  Input,
 } from '@mui/material';
+import Autocomplete, { usePlacesWidget } from 'react-google-autocomplete';
 import { VenmoCard } from 'app/components/VenmoCard';
 import SearchIcon from '@mui/icons-material/Search';
 import { apiRequest } from 'utils/apiRequest';
@@ -42,6 +44,16 @@ export function ProfilePage(props: Props) {
   const [loading, setLoading] = useState<boolean>(false);
   const [accountNumber, setAccountNumber] = useState<string>('');
   const [routingNumber, setRoutingNumber] = useState<string>('');
+  const [bankName, setBankName] = useState<string>('');
+
+  const { ref: materialRef } = usePlacesWidget({
+    apiKey: process.env.REACT_APP_GOOGLE,
+    onPlaceSelected: place => console.log(place),
+    inputAutocompleteValue: 'country',
+    options: {
+      componentRestrictions: { country: 'us' },
+    },
+  });
 
   useEffect(() => {
     const f = async () => {
@@ -113,7 +125,7 @@ export function ProfilePage(props: Props) {
       'PUT',
       props.token,
       props.removeToken,
-      { accountNumber, routingNumber },
+      { accountNumber, routingNumber, bankName },
     );
 
     if (!success) {
@@ -154,7 +166,7 @@ export function ProfilePage(props: Props) {
                     {user.bank ? 'Submitted' : 'Submit'}
                   </Button>
                 </Stack>
-                {user.bank || (
+                {user.bank.address || (
                   <>
                     <TextField
                       fullWidth
@@ -169,7 +181,33 @@ export function ProfilePage(props: Props) {
                       onChange={e => setRoutingNumber(e.target.value)}
                       error={!/^\d+$/.test(routingNumber)}
                     />
+                    <TextField
+                      fullWidth
+                      label="Bank Name"
+                      value={bankName}
+                      onChange={e => setBankName(e.target.value)}
+                      error={!!bankName}
+                    />
+                    <Input
+                      fullWidth
+                      color="secondary"
+                      inputComponent={({
+                        inputRef,
+                        onFocus,
+                        onBlur,
+                        ...props
+                      }) => (
+                        <Autocomplete
+                          apiKey={process.env.REACT_APP_GOOGLE_API_KEY}
+                          {...props}
+                          onPlaceSelected={(selected: any) =>
+                            console.log(selected)
+                          }
+                        />
+                      )}
+                    />
                   </>
+                  // 
                 )}
                 <Stack
                   direction="row"

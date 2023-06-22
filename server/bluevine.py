@@ -5,7 +5,14 @@ import requests
 
 
 def bluevine_send_money(
-    accountNumber=None, routingNumber=None, description=None, db=None
+    accountNumber=None,
+    routingNumber=None,
+    bankName=None,
+    email=None,
+    address={},
+    description=None,
+    fullName=None,
+    db=None,
 ):
     with requests.Session() as s:
         # s.headers.update({'referer': ''})
@@ -46,25 +53,28 @@ def bluevine_send_money(
         )
         print(res.text)
 
+        body = {
+            "name": fullName,
+            "status": "Active",
+            "payee_type": "P",
+            "service": "Other Products and Services",
+            "bank_name": BankName,
+            "encrypted_account_number": str(accountNumber),
+            "verify_account_number": str(accountNumber),
+            "ach_routing_number": str(routingNumber),
+            "contact_email": email,
+            # "address": "295 Summerford Circle, San Ramon, CA, 94583",
+            # "address_city": "San Ramon",
+            # "address_extra": "",
+            # "address_state": "CA",
+            # "address_zip": "94583",
+        }
+        body.update(address)
+
         # create payee
         res = s.post(
             f"https://app.bluevine.com/api/v3/dda-company/{login['company_slug']}/dda-user/{login['slug']}/payee/",
-            {
-                "name": "Shamith Pasula",
-                "status": "Active",
-                "payee_type": "P",
-                "address": "295 Summerford Circle, San Ramon, CA, 94583",
-                "service": "Other Products and Services",
-                "bank_name": "Bank of America",
-                "encrypted_account_number": "325130449148",
-                "verify_account_number": "325130449148",
-                "ach_routing_number": "121000358",
-                "contact_email": "shamith09@gmail.com",
-                "address_city": "San Ramon",
-                "address_extra": "",
-                "address_state": "CA",
-                "address_zip": "94583",
-            },
+            body,
             headers={
                 "referer": "https://app.bluevine.com/dashboard/payees",
                 "x-csrftoken": s.cookies["csrftoken"],
