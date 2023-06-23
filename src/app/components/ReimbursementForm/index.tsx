@@ -38,7 +38,7 @@ import { CommentCard } from '../CommentCard';
 import { CommentForm } from '../CommentForm';
 import { apiRequest } from 'utils/apiRequest';
 import { Error } from '../../../types/types';
-import useToken from 'utils/useToken';
+import { getToken } from 'utils/useToken';
 
 interface Props {
   teams: string[];
@@ -72,8 +72,6 @@ export function ReimbursementForm(props: Props) {
   const [images, setImages] = useState<Image[]>([]);
   const [imagesLoading, setImagesLoading] = useState<boolean>(false);
 
-  const { token } = useToken();
-
   useEffect(() => {
     if (!props.request) {
       handleReset();
@@ -84,7 +82,7 @@ export function ReimbursementForm(props: Props) {
       const [success, res] = await apiRequest(
         '/requests/',
         'PUT',
-        token,
+        getToken(),
         undefined,
         {
           comment: true,
@@ -187,7 +185,7 @@ export function ReimbursementForm(props: Props) {
 
   const onDelete = async () => {
     setDeleteModal(false);
-    apiRequest('/requests/', 'DELETE', token, undefined, {
+    apiRequest('/requests/', 'DELETE', getToken(), undefined, {
       _id: props.request!._id,
     });
     props.onClose();
@@ -254,7 +252,7 @@ export function ReimbursementForm(props: Props) {
     const [success, res] = await apiRequest(
       '/requests/',
       props.request ? 'PUT' : 'POST',
-      token,
+      getToken(),
       undefined,
       {
         ...bodyData,
@@ -279,7 +277,7 @@ export function ReimbursementForm(props: Props) {
       date: dayjs(),
       user_id: props.request
         ? props.request.user_id
-        : (jwt_decode(token!) as { sub: string }).sub,
+        : (jwt_decode(getToken()!) as { sub: string }).sub,
     });
     setIsLoading(false);
   };
@@ -299,13 +297,13 @@ export function ReimbursementForm(props: Props) {
     const commentObj = {
       message: comment,
       date: dayjs(),
-      user_id: (jwt_decode(token!) as { sub: string }).sub,
+      user_id: (jwt_decode(getToken()!) as { sub: string }).sub,
       firstName: props.userName.firstName,
       lastName: props.userName.lastName,
     };
     formData.comments.push(commentObj);
     if (props.request) {
-      apiRequest('/requests/', 'POST', token, undefined, {
+      apiRequest('/requests/', 'POST', getToken(), undefined, {
         comment: commentObj,
         request_id: props.request!._id,
       });
@@ -324,7 +322,7 @@ export function ReimbursementForm(props: Props) {
     const [success, res] = await apiRequest(
       '/requests/',
       'PUT',
-      token,
+      getToken(),
       undefined,
       {
         images: true,
@@ -531,7 +529,7 @@ export function ReimbursementForm(props: Props) {
                 .map((comment: Comment) => (
                   <CommentCard
                     key={comment.date.toString()}
-                    id={(jwt_decode(token!) as { sub: string }).sub}
+                    id={(jwt_decode(getToken()!) as { sub: string }).sub}
                     comment={comment}
                   />
                 ))

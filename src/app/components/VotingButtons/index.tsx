@@ -14,7 +14,7 @@ import { useState } from 'react';
 interface Props {
   post: Post;
   userId: string;
-  onVote: (param: {
+  onVote?: (param: {
     removeFromDownvote: boolean;
     removeFromUpvote: boolean;
     addToDownvote: boolean;
@@ -34,12 +34,14 @@ export function VotingButtons(props: Props) {
   );
 
   const onVote = (isUpvote: boolean) => {
+    if (!props.onVote) return;
+
     const param = {
       removeFromDownvote: false,
       removeFromUpvote: false,
       addToDownvote: false,
       addToUpvote: false,
-      postId: post._id,
+      postId: post._id!,
     };
 
     if (isUpvote) {

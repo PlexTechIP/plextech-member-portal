@@ -16,7 +16,7 @@ import { useEffect, useState } from 'react';
 import { ErrorModal } from '../ErrorModal';
 import { ApproveModal } from './ApproveModal';
 import { apiRequest } from 'utils/apiRequest';
-import useToken from 'utils/useToken';
+import { getToken, removeToken } from 'utils/useToken';
 
 interface Props {
   requests: AllRequests | null;
@@ -51,8 +51,6 @@ export function RequestsBoard(props: Props) {
   const [sourceStatus, setSourceStatus] = useState<string>('');
   const [sourceIndex, setSourceIndex] = useState<number>(0);
   const [destinationIndex, setDestinationIndex] = useState<number>(0);
-
-  const { token, removeToken } = useToken();
 
   useEffect(() => {
     const tempSums: Sums = {
@@ -116,7 +114,7 @@ export function RequestsBoard(props: Props) {
     const [success, res] = await apiRequest(
       `/approval/${request._id}/`,
       'PUT',
-      token,
+      getToken(),
       removeToken,
       { status: destination.droppableId, comments: [] },
     );
@@ -131,7 +129,7 @@ export function RequestsBoard(props: Props) {
     const [success, res] = await apiRequest(
       `/approval/${approveId}/`,
       'PUT',
-      token,
+      getToken(),
       removeToken,
       {
         status: 'approved',
@@ -222,7 +220,7 @@ export function RequestsBoard(props: Props) {
                                 mine={
                                   !props.isTreasurer ||
                                   request.user_id ===
-                                    (jwt_decode(token!) as any).sub
+                                    (jwt_decode(getToken()!) as any).sub
                                 }
                               />
                             ))}

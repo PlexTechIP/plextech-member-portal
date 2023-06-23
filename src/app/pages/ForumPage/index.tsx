@@ -16,7 +16,7 @@ import AddIcon from '@mui/icons-material/Add';
 import { ForumPostForm } from 'app/components/ForumPostForm';
 import jwt_decode from 'jwt-decode';
 import { apiRequest } from 'utils/apiRequest';
-import useToken from 'utils/useToken';
+import { getToken, removeToken } from 'utils/useToken';
 
 interface Props {}
 
@@ -24,8 +24,6 @@ export function ForumPage(props: Props) {
   const [error, setError] = useState<Error>();
   const [posts, setPosts] = useState<Post[]>([]);
   const [showForm, setShowForm] = useState<boolean>(false);
-
-  const { token, removeToken } = useToken();
 
   const onVote = async (param: {
     removeFromDownvote: boolean;
@@ -37,7 +35,7 @@ export function ForumPage(props: Props) {
     const [success, res] = await apiRequest(
       '/forum/',
       'PUT',
-      token,
+      getToken(),
       removeToken,
       param,
     );
@@ -52,7 +50,7 @@ export function ForumPage(props: Props) {
       const [success, res] = await apiRequest(
         '/forum/',
         'GET',
-        token,
+        getToken(),
         removeToken,
       );
 
@@ -81,7 +79,7 @@ export function ForumPage(props: Props) {
       const [success, res] = await apiRequest(
         '/profile/',
         'GET',
-        token,
+        getToken(),
         removeToken,
       );
 
@@ -93,7 +91,7 @@ export function ForumPage(props: Props) {
     };
 
     f();
-  }, [props, token]);
+  }, [props, getToken()]);
 
   const theme = useTheme();
 
@@ -108,7 +106,10 @@ export function ForumPage(props: Props) {
       </Helmet>
       {error && <ErrorModal open={!!error} error={error} />}
       <StyledModal open={showForm}>
-        <ForumPostForm userId={(jwt_decode(token!) as { sub: string }).sub} />
+        <ForumPostForm
+          userId={(jwt_decode(getToken()!) as { sub: string }).sub}
+          onClose={() => setShowForm(false)}
+        />
       </StyledModal>
       <Div>
         <Stack spacing={2}>
@@ -128,7 +129,7 @@ export function ForumPage(props: Props) {
                 isTreasurer={isTreasurer}
                 key={post._id}
                 post={post}
-                userId={(jwt_decode(token!) as any).sub}
+                userId={(jwt_decode(getToken()!) as any).sub}
                 onVote={onVote}
               />
             ))}

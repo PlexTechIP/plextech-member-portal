@@ -1,28 +1,27 @@
-import { useState } from 'react';
+import { EventEmitter } from 'events';
 
-const useToken = () => {
-  const getToken = () => {
-    const userToken = localStorage.getItem('token');
-    return userToken && userToken;
-  };
+const eventEmitter = new EventEmitter();
 
-  const [token, setToken] = useState<string | null>(getToken());
-
-  const saveToken = (userToken: string) => {
-    localStorage.setItem('token', userToken);
-    setToken(userToken);
-  };
-
-  const removeToken = () => {
-    localStorage.removeItem('token');
-    setToken(null);
-  };
-
-  return {
-    setToken: saveToken,
-    token,
-    removeToken,
-  };
+export const getToken = () => {
+  const userToken = localStorage.getItem('token');
+  return userToken && userToken;
 };
 
-export default useToken;
+export const setToken = (userToken: string) => {
+  localStorage.setItem('token', userToken);
+  eventEmitter.emit('tokenChanged', userToken);
+};
+
+export const removeToken = () => {
+  localStorage.removeItem('token');
+  eventEmitter.emit('tokenChanged', null);
+};
+
+export const onTokenChange = (callback: (newToken: string | null) => void) => {
+  eventEmitter.on('tokenChanged', callback);
+
+  // Return a function that can be used to unsubscribe
+  return () => {
+    eventEmitter.off('tokenChanged', callback);
+  };
+};

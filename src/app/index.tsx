@@ -19,7 +19,7 @@ import { LoginPage } from './pages/LoginPage/Loadable';
 import LightBackground from '../shapes-background.png';
 import DarkBackground from '../shapes-background-dark.png';
 import styled from 'styled-components';
-import useToken from 'utils/useToken';
+import { getToken, onTokenChange } from 'utils/useToken';
 import { useEffect, useState } from 'react';
 import { TopBar } from './components/TopBar';
 import { AttendancePage } from './pages/AttendancePage/Loadable';
@@ -71,8 +71,9 @@ export function App() {
 
   const [open, setOpen] = useState<boolean>(false);
   const [sessionExpired, setSessionExpired] = useState<boolean>(false);
-
-  const { token, removeToken, setToken } = useToken();
+  const [token, setToken] = useState<string | null>(
+    localStorage.getItem('token'),
+  );
 
   setTimeout(() => {
     apiRequest('/ping/', 'GET', token, () => setSessionExpired(true));
@@ -88,6 +89,9 @@ export function App() {
     } else {
       setSessionExpired(false);
     }
+
+    const unsubscribe = onTokenChange(setToken);
+    return unsubscribe;
   }, [token]);
 
   return (

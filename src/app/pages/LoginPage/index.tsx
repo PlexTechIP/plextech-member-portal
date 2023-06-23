@@ -29,7 +29,7 @@ import { ForgotPasswordPage } from '../ForgotPasswordPage/Loadable';
 import { Error } from 'types/types';
 import jwt_decode from 'jwt-decode';
 import { apiRequest } from 'utils/apiRequest';
-import useToken from 'utils/useToken';
+import { setToken, getToken } from 'utils/useToken';
 
 interface Props {}
 
@@ -49,8 +49,6 @@ export function LoginPage(props: Props) {
   const [googleResponse, setGoogleResponse] = useState<any>({});
 
   const theme = useTheme();
-
-  const { token, setToken } = useToken();
 
   useEffect(() => {
     google.accounts.id.initialize({
@@ -123,7 +121,7 @@ export function LoginPage(props: Props) {
     const [success, res] = await apiRequest(
       '/users/',
       'POST',
-      token,
+      getToken(),
       () => setIncorrect(true),
       { ...formData, method: 'login' },
     );
@@ -141,6 +139,7 @@ export function LoginPage(props: Props) {
     setIncorrect(false);
 
     setToken(res.access_token);
+    console.log(getToken());
     setSubmitted(false);
   };
 

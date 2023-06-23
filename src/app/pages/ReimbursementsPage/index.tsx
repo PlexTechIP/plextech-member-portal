@@ -11,7 +11,7 @@ import { styled as muiStyled } from '@mui/system';
 import dayjs from 'dayjs';
 import { BackToTopButton } from 'app/components/BackToTopButton';
 import { apiRequest } from 'utils/apiRequest';
-import useToken from 'utils/useToken';
+import { getToken, removeToken } from 'utils/useToken';
 
 interface Props {}
 
@@ -35,15 +35,13 @@ export function HomePage(props: Props) {
     lastName: string;
   }>({ firstName: '', lastName: '' });
 
-  const { token, removeToken } = useToken();
-
   useEffect(() => {
     const f = async () => {
       setIsLoading(true);
       const [success, res] = await apiRequest(
         `/requests/`,
         'GET',
-        token,
+        getToken(),
         removeToken,
       );
 
@@ -91,7 +89,7 @@ export function HomePage(props: Props) {
     };
 
     f();
-  }, [props, token]);
+  }, [props, getToken()]);
 
   const onClose = () => {
     setShowModal(false);

@@ -20,7 +20,6 @@ import { useState } from 'react';
 import { PasswordResetPage } from '../PasswordResetPage/Loadable';
 import { Error } from 'types/types';
 import { apiRequest } from 'utils/apiRequest';
-import useToken from 'utils/useToken';
 
 interface Props {
   onBack: () => void;
@@ -33,8 +32,6 @@ export function ForgotPasswordPage(props: Props) {
   const [loading, setLoading] = useState<boolean>(false);
   const [incorrect, setIncorrect] = useState<boolean>(false);
   const [showResetPage, setShowResetPage] = useState<boolean>(false);
-
-  const { token, setToken } = useToken();
 
   const onEmailChange = ({ target }) => {
     setEmail(target.value);

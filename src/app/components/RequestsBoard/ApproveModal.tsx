@@ -22,7 +22,7 @@ import { CommentCard } from '../CommentCard';
 import jwt_decode from 'jwt-decode';
 import { Comment } from 'types/types';
 import dayjs from 'dayjs';
-import useToken from 'utils/useToken';
+import { getToken } from 'utils/useToken';
 
 interface Props {
   open: boolean;
@@ -40,7 +40,6 @@ export function ApproveModal(props: Props) {
 
   const [comments, setComments] = useState<Comment[]>([]);
   const [curComment, setCurComment] = useState<string>('');
-  const { token } = useToken();
 
   const handleAmountChange = ({ target }) => setAmount(target.value);
 
@@ -104,7 +103,7 @@ export function ApproveModal(props: Props) {
             }}
           />
           <Divider />
-          {token &&
+          {getToken() &&
             [
               ...comments,
               {
@@ -112,7 +111,7 @@ export function ApproveModal(props: Props) {
                   (amount / props.requestedAmount) * 100,
                 )}%)`,
                 date: dayjs(),
-                user_id: (jwt_decode(token!) as { sub: string }).sub,
+                user_id: (jwt_decode(getToken()!) as { sub: string }).sub,
                 firstName: props.userName.firstName,
                 lastName: props.userName.lastName,
               },
@@ -120,7 +119,7 @@ export function ApproveModal(props: Props) {
               .map((comment: Comment, index: number) => (
                 <CommentCard
                   key={index}
-                  id={(jwt_decode(token!) as { sub: string }).sub}
+                  id={(jwt_decode(getToken()!) as { sub: string }).sub}
                   comment={comment}
                 />
               ))
@@ -137,7 +136,7 @@ export function ApproveModal(props: Props) {
                 {
                   message: curComment,
                   date: dayjs(),
-                  user_id: (jwt_decode(token!) as { sub: string }).sub,
+                  user_id: (jwt_decode(getToken()!) as { sub: string }).sub,
                   firstName: props.userName.firstName,
                   lastName: props.userName.lastName,
                 },

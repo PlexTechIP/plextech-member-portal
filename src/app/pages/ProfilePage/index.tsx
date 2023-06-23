@@ -28,7 +28,7 @@ import { VenmoCard } from 'app/components/VenmoCard';
 import SearchIcon from '@mui/icons-material/Search';
 import { apiRequest } from 'utils/apiRequest';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
-import useToken from 'utils/useToken';
+import { getToken, removeToken } from 'utils/useToken';
 
 interface Props {}
 
@@ -43,14 +43,12 @@ export function ProfilePage(props: Props) {
   const [routingNumber, setRoutingNumber] = useState<string>('');
   const [bankName, setBankName] = useState<string>('');
 
-  const { token, removeToken } = useToken();
-
   useEffect(() => {
     const f = async () => {
       const [success, res] = await apiRequest(
         '/profile/',
         'GET',
-        token,
+        getToken(),
         removeToken,
       );
 
@@ -70,7 +68,7 @@ export function ProfilePage(props: Props) {
     const [success, res] = await apiRequest(
       '/venmo/_/',
       'PUT',
-      token,
+      getToken(),
       removeToken,
       profile,
     );
@@ -98,7 +96,7 @@ export function ProfilePage(props: Props) {
     const [success, res] = await apiRequest(
       `/venmo/${encodeURIComponent(username)}/`,
       'GET',
-      token,
+      getToken(),
       removeToken,
     );
     if (!success) {
@@ -113,7 +111,7 @@ export function ProfilePage(props: Props) {
     const [success, res] = await apiRequest(
       '/bank/',
       'PUT',
-      token,
+      getToken(),
       removeToken,
       { accountNumber, routingNumber, bankName },
     );

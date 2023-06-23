@@ -88,7 +88,7 @@ export interface Post {
   user_id?: string;
   firstName?: string;
   lastName?: string;
-  _id: string;
+  _id?: string;
   title: string;
   body: string;
   date: Dayjs;

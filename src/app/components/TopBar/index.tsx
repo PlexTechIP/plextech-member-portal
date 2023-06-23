@@ -32,7 +32,7 @@ import { useEffect, useState } from 'react';
 import Brightness4 from '@mui/icons-material/Brightness4';
 import Brightness7 from '@mui/icons-material/Brightness7';
 import { apiRequest } from 'utils/apiRequest';
-import useToken from 'utils/useToken';
+import { getToken, removeToken } from 'utils/useToken';
 
 interface Props {
   open: boolean;
@@ -60,16 +60,19 @@ if (page === '?' || !(page in iconMap)) page = '';
 export function TopBar(props: Props) {
   const [isTreasurer, setIsTreasurer] = useState<boolean>(false);
 
-  const { token, removeToken } = useToken();
-
   useEffect(() => {
     const f = async () => {
-      const [, res] = await apiRequest('/profile/', 'GET', token, removeToken);
+      const [, res] = await apiRequest(
+        '/profile/',
+        'GET',
+        getToken(),
+        removeToken,
+      );
       setIsTreasurer(res.treasurer);
     };
 
     f();
-  }, [props, removeToken, token]);
+  }, [props, removeToken, getToken()]);
 
   const theme = useTheme();
 

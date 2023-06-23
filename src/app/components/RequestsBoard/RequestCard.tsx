@@ -11,7 +11,7 @@ import { ImageModal } from './ImageModal';
 import { Draggable } from 'react-beautiful-dnd';
 import { ErrorModal } from '../ErrorModal';
 import { apiRequest } from 'utils/apiRequest';
-import useToken from 'utils/useToken';
+import { getToken } from 'utils/useToken';
 
 interface Props {
   request: Request;
@@ -30,15 +30,13 @@ export function RequestCard(props: Props) {
     setShowModal(false);
   };
 
-  const { token } = useToken();
-
   const onClick = async () => {
     setLoading(true);
     setShowModal(true);
     const [success, res] = await apiRequest(
       '/requests/',
       'PUT',
-      token,
+      getToken(),
       undefined,
       {
         images: true,

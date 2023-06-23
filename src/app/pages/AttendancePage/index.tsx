@@ -37,7 +37,7 @@ import { apiRequest } from 'utils/apiRequest';
 import jwt_decode from 'jwt-decode';
 import { AttendeesDisplay } from './AttendeesDisplay';
 import { QRLandingPage } from './QRLandingPage';
-import useToken from 'utils/useToken';
+import { getToken, removeToken } from 'utils/useToken';
 
 interface Props {}
 
@@ -53,8 +53,6 @@ export function AttendancePage(props: Props) {
   const [isSessionActive, setIsSessionActive] = useState<boolean>(false);
   const [remainingTime, setRemainingTime] = useState<number>(10);
 
-  const { token, removeToken } = useToken();
-
   const handleSessionButtonClick = async () => {
     setIsLoading(true);
     if (!isSessionActive) {
@@ -65,11 +63,11 @@ export function AttendancePage(props: Props) {
       const [success, res] = await apiRequest(
         '/attendance/',
         'POST',
-        token,
+        getToken(),
         removeToken,
         {
           name: meetingName,
-          meetingLeader: (jwt_decode(token!) as { sub: string }).sub,
+          meetingLeader: (jwt_decode(getToken()!) as { sub: string }).sub,
           startTime: startTime?.format('h:mm:ss A'),
         },
       );
@@ -94,7 +92,7 @@ export function AttendancePage(props: Props) {
       const [success, res] = await apiRequest(
         '/attendance/',
         'DELETE',
-        token,
+        getToken(),
         removeToken,
         { id: meetingId },
       );
@@ -124,7 +122,7 @@ export function AttendancePage(props: Props) {
       const [success, res] = await apiRequest(
         '/attendance/',
         'PUT',
-        token,
+        getToken(),
         removeToken,
         {
           attendancecode,
@@ -154,7 +152,7 @@ export function AttendancePage(props: Props) {
       const [success, res] = await apiRequest(
         '/attendance/',
         'POST',
-        token,
+        getToken(),
         removeToken,
         { id: meetingId },
       );

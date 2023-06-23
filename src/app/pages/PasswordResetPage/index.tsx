@@ -20,7 +20,7 @@ import PlexTechLogo from '../../../PlexTechLogo.png';
 import { NewPasswordPage } from '../NewPasswordPage/Loadable';
 import { Error } from 'types/types';
 import { apiRequest } from 'utils/apiRequest';
-import useToken from 'utils/useToken';
+import { getToken, setToken } from 'utils/useToken';
 
 interface Props {
   onBack: () => void;
@@ -35,8 +35,6 @@ export function PasswordResetPage(props: Props) {
   const [incorrect, setIncorrect] = useState<boolean>(false);
   const [expired, setExpired] = useState<boolean>(false);
   const [success, setSuccess] = useState<boolean>(false);
-
-  const { token, setToken } = useToken();
 
   const onCodeChange = ({ target }) => {
     setCode(target.value);
@@ -53,7 +51,7 @@ export function PasswordResetPage(props: Props) {
     const [success, res] = await apiRequest(
       '/users/',
       'POST',
-      token!.substring(1, token!.length),
+      getToken()!.substring(1, getToken()!.length),
       undefined,
       {
         email: props.email,
@@ -77,7 +75,7 @@ export function PasswordResetPage(props: Props) {
       return;
     }
 
-    setToken('ƒ' + res.access_token);
+    setToken('ƒ' + res.access_getToken());
     setSuccess(true);
     setExpired(false);
     setIncorrect(false);

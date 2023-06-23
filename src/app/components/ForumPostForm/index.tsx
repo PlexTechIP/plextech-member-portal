@@ -9,76 +9,93 @@ import { Post } from 'types/types';
 import { styled as muiStyled } from '@mui/system';
 import { Divider, IconButton, Modal, Paper, Stack } from '@mui/material';
 import { CommentForm } from '../CommentForm';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import CloseIcon from '@mui/icons-material/Close';
 import { VotingButtons } from '../VotingButtons';
+import { apiRequest } from 'utils/apiRequest';
+import { getToken, removeToken } from 'utils/useToken';
+import dayjs from 'dayjs';
 
 interface Props {
   userId: string;
+  onClose: () => void;
 }
 
 export function ForumPostForm(props: Props) {
-  const [post, setPost] = useState<any>({
-    // user_id: props.userId,
-    // firstName?: string;
-    // lastName?: string;
-    // _id: string;
-    // title: string;
-    // body: string;
-    // date: Dayjs;
-    // images: Image[];
-    // anonymous: boolean;
-    // private: boolean;
-    // upvotes: string[];
-    // downvotes: string[];
+  useEffect(() => {
+    const f = async () => {
+      const [success, res] = await apiRequest(
+        `/requests/`,
+        'GET',
+        getToken(),
+        removeToken,
+      );
+
+      if (!success) {
+        setError(res.error);
+        return;
+      }
+
+      if (!success) {
+        setError(res.error);
+      } else {
+        setUserName({ firstName: res.firstName, lastName: res.lastName });
+      }
+    };
+    f();
+  }, [removeToken, getToken()]);
+
+  const [error, setError] = useState<string>();
+  const [userName, setUserName] = useState<any>({
+    firstName: '',
+    lastName: '',
+  });
+  const [post, setPost] = useState<Post>({
+    user_id: props.userId,
+    firstName: userName.firstName,
+    lastName: userName.lastName,
+    title: '',
+    body: '',
+    date: dayjs(),
+    images: [],
+    anonymous: false,
+    private: false,
+    upvotes: [],
+    downvotes: [],
   });
 
   return (
-    // <StyledPaper>
-    //   <Stack spacing={2}>
-    //     <Stack>
-    //       <StyledStack
-    //         direction="row"
-    //         justifyContent="space-between"
-    //         alignItems="center"
-    //       >
-    //         <H1>{post.title}</H1>
-    //         <IconButton onClick={props.onClose}>
-    //           <CloseIcon fontSize="large" />
-    //         </IconButton>
-    //       </StyledStack>
-    //     </Stack>
-    //     <Divider />
-    //     <P>{post.body}</P>
-    //     <CommentForm
-    //       comment={comment}
-    //       onChange={setComment}
-    //       onSubmit={(event: any) => {
-    //         event.preventDefault();
-    //         setComment('');
-    //       }}
-    //       message="Add Comment"
-    //     />
-    //     <StyledStack
-    //       direction="row"
-    //       justifyContent="space-between"
-    //       alignItems="center"
-    //     >
-    //       <H4>
-    //         {props.post.anonymous
-    //           ? 'Anonymous'
-    //           : `${props.post.firstName} ${props.post.lastName}`}
-    //       </H4>
-    //       <H4>{post.date.format('MM/DD/YYYY')}</H4>
-    //       <VotingButtons
-    //         post={props.post}
-    //         onVote={props.onVote}
-    //         userId={props.userId}
-    //       />
-    //     </StyledStack>
-    //   </Stack>
-    // </StyledPaper>
-    <></>
+    <StyledPaper>
+      <Stack spacing={2}>
+        <Stack>
+          <StyledStack
+            direction="row"
+            justifyContent="space-between"
+            alignItems="center"
+          >
+            <H1>{post.title}</H1>
+            <IconButton onClick={props.onClose}>
+              <CloseIcon fontSize="large" />
+            </IconButton>
+          </StyledStack>
+        </Stack>
+        <Divider />
+        <P>{post.body}</P>
+        <StyledStack
+          direction="row"
+          justifyContent="space-between"
+          alignItems="center"
+        >
+          <H4>
+            {post.anonymous
+              ? 'Anonymous'
+              : `${post.firstName} ${post.lastName}`}
+          </H4>
+          <H4>{post.date.format('MM/DD/YYYY')}</H4>
+          <VotingButtons post={post} onVote={() => {}} userId={props.userId} />
+        </StyledStack>
+      </Stack>
+    </StyledPaper>
   );
 }
 

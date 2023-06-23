@@ -20,9 +20,10 @@ def bluevine_send_money(
         # login
         res = s.post(
             "https://app.bluevine.com/api/v3/auth/login/",
-            {"email": "info@plextech.berkeley.edu", "password": 'P1ekyteky'},
+            {"email": "shamith09@berkeley.edu", "password": 'Magistrates821"'},
         )
-        # print(res.text)
+        if res.status_code != 200:
+            raise Exception("Failed to login to bluevine: " + res.json()['reason'])
         s.headers.update({"x-csrftoken": s.cookies["csrftoken"]})
 
         login = res.json()
