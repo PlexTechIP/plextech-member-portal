@@ -93,7 +93,7 @@ export function TopBar(props: Props) {
           <Img src={PlexTechLogo} />
           <StyledStack direction="row" alignItems="center" spacing={1}>
             <StyledStack direction="row" justifyContent="space-between">
-              <A href="/members">
+              <A href="/">
                 <H1 style={{ color: theme.palette.text.primary }}>
                   PlexTech Member Portal
                 </H1>
