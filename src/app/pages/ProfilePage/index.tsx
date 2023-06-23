@@ -24,16 +24,13 @@ import {
   TextField,
   Input,
 } from '@mui/material';
-import Autocomplete, { usePlacesWidget } from 'react-google-autocomplete';
 import { VenmoCard } from 'app/components/VenmoCard';
 import SearchIcon from '@mui/icons-material/Search';
 import { apiRequest } from 'utils/apiRequest';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import useToken from 'utils/useToken';
 
-interface Props {
-  token: string | null;
-  removeToken: () => void;
-}
+interface Props {}
 
 export function ProfilePage(props: Props) {
   const [error, setError] = useState<Error>();
@@ -46,22 +43,15 @@ export function ProfilePage(props: Props) {
   const [routingNumber, setRoutingNumber] = useState<string>('');
   const [bankName, setBankName] = useState<string>('');
 
-  const { ref: materialRef } = usePlacesWidget({
-    apiKey: process.env.REACT_APP_GOOGLE,
-    onPlaceSelected: place => console.log(place),
-    inputAutocompleteValue: 'country',
-    options: {
-      componentRestrictions: { country: 'us' },
-    },
-  });
+  const { token, removeToken } = useToken();
 
   useEffect(() => {
     const f = async () => {
       const [success, res] = await apiRequest(
         '/profile/',
         'GET',
-        props.token,
-        props.removeToken,
+        token,
+        removeToken,
       );
 
       if (!success) {
@@ -80,8 +70,8 @@ export function ProfilePage(props: Props) {
     const [success, res] = await apiRequest(
       '/venmo/_/',
       'PUT',
-      props.token,
-      props.removeToken,
+      token,
+      removeToken,
       profile,
     );
 
@@ -108,8 +98,8 @@ export function ProfilePage(props: Props) {
     const [success, res] = await apiRequest(
       `/venmo/${encodeURIComponent(username)}/`,
       'GET',
-      props.token,
-      props.removeToken,
+      token,
+      removeToken,
     );
     if (!success) {
       setError(res.error);
@@ -123,8 +113,8 @@ export function ProfilePage(props: Props) {
     const [success, res] = await apiRequest(
       '/bank/',
       'PUT',
-      props.token,
-      props.removeToken,
+      token,
+      removeToken,
       { accountNumber, routingNumber, bankName },
     );
 
@@ -166,7 +156,7 @@ export function ProfilePage(props: Props) {
                     {user.bank ? 'Submitted' : 'Submit'}
                   </Button>
                 </Stack>
-                {user.bank.address || (
+                {user.bank || (
                   <>
                     <TextField
                       fullWidth
@@ -181,33 +171,17 @@ export function ProfilePage(props: Props) {
                       onChange={e => setRoutingNumber(e.target.value)}
                       error={!/^\d+$/.test(routingNumber)}
                     />
+                  </>
+                )}
+                {user.bank.address || (
+                  <>
                     <TextField
                       fullWidth
                       label="Bank Name"
                       value={bankName}
                       onChange={e => setBankName(e.target.value)}
-                      error={!!bankName}
-                    />
-                    <Input
-                      fullWidth
-                      color="secondary"
-                      inputComponent={({
-                        inputRef,
-                        onFocus,
-                        onBlur,
-                        ...props
-                      }) => (
-                        <Autocomplete
-                          apiKey={process.env.REACT_APP_GOOGLE_API_KEY}
-                          {...props}
-                          onPlaceSelected={(selected: any) =>
-                            console.log(selected)
-                          }
-                        />
-                      )}
                     />
                   </>
-                  // 
                 )}
                 <Stack
                   direction="row"

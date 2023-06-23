@@ -28,6 +28,7 @@ import { ErrorModal } from 'app/components/ErrorModal';
 import { Error } from 'types/types';
 import jwt_decode from 'jwt-decode';
 import { apiRequest } from 'utils/apiRequest';
+import useToken from 'utils/useToken';
 
 const possibleTeams = [
   'Exec',
@@ -41,7 +42,6 @@ const possibleTeams = [
 
 interface Props {
   onBack: () => void;
-  setToken: (token: string) => void;
 }
 
 export function SignUpPage(props: Props) {
@@ -58,6 +58,8 @@ export function SignUpPage(props: Props) {
   const [incorrect, setIncorrect] = useState<boolean>(false);
   const [googleResponse, setGoogleResponse] = useState<any>({});
   const [loading, setLoading] = useState<boolean>();
+
+  const { setToken } = useToken();
 
   useEffect(() => {
     google.accounts.id.initialize({
@@ -157,7 +159,7 @@ export function SignUpPage(props: Props) {
       setError(res.errpr);
     }
 
-    props.setToken(res.access_token);
+    setToken(res.access_token);
 
     setSubmitted(false);
   };

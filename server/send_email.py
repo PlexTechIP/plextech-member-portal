@@ -84,8 +84,8 @@ def send_comment_email(
 
 def send_email(email, subject, header, message):
     message_text = render_template(
-        "index.html",
-        header=header,
-        message=message,
+        "index2.html",
+        # header=header,
+        # message=message,
     )
     gmail_send_message(email, subject, MIMEText(message_text, "html"))

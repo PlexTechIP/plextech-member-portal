@@ -19,7 +19,7 @@ import { LoginPage } from './pages/LoginPage/Loadable';
 import LightBackground from '../shapes-background.png';
 import DarkBackground from '../shapes-background-dark.png';
 import styled from 'styled-components';
-import useToken from 'useToken';
+import useToken from 'utils/useToken';
 import { useEffect, useState } from 'react';
 import { TopBar } from './components/TopBar';
 import { AttendancePage } from './pages/AttendancePage/Loadable';
@@ -110,42 +110,20 @@ export function App() {
             }}
           >
             {sessionExpired ? (
-              <LoginPage setToken={setToken} token={token} />
+              <LoginPage />
             ) : (
               <>
                 <TopBar
                   open={open}
                   setOpen={setOpen}
-                  token={token}
-                  removeToken={removeToken}
                   isDarkMode={isDarkMode}
                   setIsDarkMode={setIsDarkMode}
                 />
                 <Routes>
-                  <Route
-                    path="/"
-                    element={
-                      <ProfilePage token={token} removeToken={removeToken} />
-                    }
-                  />
-                  <Route
-                    path="/reimbursements"
-                    element={
-                      <HomePage token={token} removeToken={removeToken} />
-                    }
-                  />
-                  <Route
-                    path="/attendance"
-                    element={
-                      <AttendancePage token={token} removeToken={removeToken} />
-                    }
-                  />
-                  <Route
-                    path="/forum"
-                    element={
-                      <ForumPage token={token} removeToken={removeToken} />
-                    }
-                  />
+                  <Route path="/" element={<ProfilePage />} />
+                  <Route path="/reimbursements" element={<HomePage />} />
+                  <Route path="/attendance" element={<AttendancePage />} />
+                  <Route path="/forum" element={<ForumPage />} />
                   <Route path="*" element={<NotFoundPage />} />
                 </Routes>
               </>

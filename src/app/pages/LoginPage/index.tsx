@@ -29,11 +29,9 @@ import { ForgotPasswordPage } from '../ForgotPasswordPage/Loadable';
 import { Error } from 'types/types';
 import jwt_decode from 'jwt-decode';
 import { apiRequest } from 'utils/apiRequest';
+import useToken from 'utils/useToken';
 
-interface Props {
-  setToken: (token: string) => void;
-  token: string | null;
-}
+interface Props {}
 
 export function LoginPage(props: Props) {
   const [submitted, setSubmitted] = useState<boolean>(false);
@@ -51,6 +49,8 @@ export function LoginPage(props: Props) {
   const [googleResponse, setGoogleResponse] = useState<any>({});
 
   const theme = useTheme();
+
+  const { token, setToken } = useToken();
 
   useEffect(() => {
     google.accounts.id.initialize({
@@ -123,7 +123,7 @@ export function LoginPage(props: Props) {
     const [success, res] = await apiRequest(
       '/users/',
       'POST',
-      props.token,
+      token,
       () => setIncorrect(true),
       { ...formData, method: 'login' },
     );
@@ -140,27 +140,16 @@ export function LoginPage(props: Props) {
     }
     setIncorrect(false);
 
-    props.setToken(res.access_token);
+    setToken(res.access_token);
     setSubmitted(false);
   };
 
   if (showSignUp) {
-    return (
-      <SignUpPage
-        onBack={() => setShowSignUp(false)}
-        setToken={props.setToken}
-      />
-    );
+    return <SignUpPage onBack={() => setShowSignUp(false)} />;
   }
 
   if (forgotPassword) {
-    return (
-      <ForgotPasswordPage
-        onBack={() => setForgotPassword(false)}
-        setToken={props.setToken}
-        token={props.token}
-      />
-    );
+    return <ForgotPasswordPage onBack={() => setForgotPassword(false)} />;
   }
 
   return (

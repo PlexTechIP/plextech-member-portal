@@ -11,12 +11,12 @@ import { ImageModal } from './ImageModal';
 import { Draggable } from 'react-beautiful-dnd';
 import { ErrorModal } from '../ErrorModal';
 import { apiRequest } from 'utils/apiRequest';
+import useToken from 'utils/useToken';
 
 interface Props {
   request: Request;
   onEdit: (mine: boolean) => void;
   mine: boolean;
-  token: string | null;
   index: number;
 }
 
@@ -30,13 +30,15 @@ export function RequestCard(props: Props) {
     setShowModal(false);
   };
 
+  const { token } = useToken();
+
   const onClick = async () => {
     setLoading(true);
     setShowModal(true);
     const [success, res] = await apiRequest(
       '/requests/',
       'PUT',
-      props.token,
+      token,
       undefined,
       {
         images: true,

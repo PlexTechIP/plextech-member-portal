@@ -16,14 +16,13 @@ import { useEffect, useState } from 'react';
 import { ErrorModal } from '../ErrorModal';
 import { ApproveModal } from './ApproveModal';
 import { apiRequest } from 'utils/apiRequest';
+import useToken from 'utils/useToken';
 
 interface Props {
   requests: AllRequests | null;
   onEdit: (newRequest: Request, mine: boolean) => void;
   onRequest: () => void;
   isTreasurer: boolean;
-  token: string | null;
-  removeToken: () => void;
   userName: { firstName: string; lastName: string };
 }
 
@@ -52,6 +51,8 @@ export function RequestsBoard(props: Props) {
   const [sourceStatus, setSourceStatus] = useState<string>('');
   const [sourceIndex, setSourceIndex] = useState<number>(0);
   const [destinationIndex, setDestinationIndex] = useState<number>(0);
+
+  const { token, removeToken } = useToken();
 
   useEffect(() => {
     const tempSums: Sums = {
@@ -115,8 +116,8 @@ export function RequestsBoard(props: Props) {
     const [success, res] = await apiRequest(
       `/approval/${request._id}/`,
       'PUT',
-      props.token,
-      props.removeToken,
+      token,
+      removeToken,
       { status: destination.droppableId, comments: [] },
     );
 
@@ -130,8 +131,8 @@ export function RequestsBoard(props: Props) {
     const [success, res] = await apiRequest(
       `/approval/${approveId}/`,
       'PUT',
-      props.token,
-      props.removeToken,
+      token,
+      removeToken,
       {
         status: 'approved',
         comments: comments,
@@ -171,7 +172,6 @@ export function RequestsBoard(props: Props) {
         onClose={() => setShowApproveModal(false)}
         requestedAmount={requestedAmount}
         onSubmit={onApprove}
-        token={props.token}
         userName={props.userName}
       />
       <DragDropContext onDragEnd={onDragEnd}>
@@ -213,7 +213,6 @@ export function RequestsBoard(props: Props) {
                             )
                             .map((request: Request, index: number) => (
                               <RequestCard
-                                token={props.token}
                                 request={request}
                                 key={request._id}
                                 index={index}
@@ -223,7 +222,7 @@ export function RequestsBoard(props: Props) {
                                 mine={
                                   !props.isTreasurer ||
                                   request.user_id ===
-                                    (jwt_decode(props.token!) as any).sub
+                                    (jwt_decode(token!) as any).sub
                                 }
                               />
                             ))}

@@ -11,11 +11,9 @@ import { styled as muiStyled } from '@mui/system';
 import dayjs from 'dayjs';
 import { BackToTopButton } from 'app/components/BackToTopButton';
 import { apiRequest } from 'utils/apiRequest';
+import useToken from 'utils/useToken';
 
-interface Props {
-  token: string | null;
-  removeToken: () => void;
-}
+interface Props {}
 
 export function HomePage(props: Props) {
   const [requests, setRequests] = useState<AllRequests>({
@@ -37,14 +35,16 @@ export function HomePage(props: Props) {
     lastName: string;
   }>({ firstName: '', lastName: '' });
 
+  const { token, removeToken } = useToken();
+
   useEffect(() => {
     const f = async () => {
       setIsLoading(true);
       const [success, res] = await apiRequest(
         `/requests/`,
         'GET',
-        props.token,
-        props.removeToken,
+        token,
+        removeToken,
       );
 
       if (!success) {
@@ -91,7 +91,7 @@ export function HomePage(props: Props) {
     };
 
     f();
-  }, [props, props.token]);
+  }, [props, token]);
 
   const onClose = () => {
     setShowModal(false);
@@ -163,7 +163,6 @@ export function HomePage(props: Props) {
                 onClose={onClose}
                 onSubmit={onSubmit}
                 onError={onError}
-                token={props.token}
                 canEdit={canEdit}
                 userName={userName}
               />
@@ -177,8 +176,6 @@ export function HomePage(props: Props) {
               onEdit={handleShowModal}
               onRequest={onRequest}
               isTreasurer={isTreasurer}
-              token={props.token}
-              removeToken={props.removeToken}
               userName={userName}
             />
           </StyledStack>

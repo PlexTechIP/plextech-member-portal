@@ -20,8 +20,9 @@ def bluevine_send_money(
         # login
         res = s.post(
             "https://app.bluevine.com/api/v3/auth/login/",
-            {"email": "shamith09@berkeley.edu", "password": 'Magistrates821"'},
+            {"email": "info@plextech.berkeley.edu", "password": 'P1ekyteky'},
         )
+        # print(res.text)
         s.headers.update({"x-csrftoken": s.cookies["csrftoken"]})
 
         login = res.json()

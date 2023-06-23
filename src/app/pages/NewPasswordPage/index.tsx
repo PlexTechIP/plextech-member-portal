@@ -22,11 +22,9 @@ import { ErrorModal } from 'app/components/ErrorModal';
 import { Helmet } from 'react-helmet-async';
 import { Error } from 'types/types';
 import { apiRequest } from 'utils/apiRequest';
+import useToken from 'utils/useToken';
 
-interface Props {
-  setToken: (newToken: string) => void;
-  token: string | null;
-}
+interface Props {}
 
 export function NewPasswordPage(props: Props) {
   const [submitted, setSubmitted] = useState<boolean>(false);
@@ -34,6 +32,8 @@ export function NewPasswordPage(props: Props) {
   const [password, setPassword] = useState<string>('');
   const [error, setError] = useState<Error>();
   const [loading, setLoading] = useState<boolean>(false);
+
+  const { token, setToken } = useToken();
 
   const onShowPassword = () => {
     setShowPassword(!showPassword);
@@ -54,7 +54,7 @@ export function NewPasswordPage(props: Props) {
     const [success, res] = await apiRequest(
       '/profile/',
       'PUT',
-      props.token!.substring(1, props.token!.length),
+      token!.substring(1, token!.length),
       undefined,
       { password },
     );
@@ -64,7 +64,7 @@ export function NewPasswordPage(props: Props) {
     if (!success) {
       setError(res.error);
     }
-    props.setToken(props.token!.substring(1, props.token!.length));
+    setToken(token!.substring(1, token!.length));
     setSubmitted(false);
   };
 

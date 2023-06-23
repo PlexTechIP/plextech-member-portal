@@ -32,12 +32,11 @@ import { useEffect, useState } from 'react';
 import Brightness4 from '@mui/icons-material/Brightness4';
 import Brightness7 from '@mui/icons-material/Brightness7';
 import { apiRequest } from 'utils/apiRequest';
+import useToken from 'utils/useToken';
 
 interface Props {
   open: boolean;
   setOpen: (newOpen: boolean) => void;
-  token: string | null;
-  removeToken: () => void;
   isDarkMode: boolean;
   setIsDarkMode: (newMode: boolean) => void;
 }
@@ -61,19 +60,16 @@ if (page === '?' || !(page in iconMap)) page = '';
 export function TopBar(props: Props) {
   const [isTreasurer, setIsTreasurer] = useState<boolean>(false);
 
+  const { token, removeToken } = useToken();
+
   useEffect(() => {
     const f = async () => {
-      const [, res] = await apiRequest(
-        '/profile/',
-        'GET',
-        props.token,
-        props.removeToken,
-      );
+      const [, res] = await apiRequest('/profile/', 'GET', token, removeToken);
       setIsTreasurer(res.treasurer);
     };
 
     f();
-  }, [props, props.token]);
+  }, [props, removeToken, token]);
 
   const theme = useTheme();
 
@@ -157,7 +153,7 @@ export function TopBar(props: Props) {
                   </>
                 )}
                 <ListItem>
-                  <ListItemButton onClick={props.removeToken}>
+                  <ListItemButton onClick={removeToken}>
                     <ListItemIcon>{<LogoutIcon />}</ListItemIcon>
                     <ListItemText primary="Log out" />
                   </ListItemButton>

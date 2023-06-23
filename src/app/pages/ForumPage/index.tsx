@@ -16,16 +16,16 @@ import AddIcon from '@mui/icons-material/Add';
 import { ForumPostForm } from 'app/components/ForumPostForm';
 import jwt_decode from 'jwt-decode';
 import { apiRequest } from 'utils/apiRequest';
+import useToken from 'utils/useToken';
 
-interface Props {
-  token: string | null;
-  removeToken: () => void;
-}
+interface Props {}
 
 export function ForumPage(props: Props) {
   const [error, setError] = useState<Error>();
   const [posts, setPosts] = useState<Post[]>([]);
   const [showForm, setShowForm] = useState<boolean>(false);
+
+  const { token, removeToken } = useToken();
 
   const onVote = async (param: {
     removeFromDownvote: boolean;
@@ -37,8 +37,8 @@ export function ForumPage(props: Props) {
     const [success, res] = await apiRequest(
       '/forum/',
       'PUT',
-      props.token,
-      props.removeToken,
+      token,
+      removeToken,
       param,
     );
 
@@ -52,8 +52,8 @@ export function ForumPage(props: Props) {
       const [success, res] = await apiRequest(
         '/forum/',
         'GET',
-        props.token,
-        props.removeToken,
+        token,
+        removeToken,
       );
 
       if (!success) {
@@ -81,8 +81,8 @@ export function ForumPage(props: Props) {
       const [success, res] = await apiRequest(
         '/profile/',
         'GET',
-        props.token,
-        props.removeToken,
+        token,
+        removeToken,
       );
 
       if (!success) {
@@ -93,7 +93,7 @@ export function ForumPage(props: Props) {
     };
 
     f();
-  }, [props, props.token]);
+  }, [props, token]);
 
   const theme = useTheme();
 
@@ -107,9 +107,9 @@ export function ForumPage(props: Props) {
         />
       </Helmet>
       {error && <ErrorModal open={!!error} error={error} />}
-      <Modal open={showForm}>
-        <ForumPostForm />
-      </Modal>
+      <StyledModal open={showForm}>
+        <ForumPostForm userId={(jwt_decode(token!) as { sub: string }).sub} />
+      </StyledModal>
       <Div>
         <Stack spacing={2}>
           <Button
@@ -128,7 +128,7 @@ export function ForumPage(props: Props) {
                 isTreasurer={isTreasurer}
                 key={post._id}
                 post={post}
-                userId={(jwt_decode(props.token!) as any).sub}
+                userId={(jwt_decode(token!) as any).sub}
                 onVote={onVote}
               />
             ))}
@@ -147,4 +147,17 @@ const Div = styled.div`
   .MuiButton-root {
     border-radius: 48px;
   }
+`;
+
+const StyledModal = styled(Modal)`
+  width: 50%;
+  min-width: 500px;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  margin: auto;
+  padding: 64px;
 `;

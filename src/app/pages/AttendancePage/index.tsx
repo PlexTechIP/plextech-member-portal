@@ -37,11 +37,9 @@ import { apiRequest } from 'utils/apiRequest';
 import jwt_decode from 'jwt-decode';
 import { AttendeesDisplay } from './AttendeesDisplay';
 import { QRLandingPage } from './QRLandingPage';
+import useToken from 'utils/useToken';
 
-interface Props {
-  token: string | null;
-  removeToken: () => void;
-}
+interface Props {}
 
 export function AttendancePage(props: Props) {
   const [code, setCode] = useState<string>('hi');
@@ -55,6 +53,8 @@ export function AttendancePage(props: Props) {
   const [isSessionActive, setIsSessionActive] = useState<boolean>(false);
   const [remainingTime, setRemainingTime] = useState<number>(10);
 
+  const { token, removeToken } = useToken();
+
   const handleSessionButtonClick = async () => {
     setIsLoading(true);
     if (!isSessionActive) {
@@ -65,11 +65,11 @@ export function AttendancePage(props: Props) {
       const [success, res] = await apiRequest(
         '/attendance/',
         'POST',
-        props.token,
-        props.removeToken,
+        token,
+        removeToken,
         {
           name: meetingName,
-          meetingLeader: (jwt_decode(props.token!) as { sub: string }).sub,
+          meetingLeader: (jwt_decode(token!) as { sub: string }).sub,
           startTime: startTime?.format('h:mm:ss A'),
         },
       );
@@ -94,8 +94,8 @@ export function AttendancePage(props: Props) {
       const [success, res] = await apiRequest(
         '/attendance/',
         'DELETE',
-        props.token,
-        props.removeToken,
+        token,
+        removeToken,
         { id: meetingId },
       );
 
@@ -124,8 +124,8 @@ export function AttendancePage(props: Props) {
       const [success, res] = await apiRequest(
         '/attendance/',
         'PUT',
-        props.token,
-        props.removeToken,
+        token,
+        removeToken,
         {
           attendancecode,
           meetingId: meetingIdUrl,
@@ -154,8 +154,8 @@ export function AttendancePage(props: Props) {
       const [success, res] = await apiRequest(
         '/attendance/',
         'POST',
-        props.token,
-        props.removeToken,
+        token,
+        removeToken,
         { id: meetingId },
       );
 
