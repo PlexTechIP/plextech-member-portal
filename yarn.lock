@@ -10302,6 +10302,11 @@ rc@^1.0.1, rc@^1.1.6:
     minimist "^1.2.0"
     strip-json-comments "~2.0.1"
 
+react-animated-checkmark@1.0.3:
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/react-animated-checkmark/-/react-animated-checkmark-1.0.3.tgz#85806172dafd7994de2dc42748d85e80bc3c9475"
+  integrity sha512-wDFt0VvuUgKfHC4HT3g0dSfBawQWMHD4BonjUkJCfCBoq1l3h9uBxyOuYJ0nx8uBTgeKG3djAqt8I3xi0kbs8Q==
+
 react-app-polyfill@3.0.0, react-app-polyfill@^3.0.0:
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/react-app-polyfill/-/react-app-polyfill-3.0.0.tgz#95221e0a9bd259e5ca6b177c7bb1cb6768f68fd7"

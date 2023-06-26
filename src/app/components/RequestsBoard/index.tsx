@@ -17,6 +17,7 @@ import { ErrorModal } from '../ErrorModal';
 import { ApproveModal } from './ApproveModal';
 import { apiRequest } from 'utils/apiRequest';
 import { getToken, removeToken } from 'utils/useToken';
+import { ApproveMFA } from './ApproveMFA';
 
 interface Props {
   requests: AllRequests | null;
@@ -51,6 +52,7 @@ export function RequestsBoard(props: Props) {
   const [sourceStatus, setSourceStatus] = useState<string>('');
   const [sourceIndex, setSourceIndex] = useState<number>(0);
   const [destinationIndex, setDestinationIndex] = useState<number>(0);
+  const [showMFA, setShowMFA] = useState<boolean>(false);
 
   useEffect(() => {
     const tempSums: Sums = {
@@ -85,16 +87,6 @@ export function RequestsBoard(props: Props) {
 
     const request: any = props.requests![source.droppableId][source.index];
 
-    if (destination.droppableId === 'approved') {
-      setShowApproveModal(true);
-      setRequestedAmount(request.amount);
-      setApproveId(request._id);
-      setSourceStatus(source.droppableId);
-      setSourceIndex(source.index);
-      setDestinationIndex(destination.index);
-      return;
-    }
-
     props.requests![source.droppableId].splice(source.index, 1);
 
     props.requests![destination.droppableId].splice(
@@ -110,6 +102,16 @@ export function RequestsBoard(props: Props) {
       [destination.droppableId]:
         prevState[destination.droppableId] + parseFloat(request.amount),
     }));
+
+    if (destination.droppableId === 'approved') {
+      setShowApproveModal(true);
+      setRequestedAmount(request.amount);
+      setApproveId(request._id);
+      setSourceStatus(source.droppableId);
+      setSourceIndex(source.index);
+      setDestinationIndex(destination.index);
+      return;
+    }
 
     const [success, res] = await apiRequest(
       `/approval/${request._id}/`,
@@ -140,7 +142,8 @@ export function RequestsBoard(props: Props) {
 
     if (!success) {
       if (res.status === 407) {
-        setError({ errorMessage: 'User has not set Venmo account.' });
+        setError({ errorMessage: 'User has not set payment information.' });
+        return;
       }
       setError(res.error);
       return;
@@ -160,6 +163,26 @@ export function RequestsBoard(props: Props) {
     }));
 
     setShowApproveModal(false);
+    setShowMFA(true);
+  };
+
+  const onApproveMFA = (success: boolean) => {
+    setShowApproveModal(false);
+
+    if (!success) return;
+
+    const request: any = props.requests!.approved.splice(
+      destinationIndex,
+      1,
+    )[0];
+
+    props.requests!['paid'].splice(0, 0, request);
+
+    setSums((prevState: Sums) => ({
+      ...prevState,
+      [sourceStatus]: prevState[sourceStatus] - parseFloat(request.amount),
+      paid: prevState.paid + parseFloat(request.amount),
+    }));
   };
 
   return (
@@ -172,6 +195,7 @@ export function RequestsBoard(props: Props) {
         onSubmit={onApprove}
         userName={props.userName}
       />
+      {showMFA && <ApproveMFA open={showMFA} onClose={onApproveMFA} />}
       <DragDropContext onDragEnd={onDragEnd}>
         <Stack direction="row" spacing={1}>
           {statuses.map((statusKey: string) => {

@@ -1,9 +1,9 @@
 # type: ignore
 from time import sleep
-from os import getenv, makedirs
-from os.path import exists
+from os import getenv
 from dotenv import load_dotenv
 from datetime import datetime
+from bson.objectid import ObjectId
 
 import requests
 import pymongo
@@ -17,11 +17,12 @@ client = pymongo.MongoClient(
 )
 db = client.test
 
+
 def login(s):
     # login
     res = s.post(
         "https://app.bluevine.com/api/v3/auth/login/",
-        {"email": "shamith09@berkeley.edu", "password": 'Magistrates821"'},
+        {"email": getenv("BLUEVINE_EMAIL"), "password": getenv("BLUEVINE_PASSWORD")},
         headers={"referer": "https://app.bluevine.com/dashboard"},
     )
     if res.status_code != 200:
@@ -40,24 +41,14 @@ def login(s):
         f"https://app.bluevine.com/api/v3/company/{login_data['company_slug']}/user/{login_data['slug']}/mfa/send_token/",
         headers={"referer": "https://app.bluevine.com/dashboard"},
     )
-    print("sent mfa")
-
-    while not len(list(db.MFA.find({}))):
-        sleep(5)
-
-    mfa = db.MFA.find_one_and_delete({})["code"]
-
-    # verify mfa
-    res = s.post(
-        f"https://app.bluevine.com/api/v3/company/{login_data['company_slug']}/user/{login_data['slug']}/mfa/verify_token/",
-        {"token": mfa, "trust_device": True},
-        headers={"referer": "https://app.bluevine.com/dashboard"},
-    )
-    print(res.status_code)
 
     return s, login_data
 
-def bluevine_send_money(
+
+def after_login(
+    code,
+    s,
+    login_data,
     accountNumber,
     routingNumber,
     bankName,
@@ -65,17 +56,21 @@ def bluevine_send_money(
     email,
     user_id,
     amount,
+    comments,
+    request_id,
     description=None,
 ):
-    try: 
-        with open('bluevine/session.pkl', 'rb') as f: 
-            s = pickle.load(f) 
+    s = pickle.loads(s)
 
-        with open('bluevine/login.json', 'r') as f:
-            login_data = json.load(f)
-    except IOError: 
-        s = requests.session() 
-        s, login_data = login(s)
+    # verify mfa
+    res = s.post(
+        f"https://app.bluevine.com/api/v3/company/{login_data['company_slug']}/user/{login_data['slug']}/mfa/verify_token/",
+        {"token": code, "trust_device": True},
+        headers={"referer": "https://app.bluevine.com/dashboard"},
+    )
+
+    # if not res.ok:
+    #     return {"error": "bad mfa"}, 400
 
     body = {
         "name": fullName,
@@ -106,10 +101,10 @@ def bluevine_send_money(
     )
 
     if res.status_code == 412:
-        payee_slug = db.Users.find_one({'_id': user_id})['bluevine_slug']
+        payee_slug = db.Users.find_one({"_id": user_id})["bluevine_slug"]
     else:
-        payee_slug = res.json()['slug']
-        db.Users.update_one({'_id': user_id}, {'$set': {'bluevine_slug': payee_slug}})
+        payee_slug = res.json()["slug"]
+        db.Users.update_one({"_id": user_id}, {"$set": {"bluevine_slug": payee_slug}})
 
     # send money
     res = s.post(
@@ -142,6 +137,7 @@ def bluevine_send_money(
         )
 
         while not len(list(db.MFA.find({}))):
+            print("waiting for mfa")
             sleep(5)
 
         mfa = db.MFA.find_one_and_delete({})["code"]
@@ -169,6 +165,49 @@ def bluevine_send_money(
                 "x-csrftoken": s.cookies["csrftoken"],
             },
         )
+
+    db.Requests.find_one_and_update(
+        {"_id": ObjectId(request_id)},
+        {
+            "$set": {"status": "paid"},
+            "$push": {"comments": {"$each": comments}},
+        },
+    )
+
+    return {}, 200
+
+
+def bluevine_send_money(
+    accountNumber,
+    routingNumber,
+    bankName,
+    fullName,
+    email,
+    user_id,
+    amount,
+    comments,
+    request_id,
+    description=None,
+):
+    s = requests.session()
+    s, login_data = login(s)
+
+    db.MFA.insert_one(
+        {
+            "s": pickle.dumps(s),
+            "login_data": login_data,
+            "accountNumber": accountNumber,
+            "routingNumber": routingNumber,
+            "bankName": bankName,
+            "fullName": fullName,
+            "email": email,
+            "user_id": user_id,
+            "amount": amount,
+            "description": description,
+            "comments": comments,
+            "request_id": request_id,
+        }
+    )
 
 
 # bluevine_send_money()

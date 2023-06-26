@@ -20,8 +20,9 @@ from random import randint
 from cryptography.fernet import Fernet
 
 from send_email import gmail_send_message, send_comment_email, send_email
+
 # from venmo import request_money, send_money, search
-from bluevine import bluevine_send_money
+from bluevine import bluevine_send_money, after_login
 
 import time
 import bcrypt
@@ -196,8 +197,8 @@ def protected_user_routes():
         del user["requests"]
         del user["password"]
         if "bank" in user:
-            user["bank"]['accountNumber'] = str(user['bank']['accountNumber'])[:20]
-            user["bank"]['routingNumber'] = str(user['bank']['routingNumber'])[:20]
+            user["bank"]["accountNumber"] = str(user["bank"]["accountNumber"])[:20]
+            user["bank"]["routingNumber"] = str(user["bank"]["routingNumber"])[:20]
         return dict(user), 200
 
 
@@ -416,7 +417,7 @@ def attendance():
         return {}, 200
 
 
-@app.route("/approval/<request_id>/", methods=["GET", "PUT", "OPTIONS"])
+@app.route("/approval/<request_id>/", methods=["GET", "PUT", "POST", "OPTIONS"])
 @jwt_required()
 def approve_request(request_id):
     if request.method == "OPTIONS":
@@ -434,31 +435,27 @@ def approve_request(request_id):
     if request.method == "PUT":
         form = dict(request.json)
 
-        r = db.Requests.find_one_and_update(
+        r = db.Requests.find_one(
             {"_id": ObjectId(request_id)},
-            {
-                "$set": {"status": form["status"]},
-                "$push": {"comments": {"$each": form["comments"]}},
-            },
         )
 
         if form["status"] == "approved":
             user = db.Users.find_one({"_id": r["user_id"]})
-            if "venmo" not in user:
-                r = db.Requests.find_one_and_update(
-                    {"_id": ObjectId(request_id)},
-                    {
-                        "$set": {"status": "errors"},
-                        "$push": {"comments": {"$each": form["comments"]}},
-                    },
-                )
-                return {"error": "Need to set venmo username"}, 407
+            # if "venmo" not in user:
+            #     r = db.Requests.find_one_and_update(
+            #         {"_id": ObjectId(request_id)},
+            #         {
+            #             "$set": {"status": "errors"},
+            #             "$push": {"comments": {"$each": form["comments"]}},
+            #         },
+            #     )
+            #     return {"error": "Need to set venmo username"}, 407
             if "bank" not in user:
                 send_email(
                     user["email"],
                     "PlexTech Reimbursement Error",
                     f'Hello {user["firstName"]}',
-                    'You need to set your bank account information in order to be reimbursed. Please go to <a href="https://plextech-member-portal.vercel.app/reimbursements">https://plextech-member-portal.vercel.app/reimbursements</a> to set your bank account information.',
+                    'You need to set your bank account information in order to be reimbursed. Please go to <a href="https://plextech-member-portal.vercel.app/">https://plextech-member-portal.vercel.app/</a> to set your bank account information.',
                 )
                 return {"error": "Need to set bank info"}, 407
             # send_money(user['venmo']['id'], form['amount'],
@@ -466,22 +463,35 @@ def approve_request(request_id):
             # db.PaymentQueue.insert_one({'_id': ObjectId(request_id), 'venmo_id': user['venmo']['id'], 'amount': float(
             #     form['amount']), 'subject': r["itemDescription"], 'successes': 0})
             bluevine_send_money(
-                user["firstName"] + " " + user["lastName"],
-                decrypt(user["bank"]["accountNumber"]),
-                decrypt(user["bank"]["routingNumber"]),
-                form["amount"],
-                r["itemDescription"],
-                db,
+                fullName=user["firstName"] + " " + user["lastName"],
+                accountNumber=decrypt(user["bank"]["accountNumber"]),
+                routingNumber=decrypt(user["bank"]["routingNumber"]),
+                bankName=user["bank"]["bankName"],
+                amount=form["amount"],
+                user_id=user["_id"],
+                email=user["email"],
+                comments=form["comments"],
+                request_id=request_id,
             )
-            # r = db.Requests.find_one_and_update(
-            #     {"_id": ObjectId(request_id)},
-            #     {
-            #         "$set": {"status": "paid"},
-            #         "$push": {"comments": {"$each": form["comments"]}},
-            #     },
-            # )
+
+        db.Requests.update_one(
+            {"_id": ObjectId(request_id)},
+            {
+                "$set": {"status": form["status"]},
+                "$push": {"comments": {"$each": form["comments"]}},
+            },
+        )
 
         return {}, 200
+
+    if request.method == "POST":
+        form = dict(request.json)
+        code = form["code"]
+
+        args = db.MFA.find_one_and_delete({})
+        del args["_id"]
+
+        return after_login(code, **args)
 
 
 @app.route("/requests/", methods=["GET", "POST", "PUT", "DELETE"])
@@ -719,7 +729,7 @@ def bank_details():
         if "bankName" in form and form["bankName"]:
             bank["bankName"] = form["bankName"]
 
-        res = db.Users.find_one_and_update(
+        db.Users.update_one(
             {"_id": _id},
             {
                 "$set": {
@@ -729,22 +739,6 @@ def bank_details():
         )
 
         return {}, 200
-
-
-from twilio.twiml.messaging_response import MessagingResponse
-
-
-@app.route("/sms/", methods=["POST"])
-def sms_reply():
-    """Respond to incoming calls with a simple text message."""
-
-    # Use this data in your application logic
-    from_number = request.form["From"]
-    to_number = request.form["To"]
-    body = request.form["Body"]
-    print(body)
-    db.MFA.insert_one({"code": body})
-    return {}, 200
 
 
 if __name__ == "__main__":
