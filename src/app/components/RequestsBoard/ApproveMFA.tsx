@@ -60,10 +60,7 @@ export function ApproveMFA(props: Props) {
         }}
       >
         {success ? (
-          <AnimatedCheckmark
-            mode={MODES.SUCCESS}
-            style={{ color: 'rgb(255, 138, 0)' }}
-          />
+          <AnimatedCheckmark mode={MODES.SUCCESS} />
         ) : (
           <>
             <Stack spacing={3}>

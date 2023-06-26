@@ -167,7 +167,7 @@ export function RequestsBoard(props: Props) {
   };
 
   const onApproveMFA = (success: boolean) => {
-    setShowApproveModal(false);
+    setShowMFA(false);
 
     if (!success) return;
 
