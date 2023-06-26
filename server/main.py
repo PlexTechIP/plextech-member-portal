@@ -196,7 +196,7 @@ def protected_user_routes():
         user["_id"] = str(user["_id"])
         del user["requests"]
         del user["password"]
-        if "bank" in user:
+        if "bank" in user and user["bank"] and "accountNumber" in user["bank"] and "routingNumber" in user["bank"]:
             user["bank"]["accountNumber"] = str(user["bank"]["accountNumber"])[:20]
             user["bank"]["routingNumber"] = str(user["bank"]["routingNumber"])[:20]
         return dict(user), 200
