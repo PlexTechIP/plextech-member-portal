@@ -39,6 +39,7 @@ export function ProfilePage(props: Props) {
   const [profiles, setProfiles] = useState<VenmoProfile[]>([]);
   const [curProfile, setCurProfile] = useState<VenmoProfile>();
   const [loading, setLoading] = useState<boolean>(false);
+
   const [accountNumber, setAccountNumber] = useState<string>('');
   const [routingNumber, setRoutingNumber] = useState<string>('');
   const [bankName, setBankName] = useState<string>('');
@@ -58,6 +59,10 @@ export function ProfilePage(props: Props) {
       }
 
       setUser(res);
+      setAccountNumber(res.bank.accountNumber);
+      setRoutingNumber(res.bank.routingNumber);
+      setBankName(res.bank.bankName);
+
       setCurProfile(res.venmo);
     };
     f();
@@ -108,12 +113,23 @@ export function ProfilePage(props: Props) {
   };
 
   const bankSubmit = async () => {
+    const bodyData = {};
+    if (accountNumber && accountNumber[0] !== 'b') {
+      bodyData['accountNumber'] = accountNumber;
+    }
+    if (routingNumber && routingNumber[0] !== 'b') {
+      bodyData['routingNumber'] = routingNumber;
+    }
+    if (bankName && routingNumber[0] !== 'b') {
+      bodyData['bankName'] = bankName;
+    }
+
     const [success, res] = await apiRequest(
       '/bank/',
       'PUT',
       getToken(),
       removeToken,
-      { accountNumber, routingNumber, bankName },
+      bodyData,
     );
 
     if (!success) {
@@ -121,7 +137,13 @@ export function ProfilePage(props: Props) {
       return;
     }
 
-    setUser(res);
+    setUser((prevUser: User | undefined) => ({
+      ...prevUser!,
+      bank: {
+        ...prevUser!.bank,
+        ...bodyData,
+      },
+    }));
   };
 
   return (
@@ -146,41 +168,58 @@ export function ProfilePage(props: Props) {
                   alignItems="center"
                 >
                   <H1>Bank Details</H1>
-                  <Button
-                    onClick={bankSubmit}
-                    disabled={!!user.bank}
-                    variant="contained"
-                  >
-                    {user.bank ? 'Submitted' : 'Submit'}
+                  <Button onClick={bankSubmit} variant="contained">
+                    {user.bank ? 'Update' : 'Submit'}
                   </Button>
                 </Stack>
-                {user.bank || (
-                  <>
-                    <TextField
-                      fullWidth
-                      label="Account Number"
-                      onChange={e => setAccountNumber(e.target.value)}
-                      error={!/^\d+$/.test(accountNumber)}
-                    />
-                    <TextField
-                      fullWidth
-                      label="Routing Number"
-                      value={routingNumber}
-                      onChange={e => setRoutingNumber(e.target.value)}
-                      error={!/^\d+$/.test(routingNumber)}
-                    />
-                  </>
-                )}
-                {user.bank.address || (
-                  <>
-                    <TextField
-                      fullWidth
-                      label="Bank Name"
-                      value={bankName}
-                      onChange={e => setBankName(e.target.value)}
-                    />
-                  </>
-                )}
+                <>
+                  <TextField
+                    fullWidth
+                    label="Account Number"
+                    onChange={e => setAccountNumber(e.target.value)}
+                    required
+                    error={
+                      !(
+                        /^\d+$/.test(accountNumber) ||
+                        (user.bank?.accountNumber &&
+                          accountNumber === user.bank?.accountNumber)
+                      )
+                    }
+                    value={accountNumber}
+                    type="password"
+                  />
+                  <TextField
+                    fullWidth
+                    label="Routing Number"
+                    value={routingNumber}
+                    onChange={e => setRoutingNumber(e.target.value)}
+                    required
+                    error={
+                      !(
+                        /^\d+$/.test(routingNumber) ||
+                        (user.bank?.routingNumber &&
+                          routingNumber === user.bank?.routingNumber)
+                      )
+                    }
+                    type="password"
+                  />
+                </>
+                <>
+                  <TextField
+                    fullWidth
+                    label="Bank Name"
+                    value={bankName}
+                    onChange={e => setBankName(e.target.value)}
+                    required
+                    error={
+                      !(
+                        bankName ||
+                        (user.bank?.bankName &&
+                          bankName === user.bank?.bankName)
+                      )
+                    }
+                  />
+                </>
                 <Stack
                   direction="row"
                   alignItems="center"

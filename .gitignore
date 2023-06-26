@@ -38,6 +38,7 @@ server/.buildt
 server/env/
 server/.env
 server/index.html
+server/bluevine/
 
 .husky/
 .vscode/

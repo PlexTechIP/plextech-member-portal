@@ -196,7 +196,8 @@ def protected_user_routes():
         del user["requests"]
         del user["password"]
         if "bank" in user:
-            user["bank"] = True
+            user["bank"]['accountNumber'] = str(user['bank']['accountNumber'])[:20]
+            user["bank"]['routingNumber'] = str(user['bank']['routingNumber'])[:20]
         return dict(user), 200
 
 
@@ -710,19 +711,24 @@ def bank_details():
         _id = ObjectId(get_jwt_identity())
         form = dict(request.json)
 
+        bank = {}
+        if "accountNumber" in form and form["accountNumber"]:
+            bank["accountNumber"] = encrypt(form["accountNumber"])
+        if "routingNumber" in form and form["routingNumber"]:
+            bank["routingNumber"] = encrypt(form["routingNumber"])
+        if "bankName" in form and form["bankName"]:
+            bank["bankName"] = form["bankName"]
+
         res = db.Users.find_one_and_update(
             {"_id": _id},
             {
                 "$set": {
-                    "bank": {
-                        "accountNumber": encrypt(form["accountNumber"]),
-                        "routingNumber": encrypt(form["routingNumber"]),
-                    }
+                    "bank": bank,
                 }
             },
         )
 
-        return res, 200
+        return {}, 200
 
 
 from twilio.twiml.messaging_response import MessagingResponse

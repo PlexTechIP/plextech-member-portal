@@ -71,7 +71,7 @@ export interface VenmoProfile {
 }
 
 export interface User {
-  bank: any;
+  bank: { accountNumber?: string; routingNumber?: string; bankName?: string };
   email: string;
   _id: string;
   firstName: string;
