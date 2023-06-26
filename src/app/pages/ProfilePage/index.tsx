@@ -169,7 +169,9 @@ export function ProfilePage(props: Props) {
                     onClick={bankSubmit}
                     variant="contained"
                     disabled={
-                      (accountNumber[0] === 'b' && routingNumber[0] === 'b') ||
+                      (accountNumber[0] === 'b' &&
+                        routingNumber[0] === 'b' &&
+                        bankName !== user.bank.bankName) ||
                       !bankName
                     }
                   >
