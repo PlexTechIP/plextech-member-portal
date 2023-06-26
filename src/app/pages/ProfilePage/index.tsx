@@ -113,15 +113,12 @@ export function ProfilePage(props: Props) {
   };
 
   const bankSubmit = async () => {
-    const bodyData = {};
+    const bodyData = { bankName };
     if (accountNumber && accountNumber[0] !== 'b') {
       bodyData['accountNumber'] = accountNumber;
     }
     if (routingNumber && routingNumber[0] !== 'b') {
       bodyData['routingNumber'] = routingNumber;
-    }
-    if (bankName && routingNumber[0] !== 'b') {
-      bodyData['bankName'] = bankName;
     }
 
     const [success, res] = await apiRequest(
@@ -168,7 +165,14 @@ export function ProfilePage(props: Props) {
                   alignItems="center"
                 >
                   <H1>Bank Details</H1>
-                  <Button onClick={bankSubmit} variant="contained">
+                  <Button
+                    onClick={bankSubmit}
+                    variant="contained"
+                    disabled={
+                      (accountNumber[0] === 'b' && routingNumber[0] === 'b') ||
+                      !bankName
+                    }
+                  >
                     {user.bank ? 'Update' : 'Submit'}
                   </Button>
                 </Stack>
