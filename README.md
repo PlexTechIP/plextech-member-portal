@@ -1,6 +1,6 @@
 # PlexTech Member Portal
 
-![PlexTech Logo](https://plextech.berkeley.edu/) <!-- You can replace 'logo-url' with the actual url of your logo -->
+![PlexTech Logo](https://plextech.berkeley.edu/images/PlexTechLogo.png) <!-- You can replace 'logo-url' with the actual url of your logo -->
 
 The PlexTech Member Portal is a web application designed to provide PlexTech members with various functionalities. The application is built with [insert the technologies used, for example: React, Node.js, etc.].
 
