@@ -40,12 +40,13 @@ jwt = JWTManager(app)
 key = getenv("FERNET_KEY")
 f = Fernet(key)
 
+
 @app.after_request
 def after_request(response):
     # cors
-    if getenv("ENVIRONMENT") == 'local':
+    if getenv("ENVIRONMENT") == "local":
         origin = "*"
-    elif getenv("ENVIRONMENT") == 'production':
+    elif getenv("ENVIRONMENT") == "production":
         origin = "https://plextech-member-portal.vercel.app"
 
     response.headers.add(
