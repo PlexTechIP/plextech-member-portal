@@ -587,7 +587,7 @@ exports[`<App /> should render and match the snapshot 1`] = `
       <styled.div
         style={
           {
-            "backgroundImage": "url(./shapes-background.png)",
+            "backgroundImage": "url(undefined)",
           }
         }
       >
