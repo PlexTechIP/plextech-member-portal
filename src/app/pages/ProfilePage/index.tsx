@@ -27,7 +27,6 @@ import { VenmoCard } from 'app/components/VenmoCard';
 import SearchIcon from '@mui/icons-material/Search';
 import { apiRequest } from 'utils/apiRequest';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
-import { getToken, removeToken } from 'utils/useToken';
 import { SuccessDialog } from 'app/components/SuccessDialog';
 
 interface Props {}
@@ -48,12 +47,7 @@ export function ProfilePage(props: Props) {
 
   useEffect(() => {
     const f = async () => {
-      const [success, res] = await apiRequest(
-        '/profile/',
-        'GET',
-        getToken(),
-        removeToken,
-      );
+      const [success, res] = await apiRequest('/profile/', 'GET');
 
       if (!success) {
         setError(res.error);
@@ -72,13 +66,7 @@ export function ProfilePage(props: Props) {
 
   const onSelect = async (profile: VenmoProfile) => {
     setLoading(true);
-    const [success, res] = await apiRequest(
-      '/venmo/_/',
-      'PUT',
-      getToken(),
-      removeToken,
-      profile,
-    );
+    const [success, res] = await apiRequest('/venmo/_/', 'PUT', profile);
 
     if (!success) {
       setError(res.error);
@@ -103,8 +91,6 @@ export function ProfilePage(props: Props) {
     const [success, res] = await apiRequest(
       `/venmo/${encodeURIComponent(username)}/`,
       'GET',
-      getToken(),
-      removeToken,
     );
     if (!success) {
       setError(res.error);
@@ -123,13 +109,7 @@ export function ProfilePage(props: Props) {
       bodyData['routingNumber'] = routingNumber;
     }
 
-    const [success, res] = await apiRequest(
-      '/bank/',
-      'PUT',
-      getToken(),
-      removeToken,
-      bodyData,
-    );
+    const [success, res] = await apiRequest('/bank/', 'PUT', bodyData);
 
     if (!success) {
       setError(res.error);

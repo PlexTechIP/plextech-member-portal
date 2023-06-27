@@ -1,14 +1,17 @@
+import { getToken, removeToken, setToken } from 'utils/useToken';
+
 export const apiRequest = async (
   path: string,
   method: string,
-  token?: string | null,
-  on401?: () => void,
   bodyData?: any,
+  token: string | undefined = getToken(),
+  on401: () => void = removeToken,
 ) => {
   try {
     let headers: any = {
       'Content-Type': 'application/json',
     };
+
     if (token) {
       headers.Authorization = 'Bearer ' + token;
     }
@@ -48,7 +51,12 @@ export const apiRequest = async (
       ];
     }
 
-    return [true, await response.json()];
+    const res = await response.json();
+    if (res.access_token) {
+      setToken(res.access_token);
+    }
+
+    return [true, res];
   } catch (e: any) {
     console.warn(e);
     return [

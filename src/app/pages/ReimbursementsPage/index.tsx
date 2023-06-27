@@ -11,7 +11,6 @@ import { styled as muiStyled } from '@mui/system';
 import dayjs from 'dayjs';
 import { BackToTopButton } from 'app/components/BackToTopButton';
 import { apiRequest } from 'utils/apiRequest';
-import { getToken, removeToken } from 'utils/useToken';
 
 interface Props {}
 
@@ -38,12 +37,7 @@ export function HomePage(props: Props) {
   useEffect(() => {
     const f = async () => {
       setIsLoading(true);
-      const [success, res] = await apiRequest(
-        `/requests/`,
-        'GET',
-        getToken(),
-        removeToken,
-      );
+      const [success, res] = await apiRequest(`/requests/`, 'GET');
 
       if (!success) {
         setError(res.error);

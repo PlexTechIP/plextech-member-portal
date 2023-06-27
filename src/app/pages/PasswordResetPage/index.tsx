@@ -51,13 +51,12 @@ export function PasswordResetPage(props: Props) {
     const [success, res] = await apiRequest(
       '/users/',
       'POST',
-      getToken()!.substring(1, getToken()!.length),
-      undefined,
       {
         email: props.email,
         code,
         method: 'checkResetPasswordCode',
       },
+      getToken()!.substring(1, getToken()!.length),
     );
 
     setLoading(false);
@@ -75,7 +74,7 @@ export function PasswordResetPage(props: Props) {
       return;
     }
 
-    setToken('ƒ' + res.access_getToken());
+    setToken('ƒ' + res.access_token);
     setSuccess(true);
     setExpired(false);
     setIncorrect(false);

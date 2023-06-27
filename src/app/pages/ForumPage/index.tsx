@@ -16,7 +16,7 @@ import AddIcon from '@mui/icons-material/Add';
 import { ForumPostForm } from 'app/components/ForumPostForm';
 import jwt_decode from 'jwt-decode';
 import { apiRequest } from 'utils/apiRequest';
-import { getToken, removeToken } from 'utils/useToken';
+import { getToken } from 'utils/useToken';
 
 interface Props {}
 
@@ -32,13 +32,7 @@ export function ForumPage(props: Props) {
     addToUpvote: boolean;
     postId: string;
   }) => {
-    const [success, res] = await apiRequest(
-      '/forum/',
-      'PUT',
-      getToken(),
-      removeToken,
-      param,
-    );
+    const [success, res] = await apiRequest('/forum/', 'PUT', param);
 
     if (!success) {
       setError(res.error);
@@ -47,12 +41,7 @@ export function ForumPage(props: Props) {
 
   useEffect(() => {
     const f = async () => {
-      const [success, res] = await apiRequest(
-        '/forum/',
-        'GET',
-        getToken(),
-        removeToken,
-      );
+      const [success, res] = await apiRequest('/forum/', 'GET');
 
       if (!success) {
         setError(res.error);
@@ -76,12 +65,7 @@ export function ForumPage(props: Props) {
 
   useEffect(() => {
     const f = async () => {
-      const [success, res] = await apiRequest(
-        '/profile/',
-        'GET',
-        getToken(),
-        removeToken,
-      );
+      const [success, res] = await apiRequest('/profile/', 'GET');
 
       if (!success) {
         setError(res.error);

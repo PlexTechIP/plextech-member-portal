@@ -15,7 +15,6 @@ import {
 } from '@mui/material';
 import { useState } from 'react';
 import { Error } from 'types/types';
-import { getToken, removeToken } from 'utils/useToken';
 import { apiRequest } from 'utils/apiRequest';
 import { ErrorModal } from '../ErrorModal';
 import { SuccessDialog } from '../SuccessDialog';
@@ -31,13 +30,7 @@ export function ApproveMFA(props: Props) {
   const [success, setSuccess] = useState<boolean>(false);
 
   const onSubmit = async () => {
-    const [success, res] = await apiRequest(
-      `/approval/_/`,
-      'POST',
-      getToken(),
-      removeToken,
-      { code },
-    );
+    const [success, res] = await apiRequest(`/approval/_/`, 'POST', { code });
 
     if (!success) {
       setError(res.error);

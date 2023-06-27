@@ -20,6 +20,7 @@ import { useState } from 'react';
 import { PasswordResetPage } from '../PasswordResetPage/Loadable';
 import { Error } from 'types/types';
 import { apiRequest } from 'utils/apiRequest';
+import { getToken } from 'utils/useToken';
 
 interface Props {
   onBack: () => void;
@@ -48,9 +49,9 @@ export function ForgotPasswordPage(props: Props) {
     const [success, res] = await apiRequest(
       '/users/',
       'PUT',
-      undefined,
-      () => setIncorrect(true),
       { email, method: 'passwordCode' },
+      getToken(),
+      () => setIncorrect(true),
     );
 
     setLoading(false);

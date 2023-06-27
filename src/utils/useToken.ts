@@ -9,7 +9,7 @@ export const getToken = () => {
 };
 
 export const setToken = (userToken: string) => {
-  Cookies.set('token', userToken);
+  Cookies.set('token', userToken, { expires: 1 / 48 });
   eventEmitter.emit('tokenChanged', userToken);
 };
 

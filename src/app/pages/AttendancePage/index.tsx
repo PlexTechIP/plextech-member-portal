@@ -36,7 +36,7 @@ import { apiRequest } from 'utils/apiRequest';
 import jwt_decode from 'jwt-decode';
 import { AttendeesDisplay } from './AttendeesDisplay';
 import { QRLandingPage } from './QRLandingPage';
-import { getToken, removeToken } from 'utils/useToken';
+import { getToken } from 'utils/useToken';
 
 interface Props {}
 
@@ -59,17 +59,11 @@ export function AttendancePage(props: Props) {
       setIsSessionActive(true);
 
       // Make a POST request to /attendance to start the session
-      const [success, res] = await apiRequest(
-        '/attendance/',
-        'POST',
-        getToken(),
-        removeToken,
-        {
-          name: meetingName,
-          meetingLeader: (jwt_decode(getToken()!) as { sub: string }).sub,
-          startTime: startTime?.format('h:mm:ss A'),
-        },
-      );
+      const [success, res] = await apiRequest('/attendance/', 'POST', {
+        name: meetingName,
+        meetingLeader: (jwt_decode(getToken()!) as { sub: string }).sub,
+        startTime: startTime?.format('h:mm:ss A'),
+      });
       if (!success) {
         setError(res.error);
         setIsSessionActive(false);
@@ -84,13 +78,9 @@ export function AttendancePage(props: Props) {
       setIsSessionActive(false);
 
       // Make a DELETE request to /attendance to stop the session
-      const [success, res] = await apiRequest(
-        '/attendance/',
-        'DELETE',
-        getToken(),
-        removeToken,
-        { id: meetingId },
-      );
+      const [success, res] = await apiRequest('/attendance/', 'DELETE', {
+        id: meetingId,
+      });
 
       if (!success) {
         setError(res.error);
@@ -114,17 +104,11 @@ export function AttendancePage(props: Props) {
     if (!attendancecode) return;
     const f = async () => {
       setIsLoading(true);
-      const [success, res] = await apiRequest(
-        '/attendance/',
-        'PUT',
-        getToken(),
-        removeToken,
-        {
-          attendancecode,
-          meetingId: meetingIdUrl,
-          time: dayjs().format('h:mm:ss A'),
-        },
-      );
+      const [success, res] = await apiRequest('/attendance/', 'PUT', {
+        attendancecode,
+        meetingId: meetingIdUrl,
+        time: dayjs().format('h:mm:ss A'),
+      });
 
       if (!success && res.error.errorCode !== 402) {
         setError(res.error);
@@ -144,13 +128,9 @@ export function AttendancePage(props: Props) {
 
     const updateQRCode = async () => {
       setIsLoading(true);
-      const [success, res] = await apiRequest(
-        '/attendance/',
-        'POST',
-        getToken(),
-        removeToken,
-        { id: meetingId },
-      );
+      const [success, res] = await apiRequest('/attendance/', 'POST', {
+        id: meetingId,
+      });
 
       if (!success) {
         setError(res.error);

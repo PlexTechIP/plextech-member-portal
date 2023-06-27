@@ -52,9 +52,8 @@ export function NewPasswordPage(props: Props) {
     const [success, res] = await apiRequest(
       '/profile/',
       'PUT',
-      getToken()!.substring(1, getToken()!.length),
-      undefined,
       { password },
+      getToken()!.substring(1, getToken()!.length),
     );
 
     setLoading(false);

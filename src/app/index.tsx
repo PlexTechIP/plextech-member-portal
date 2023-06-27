@@ -74,7 +74,9 @@ export function App() {
   const [token, setToken] = useState<string | undefined>(Cookies.get('token'));
 
   setTimeout(() => {
-    apiRequest('/ping/', 'GET', token, () => setSessionExpired(true));
+    apiRequest('/ping/', 'GET', undefined, undefined, () =>
+      setSessionExpired(true),
+    );
   }, 1000 * 60 * 30);
 
   useEffect(() => {

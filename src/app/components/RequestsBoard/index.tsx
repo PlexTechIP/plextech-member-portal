@@ -16,7 +16,7 @@ import { useEffect, useState } from 'react';
 import { ErrorModal } from '../ErrorModal';
 import { ApproveModal } from './ApproveModal';
 import { apiRequest } from 'utils/apiRequest';
-import { getToken, removeToken } from 'utils/useToken';
+import { getToken } from 'utils/useToken';
 import { ApproveMFA } from './ApproveMFA';
 
 interface Props {
@@ -116,8 +116,6 @@ export function RequestsBoard(props: Props) {
     const [success, res] = await apiRequest(
       `/approval/${request._id}/`,
       'PUT',
-      getToken(),
-      removeToken,
       { status: destination.droppableId, comments: [] },
     );
 
@@ -128,17 +126,11 @@ export function RequestsBoard(props: Props) {
   };
 
   const onApprove = async (comments: Comment[], amount: any) => {
-    const [success, res] = await apiRequest(
-      `/approval/${approveId}/`,
-      'PUT',
-      getToken(),
-      removeToken,
-      {
-        status: 'approved',
-        comments: comments,
-        amount: amount,
-      },
-    );
+    const [success, res] = await apiRequest(`/approval/${approveId}/`, 'PUT', {
+      status: 'approved',
+      comments: comments,
+      amount: amount,
+    });
 
     if (!success) {
       if (res.status === 407) {
