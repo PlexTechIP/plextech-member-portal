@@ -29,16 +29,17 @@ import { createTheme, ThemeProvider } from '@mui/material';
 import createPalette from '@mui/material/styles/createPalette';
 import { Analytics } from '@vercel/analytics/react';
 import { apiRequest } from 'utils/apiRequest';
+import Cookies from 'js-cookie';
 
 export function App() {
   const { i18n } = useTranslation();
 
   const [isDarkMode, setIsDarkMode] = useState<boolean>(
-    localStorage.getItem('isDarkMode') === 'true',
+    Cookies.get('isDarkMode') === 'true',
   );
 
   useEffect(() => {
-    localStorage.setItem('isDarkMode', isDarkMode.toString());
+    Cookies.set('isDarkMode', isDarkMode.toString());
   }, [isDarkMode]);
 
   const palette = createPalette({
@@ -70,9 +71,7 @@ export function App() {
 
   const [open, setOpen] = useState<boolean>(false);
   const [sessionExpired, setSessionExpired] = useState<boolean>(false);
-  const [token, setToken] = useState<string | null>(
-    localStorage.getItem('token'),
-  );
+  const [token, setToken] = useState<string | undefined>(Cookies.get('token'));
 
   setTimeout(() => {
     apiRequest('/ping/', 'GET', token, () => setSessionExpired(true));
