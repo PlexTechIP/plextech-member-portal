@@ -1,23 +1,26 @@
 import { EventEmitter } from 'events';
+import Cookies from 'js-cookie';
 
 const eventEmitter = new EventEmitter();
 
 export const getToken = () => {
-  const userToken = localStorage.getItem('token');
+  const userToken = Cookies.get('token');
   return userToken && userToken;
 };
 
 export const setToken = (userToken: string) => {
-  localStorage.setItem('token', userToken);
+  Cookies.set('token', userToken);
   eventEmitter.emit('tokenChanged', userToken);
 };
 
 export const removeToken = () => {
-  localStorage.removeItem('token');
+  Cookies.remove('token');
   eventEmitter.emit('tokenChanged', null);
 };
 
-export const onTokenChange = (callback: (newToken: string | null) => void) => {
+export const onTokenChange = (
+  callback: (newToken: string | undefined) => void,
+) => {
   eventEmitter.on('tokenChanged', callback);
 
   // Return a function that can be used to unsubscribe
