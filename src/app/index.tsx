@@ -27,7 +27,6 @@ import { ProfilePage } from './pages/ProfilePage/Loadable';
 import { ForumPage } from './pages/ForumPage/Loadable';
 import { createTheme, ThemeProvider } from '@mui/material';
 import createPalette from '@mui/material/styles/createPalette';
-
 import { Analytics } from '@vercel/analytics/react';
 import { apiRequest } from 'utils/apiRequest';
 

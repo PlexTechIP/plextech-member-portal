@@ -23,7 +23,7 @@ export function ErrorModal(props: Props) {
   };
 
   useEffect(() => {
-    console.log(props.error);
+    console.warn(props.error);
   });
 
   return (

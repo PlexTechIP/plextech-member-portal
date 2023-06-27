@@ -70,10 +70,6 @@ export function AttendancePage(props: Props) {
           startTime: startTime?.format('h:mm:ss A'),
         },
       );
-      console.log(
-        `${window.location}/?attendancecode=${res.code}&meetingid=${res.id}`,
-      );
-
       if (!success) {
         setError(res.error);
         setIsSessionActive(false);
@@ -154,10 +150,6 @@ export function AttendancePage(props: Props) {
         getToken(),
         removeToken,
         { id: meetingId },
-      );
-
-      console.log(
-        `${window.location}/?attendancecode=${res.code}&meetingid=${meetingId}`,
       );
 
       if (!success) {

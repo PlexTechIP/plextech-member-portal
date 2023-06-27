@@ -36,7 +36,7 @@ export const apiRequest = async (
     }
 
     if (!response.ok) {
-      console.error(await response.text());
+      console.warn(await response.text());
       return [
         false,
         {
@@ -50,7 +50,7 @@ export const apiRequest = async (
 
     return [true, await response.json()];
   } catch (e: any) {
-    console.error(e);
+    console.warn(e);
     return [
       false,
       {

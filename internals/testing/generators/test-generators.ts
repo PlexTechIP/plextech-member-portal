@@ -179,7 +179,7 @@ function reportSuccess(message: string) {
 }
 
 function reportErrors(reason: Error, shouldExist = true) {
-  console.error(chalk.red(` ✘ ${reason}`));
+  console.warn(chalk.red(` ✘ ${reason}`));
   if (shouldExist) {
     process.exit(1);
   }
