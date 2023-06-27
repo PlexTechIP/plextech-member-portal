@@ -19,6 +19,7 @@ import { getToken, removeToken } from 'utils/useToken';
 import { apiRequest } from 'utils/apiRequest';
 import { ErrorModal } from '../ErrorModal';
 import AnimatedCheckmark, { MODES } from 'react-animated-checkmark';
+import { SuccessDialog } from '../SuccessDialog';
 
 interface Props {
   open: boolean;
@@ -44,23 +45,20 @@ export function ApproveMFA(props: Props) {
       return;
     }
     setSuccess(true);
-    setTimeout(() => {
-      props.onClose(true);
-    }, 3000);
   };
 
   return (
     <>
       {error && <ErrorModal error={error} open={!!error} />}
       <Dialog
-        onClose={props.onClose}
+        onClose={() => props.onClose(false)}
         open={props.open}
         PaperProps={{
           style: { borderRadius: '48px', padding: '48px' },
         }}
       >
         {success ? (
-          <AnimatedCheckmark mode={MODES.SUCCESS} />
+          <SuccessDialog open={success} onClose={() => props.onClose(true)} />
         ) : (
           <>
             <Stack spacing={3}>

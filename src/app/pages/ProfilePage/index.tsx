@@ -29,6 +29,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import { apiRequest } from 'utils/apiRequest';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import { getToken, removeToken } from 'utils/useToken';
+import { SuccessDialog } from 'app/components/SuccessDialog';
 
 interface Props {}
 
@@ -43,6 +44,8 @@ export function ProfilePage(props: Props) {
   const [accountNumber, setAccountNumber] = useState<string>('');
   const [routingNumber, setRoutingNumber] = useState<string>('');
   const [bankName, setBankName] = useState<string>('');
+
+  const [success, setSuccess] = useState<boolean>(false);
 
   useEffect(() => {
     const f = async () => {
@@ -141,6 +144,8 @@ export function ProfilePage(props: Props) {
         ...bodyData,
       },
     }));
+
+    setSuccess(true);
   };
 
   return (
@@ -226,6 +231,10 @@ export function ProfilePage(props: Props) {
                           bankName === user.bank?.bankName)
                       )
                     }
+                  />
+                  <SuccessDialog
+                    open={success}
+                    onClose={() => setSuccess(false)}
                   />
                 </>
                 <Stack
