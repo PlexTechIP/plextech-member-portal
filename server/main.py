@@ -43,9 +43,16 @@ f = Fernet(key)
 @app.after_request
 def after_request(response):
     # cors
+    if getenv("ENVIRONMENT") == 'local':
+        origin = "*"
+    elif getenv("ENVIRONMENT") == 'production':
+        origin = "https://plextech-member-portal.vercel.app"
+    else:
+        origin = "https://plextech-member-portal-dev.vercel.app"
+
     response.headers.add(
         "Access-Control-Allow-Origin",
-        "*" if getenv("DEBUG") else "https://plextech-member-portal.vercel.app",
+        origin,
     )
     response.headers.add(
         "Access-Control-Allow-Headers", "Content-Type,Authorization,X-Requested-With"
