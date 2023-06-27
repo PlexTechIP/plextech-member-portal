@@ -5,7 +5,8 @@ const eventEmitter = new EventEmitter();
 
 export const getToken = () => {
   const userToken = Cookies.get('token');
-  return userToken && userToken;
+  if (!userToken) return null;
+  return userToken;
 };
 
 export const setToken = (userToken: string) => {

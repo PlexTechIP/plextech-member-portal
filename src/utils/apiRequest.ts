@@ -4,7 +4,7 @@ export const apiRequest = async (
   path: string,
   method: string,
   bodyData?: any,
-  token: string | undefined = getToken(),
+  token: string | null = getToken(),
   on401: () => void = removeToken,
 ) => {
   try {
