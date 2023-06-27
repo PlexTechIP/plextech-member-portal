@@ -72,7 +72,7 @@ export function TopBar(props: Props) {
     };
 
     f();
-  }, [props, removeToken, getToken()]);
+  }, [props]);
 
   const theme = useTheme();
 

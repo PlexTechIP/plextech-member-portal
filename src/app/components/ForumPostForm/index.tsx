@@ -7,8 +7,7 @@ import * as React from 'react';
 import styled from 'styled-components/macro';
 import { Post } from 'types/types';
 import { styled as muiStyled } from '@mui/system';
-import { Divider, IconButton, Modal, Paper, Stack } from '@mui/material';
-import { CommentForm } from '../CommentForm';
+import { Divider, IconButton, Paper, Stack } from '@mui/material';
 import { useEffect, useState } from 'react';
 import CloseIcon from '@mui/icons-material/Close';
 import { VotingButtons } from '../VotingButtons';
@@ -43,13 +42,15 @@ export function ForumPostForm(props: Props) {
       }
     };
     f();
-  }, [removeToken, getToken()]);
+  }, []);
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [error, setError] = useState<string>();
   const [userName, setUserName] = useState<any>({
     firstName: '',
     lastName: '',
   });
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [post, setPost] = useState<Post>({
     user_id: props.userId,
     firstName: userName.firstName,

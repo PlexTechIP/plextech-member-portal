@@ -19,7 +19,7 @@ import { LoginPage } from './pages/LoginPage/Loadable';
 import LightBackground from '../shapes-background.png';
 import DarkBackground from '../shapes-background-dark.png';
 import styled from 'styled-components';
-import { getToken, onTokenChange } from 'utils/useToken';
+import { onTokenChange } from 'utils/useToken';
 import { useEffect, useState } from 'react';
 import { TopBar } from './components/TopBar';
 import { AttendancePage } from './pages/AttendancePage/Loadable';
