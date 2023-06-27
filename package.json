@@ -154,7 +154,7 @@
       "^utils/useToken$": "<rootDir>/src/utils/useToken",
       "^utils/apiRequest$": "<rootDir>/src/utils/apiRequest",
       "^styles/global-styles$": "<rootDir>/src/styles/global-styles",
-      "^images$": "<rootDir>/src/images/index"
+      "^images$": "<rootDir>/src/images/imageMock"
     },
     "transformIgnorePatterns": [
       "/node_modules/(?!.*\\.(js|jsx|ts|tsx)$)",
