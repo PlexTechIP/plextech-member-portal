@@ -8,7 +8,6 @@ from bson.objectid import ObjectId
 import requests
 import pymongo
 import pickle
-import json
 
 load_dotenv()
 

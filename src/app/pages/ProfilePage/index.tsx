@@ -168,12 +168,12 @@ export function ProfilePage(props: Props) {
                   <Button
                     onClick={bankSubmit}
                     variant="contained"
-                    disabled={
-                      (accountNumber[0] === 'b' &&
-                        routingNumber[0] === 'b' &&
-                        bankName !== user.bank.bankName) ||
-                      !bankName
-                    }
+                    // disabled={
+                    //   (accountNumber[0] === 'b' &&
+                    //     routingNumber[0] === 'b' &&
+                    //     bankName !== user.bank.bankName) ||
+                    //   !bankName
+                    // }
                   >
                     {user.bank ? 'Update' : 'Submit'}
                   </Button>
