@@ -139,7 +139,6 @@ export function LoginPage(props: Props) {
     setIncorrect(false);
 
     setToken(res.access_token);
-    console.log(getToken());
     setSubmitted(false);
   };
 
