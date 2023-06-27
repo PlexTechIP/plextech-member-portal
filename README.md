@@ -1,22 +1,14 @@
-# PlexTech Member Portal
+[<img src="https://plextech.berkeley.edu/images/PlexTechLogo.png" width="100" alt="PlexTech Logo">](https://plextech-member-portal.vercel.app)
 
-![PlexTech Logo](https://plextech.berkeley.edu/images/PlexTechLogo.png) <!-- You can replace 'logo-url' with the actual url of your logo -->
+# [PlexTech Member Portal](https://plextech-member-portal.vercel.app)
 
-The PlexTech Member Portal is a web application designed to provide PlexTech members with various functionalities. The application is built with [insert the technologies used, for example: React, Node.js, etc.].
+The PlexTech Member Portal is a web application designed to provide PlexTech members with various functionalities. The application is built with React.js, Flask, and MongoDB (TypeScript + Python).
 
 ## Features
 
-Here's a brief overview of the various pages and their functions in the application:
-
-- **LoginPage**: Allows users to log in to their account.
-- **SignUpPage**: Allows new users to create an account.
-- **ForgotPasswordPage**: Allows users to initiate the password recovery process if they forget their password.
-- **NewPasswordPage**: Allows users to set a new password.
-- **PasswordResetPage**: Allows users to reset their password.
-- **ProfilePage**: Allows users to view and manage their profile.
-- **AttendancePage**: Allows users to track their attendance.
-- **ReimbursementsPage**: Allows users to submit reimbursement requests.
-- **ForumPage**: A platform for users to participate in discussions【15†source】.
+- Automatic requesting and processing of reimbursements through ACH transfers
+- Attendance tracking by scanning QR codes that change every 10 seconds
+- Public forum for discussions, including private and anonymous posts, upvotes, and comments.
 
 ## Getting Started
 
@@ -37,13 +29,13 @@ cd plextech-member-portal
 3. Install dependencies (make sure you have Node.js and npm installed on your machine):
 
 ```bash
-npm install
+yarn install
 ```
 
 4. Run the application:
 
 ```bash
-npm start
+yarn start
 ```
 
 ## Contributing
@@ -52,14 +44,11 @@ Contributions are what make the open-source community such an amazing place to l
 
 Here's how you can contribute:
 
-1. Fork the Project
-2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the Branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+1. Clone the project
+2. Create your branch (`git checkout -b <branch-name>`)
+3. Push to the branch (`git push origin <branch-name>`)
+4. Open a pull request
 
 ## License
 
 Distributed under the MIT License. See `LICENSE` for more information.
-
-## Contact
