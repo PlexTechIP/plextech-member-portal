@@ -4,7 +4,7 @@
  *
  */
 import * as React from 'react';
-import styled from 'styled-components/macro';
+import styled from 'styled-components';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import { Stack, IconButton } from '@mui/material';

@@ -20,7 +20,7 @@ import * as React from 'react';
 import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import styled from 'styled-components';
-import PlexTechLogo from '../../../PlexTechLogo.png';
+import { PlexTechLogo } from 'images';
 import { styled as muiStyled } from '@mui/system';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { SignUpData } from 'types/types';

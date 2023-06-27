@@ -1,6 +1,6 @@
 import { Stack, Button, Card, useTheme } from '@mui/material';
 import * as React from 'react';
-import styled from 'styled-components/macro';
+import styled from 'styled-components';
 import { Error, Image, Request } from '../../../types/types';
 import EditIcon from '@mui/icons-material/Edit';
 import ImageIcon from '@mui/icons-material/Image';

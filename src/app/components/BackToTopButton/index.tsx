@@ -4,7 +4,7 @@
  *
  */
 import * as React from 'react';
-// import styled from 'styled-components/macro';
+// import styled from 'styled-components';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import { styled as muiStyled } from '@mui/system';
 import { useEffect, useState } from 'react';

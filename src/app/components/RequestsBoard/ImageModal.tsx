@@ -13,7 +13,7 @@ import {
   CircularProgress,
 } from '@mui/material';
 import * as React from 'react';
-import styled from 'styled-components/macro';
+import styled from 'styled-components';
 import { Image } from 'types/types';
 import { styled as muiStyled } from '@mui/system';
 import CloseIcon from '@mui/icons-material/Close';

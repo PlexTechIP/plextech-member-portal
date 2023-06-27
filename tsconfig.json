@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "noImplicitAny": false,
-    "target": "es5",
+    "target": "es6",
     "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "skipLibCheck": true,
@@ -22,7 +22,7 @@
   "ts-node": {
     "compilerOptions": {
       "esModuleInterop": true,
-      "module": "commonjs",
+      "module": "esnext",
       "moduleResolution": "node",
       "noEmit": true,
       "allowSyntheticDefaultImports": true

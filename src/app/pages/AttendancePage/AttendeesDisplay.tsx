@@ -1,7 +1,7 @@
 import { Card, Grid, Paper, Stack, Grow } from '@mui/material';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import React from 'react';
-import styled from 'styled-components/macro';
+import styled from 'styled-components';
 import { styled as muiStyled } from '@mui/material';
 import dayjs, { Dayjs } from 'dayjs';
 

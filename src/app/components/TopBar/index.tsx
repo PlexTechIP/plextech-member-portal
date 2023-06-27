@@ -19,9 +19,9 @@ import {
   useTheme,
 } from '@mui/material';
 import * as React from 'react';
-import styled from 'styled-components/macro';
+import styled from 'styled-components';
 import MenuIcon from '@mui/icons-material/Menu';
-import PlexTechLogo from '../../../PlexTechLogo.png';
+import { PlexTechLogo } from 'images';
 import KeyboardArrowLeftIcon from '@mui/icons-material/KeyboardArrowLeft';
 import PersonIcon from '@mui/icons-material/Person';
 import RecentActorsIcon from '@mui/icons-material/RecentActors';

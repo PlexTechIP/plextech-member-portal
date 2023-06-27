@@ -4,7 +4,7 @@
  *
  */
 import * as React from 'react';
-import styled from 'styled-components/macro';
+import styled from 'styled-components';
 import { Post } from 'types/types';
 import { styled as muiStyled } from '@mui/system';
 import { Card, Divider, IconButton, Stack, useTheme } from '@mui/material';
