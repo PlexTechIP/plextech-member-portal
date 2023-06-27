@@ -147,9 +147,9 @@ export function SignUpPage(props: Props) {
     const [success, res] = await apiRequest(
       `/users/`,
       'POST',
+      { ...formData, method: 'signup' },
       undefined,
       () => setIncorrect(true),
-      { ...formData, method: 'signup' },
     );
     setLoading(false);
 

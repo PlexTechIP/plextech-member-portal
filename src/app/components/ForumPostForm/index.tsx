@@ -12,7 +12,6 @@ import { useEffect, useState } from 'react';
 import CloseIcon from '@mui/icons-material/Close';
 import { VotingButtons } from '../VotingButtons';
 import { apiRequest } from 'utils/apiRequest';
-import { getToken, removeToken } from 'utils/useToken';
 import dayjs from 'dayjs';
 
 interface Props {
@@ -23,12 +22,7 @@ interface Props {
 export function ForumPostForm(props: Props) {
   useEffect(() => {
     const f = async () => {
-      const [success, res] = await apiRequest(
-        `/requests/`,
-        'GET',
-        getToken(),
-        removeToken,
-      );
+      const [success, res] = await apiRequest(`/requests/`, 'GET');
 
       if (!success) {
         setError(res.error);

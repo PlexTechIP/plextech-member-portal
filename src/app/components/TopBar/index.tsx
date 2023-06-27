@@ -32,7 +32,7 @@ import { useEffect, useState } from 'react';
 import Brightness4 from '@mui/icons-material/Brightness4';
 import Brightness7 from '@mui/icons-material/Brightness7';
 import { apiRequest } from 'utils/apiRequest';
-import { getToken, removeToken } from 'utils/useToken';
+import { removeToken } from 'utils/useToken';
 
 interface Props {
   open: boolean;
@@ -62,12 +62,7 @@ export function TopBar(props: Props) {
 
   useEffect(() => {
     const f = async () => {
-      const [, res] = await apiRequest(
-        '/profile/',
-        'GET',
-        getToken(),
-        removeToken,
-      );
+      const [, res] = await apiRequest('/profile/', 'GET');
       setIsTreasurer(res.treasurer);
     };
 

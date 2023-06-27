@@ -121,9 +121,9 @@ export function LoginPage(props: Props) {
     const [success, res] = await apiRequest(
       '/users/',
       'POST',
+      { ...formData, method: 'login' },
       getToken(),
       () => setIncorrect(true),
-      { ...formData, method: 'login' },
     );
 
     setLoading(false);

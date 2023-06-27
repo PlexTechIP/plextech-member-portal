@@ -40,40 +40,6 @@ jwt = JWTManager(app)
 key = getenv("FERNET_KEY")
 f = Fernet(key)
 
-# VENMO AUTO PAYMENT - DEPRECATED
-# from apscheduler.schedulers.background import BackgroundScheduler
-
-# interval = 60
-# def handle_payment_queue():
-#     global interval
-#     payment = db.PaymentQueue.find_one({})
-#     try:
-#         send_money(payment["venmo_id"], payment["amount"], 'PlexTech Reimbursement: ' + payment["subject"])
-#         print("Sent $" + str(payment["amount"]) + " to " + payment["venmo_id"] + " for " + payment["subject"])
-#         interval = 60
-#     except e:
-#         print("Error sending $" + str(payment["amount"]) + " to " + payment["venmo_id"] + " for " + payment["subject"])
-#         print(e)
-#         interval = 10000
-#         return
-
-#     try:
-#         db.Requests.find_one_and_update({"_id": payment["_id"]}, {'$set': {'status': 'paid'}})
-#         db.PaymentQueue.delete_one({"_id": payment["_id"]})
-#         interval = 60
-#     except e:
-#         print("Error updating payment status for " + payment["subject"])
-#         print(e)
-#         interval = 10000
-
-# scheduler = BackgroundScheduler()
-# scheduler.add_job(func=handle_payment_queue, trigger="interval", seconds=interval)
-# scheduler.start()
-
-# # Shut down the scheduler when exiting the app
-# atexit.register(lambda: scheduler.shutdown())
-
-
 @app.after_request
 def after_request(response):
     # cors

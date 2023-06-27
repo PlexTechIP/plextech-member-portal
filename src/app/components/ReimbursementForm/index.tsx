@@ -79,16 +79,10 @@ export function ReimbursementForm(props: Props) {
     }
     const f = async () => {
       setImagesLoading(true);
-      const [success, res] = await apiRequest(
-        '/requests/',
-        'PUT',
-        getToken(),
-        undefined,
-        {
-          comment: true,
-          request_id: props.request ? props.request._id : null,
-        },
-      );
+      const [success, res] = await apiRequest('/requests/', 'PUT', {
+        comment: true,
+        request_id: props.request ? props.request._id : null,
+      });
 
       if (!success) {
         props.onError(res.error);
@@ -185,7 +179,7 @@ export function ReimbursementForm(props: Props) {
 
   const onDelete = async () => {
     setDeleteModal(false);
-    apiRequest('/requests/', 'DELETE', getToken(), undefined, {
+    apiRequest('/requests/', 'DELETE', {
       _id: props.request!._id,
     });
     props.onClose();
@@ -252,8 +246,6 @@ export function ReimbursementForm(props: Props) {
     const [success, res] = await apiRequest(
       '/requests/',
       props.request ? 'PUT' : 'POST',
-      getToken(),
-      undefined,
       {
         ...bodyData,
         date: dayjs(),
@@ -303,7 +295,7 @@ export function ReimbursementForm(props: Props) {
     };
     formData.comments.push(commentObj);
     if (props.request) {
-      apiRequest('/requests/', 'POST', getToken(), undefined, {
+      apiRequest('/requests/', 'POST', {
         comment: commentObj,
         request_id: props.request!._id,
       });
@@ -319,16 +311,10 @@ export function ReimbursementForm(props: Props) {
   };
 
   const loadImages = async () => {
-    const [success, res] = await apiRequest(
-      '/requests/',
-      'PUT',
-      getToken(),
-      undefined,
-      {
-        images: true,
-        request_id: props.request?._id,
-      },
-    );
+    const [success, res] = await apiRequest('/requests/', 'PUT', {
+      images: true,
+      request_id: props.request?._id,
+    });
     if (!success) {
       props.onError(res.error);
       return;
