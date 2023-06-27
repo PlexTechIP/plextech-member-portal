@@ -14,7 +14,6 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import {
   Button,
-  Card,
   CircularProgress,
   Paper,
   Stack,
@@ -319,18 +318,4 @@ const StyledCircularProgress = muiStyled(CircularProgress)`
 const P = styled.p`
   margin: 0;
   color: grey;
-`;
-
-const H1 = styled.h1`
-  margin: 0;
-`;
-
-const H3 = styled.h3`
-  margin: 0;
-`;
-
-const StyledCard = muiStyled(Card)`
-  padding: 24px;
-  border-radius: 24px;
-  width: 100%;
 `;

@@ -91,7 +91,7 @@ export function ForumPage(props: Props) {
     };
 
     f();
-  }, [props, getToken()]);
+  }, [props]);
 
   const theme = useTheme();
 

@@ -89,7 +89,7 @@ export function HomePage(props: Props) {
     };
 
     f();
-  }, [props, getToken()]);
+  }, [props]);
 
   const onClose = () => {
     setShowModal(false);

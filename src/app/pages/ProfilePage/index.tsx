@@ -22,7 +22,6 @@ import {
   InputAdornment,
   Stack,
   TextField,
-  Input,
 } from '@mui/material';
 import { VenmoCard } from 'app/components/VenmoCard';
 import SearchIcon from '@mui/icons-material/Search';
