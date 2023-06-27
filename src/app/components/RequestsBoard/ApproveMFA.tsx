@@ -18,7 +18,6 @@ import { Error } from 'types/types';
 import { getToken, removeToken } from 'utils/useToken';
 import { apiRequest } from 'utils/apiRequest';
 import { ErrorModal } from '../ErrorModal';
-import AnimatedCheckmark, { MODES } from 'react-animated-checkmark';
 import { SuccessDialog } from '../SuccessDialog';
 
 interface Props {
