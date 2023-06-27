@@ -16,8 +16,8 @@ import { HomePage } from './pages/ReimbursementsPage/Loadable';
 import { NotFoundPage } from './components/NotFoundPage/Loadable';
 import { useTranslation } from 'react-i18next';
 import { LoginPage } from './pages/LoginPage/Loadable';
-import LightBackground from '../shapes-background.png';
-import DarkBackground from '../shapes-background-dark.png';
+import { shapesBackground } from 'images';
+import { shapesBackgroundDark } from 'images';
 import styled from 'styled-components';
 import { onTokenChange } from 'utils/useToken';
 import { useEffect, useState } from 'react';
@@ -109,8 +109,8 @@ export function App() {
             style={{
               backgroundImage:
                 theme.palette.mode === 'dark'
-                  ? `url(${DarkBackground})`
-                  : `url(${LightBackground})`,
+                  ? `url(${shapesBackgroundDark})`
+                  : `url(${shapesBackground})`,
             }}
           >
             {sessionExpired ? (

@@ -6,9 +6,9 @@
 import { Modal, Stack, Paper, IconButton } from '@mui/material';
 import * as React from 'react';
 import { styled as muiStyled } from '@mui/system';
-import styled from 'styled-components/macro';
+import styled from 'styled-components';
 import RefreshIcon from '@mui/icons-material/Refresh';
-import ErrorImage from '../../../error.png';
+import { errorImg } from 'images';
 import { Error } from 'types/types';
 import { useEffect } from 'react';
 
@@ -50,7 +50,7 @@ export function ErrorModal(props: Props) {
             </a>{' '}
             if the issue persists.
           </P>
-          <img src={ErrorImage} alt="error"></img>
+          <img src={errorImg} alt="error"></img>
         </Stack>
       </StyledPaper>
     </StyledModal>

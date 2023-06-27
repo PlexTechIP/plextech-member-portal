@@ -4,9 +4,9 @@
  *
  */
 import * as React from 'react';
-import styled from 'styled-components/macro';
+import styled from 'styled-components';
 import { styled as muiStyled } from '@mui/system';
-import PlexTechLogo from '../../../PlexTechLogo.png';
+import { PlexTechLogo } from 'images';
 import {
   Stack,
   Button,

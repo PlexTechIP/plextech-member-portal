@@ -6,7 +6,7 @@
 
 import * as React from 'react';
 import { useEffect, useState } from 'react';
-import styled from 'styled-components/macro';
+import styled from 'styled-components';
 import { Error, User, VenmoProfile } from 'types/types';
 import { Helmet } from 'react-helmet-async';
 import { ErrorModal } from 'app/components/ErrorModal';

@@ -1,11 +1,11 @@
 import { Paper, Stack } from '@mui/material';
 import React from 'react';
-import styled from 'styled-components/macro';
+import styled from 'styled-components';
 import { styled as muiStyled } from '@mui/material';
 import dayjs, { Dayjs } from 'dayjs';
-import PErrorImage from './PError.png';
-import PRegularImage from './PRegular.png';
-import PColdImage from './PCold.png';
+import { PError } from 'images';
+import { PCold } from 'images';
+import { PRegular } from 'images';
 import { Error } from 'types/types';
 
 interface Props {
@@ -24,7 +24,7 @@ export function QRLandingPage(props: Props) {
           justifyContent="space-between"
         >
           <H2>Sorry! This code is invalid, please try scanning it again.</H2>
-          <Img src={PColdImage} alt="Plexie cold" />
+          <Img src={PCold} alt="Plexie cold" />
         </Stack>
       </Form>
     );
@@ -63,9 +63,9 @@ export function QRLandingPage(props: Props) {
             <H2>Meeting start time: {props.startTime}</H2>
           </Stack>
           {isLate ? (
-            <Img src={PErrorImage} alt="Plexie sad" />
+            <Img src={PError} alt="Plexie sad" />
           ) : (
-            <Img src={PRegularImage} alt="Plexie happy" />
+            <Img src={PRegular} alt="Plexie happy" />
           )}
         </Stack>
       </Stack>
