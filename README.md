@@ -2,7 +2,7 @@
 
 # [PlexTech Member Portal](https://plextech-member-portal.vercel.app)
 
-The PlexTech Member Portal is a web application designed to provide members of PlexTech with a hub for all of the necessary resources. PlexTech is a student organization at the University of California, Berkeley that provides software consulting services to various companies. If you're interested in these services, please contact [info@plextech.berkeley.edu](info@plextech.berkeley.edu).
+The PlexTech Member Portal is a web application designed to provide members of PlexTech with a hub for all of the necessary resources. PlexTech is a student organization at the University of California, Berkeley that provides software consulting services to various companies. If you're interested in these services, please contact [info@plextech.berkeley.edu](mailto:info@plextech.berkeley.edu).
 
 This project was built with React.js, Flask, and MongoDB (TypeScript + Python). PlexTech provides a New Member Experience program that teaches new members how to utilize this tech stack to create beautiful, interactive websites like this one.
 
