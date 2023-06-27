@@ -47,8 +47,6 @@ def after_request(response):
         origin = "*"
     elif getenv("ENVIRONMENT") == 'production':
         origin = "https://plextech-member-portal.vercel.app"
-    else:
-        origin = "https://plextech-member-portal-dev.vercel.app"
 
     response.headers.add(
         "Access-Control-Allow-Origin",
