@@ -3,6 +3,7 @@ from __future__ import print_function
 import base64
 from email.message import EmailMessage
 from email.mime.text import MIMEText
+from markupsafe import Markup
 
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
@@ -86,6 +87,6 @@ def send_email(email, subject, header, message):
     message_text = render_template(
         "index.html",
         header=header,
-        message=message,
+        message=Markup(message),
     )
     gmail_send_message(email, subject, MIMEText(message_text, "html"))

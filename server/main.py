@@ -435,7 +435,7 @@ def approve_request(request_id):
                 send_email(
                     user["email"],
                     "PlexTech Reimbursement Error",
-                    f'Hello {user["firstName"]}',
+                    f'Hi {user["firstName"]},',
                     'You need to set your bank account information in order to be reimbursed. Please go to <a href="https://plextech-member-portal.vercel.app/">https://plextech-member-portal.vercel.app/</a> to set your bank account information.',
                 )
                 return {"error": "Need to set bank info"}, 407
