@@ -100,6 +100,7 @@ def after_login(
     )
 
     if res.status_code == 412:
+        print(res.text)
         try:
             payee_slug = db.Users.find_one({"_id": user_id})["bluevine_slug"]
         except:

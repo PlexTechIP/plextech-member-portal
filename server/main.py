@@ -720,6 +720,8 @@ def bank_details():
             },
         )
 
+        bank = {k: str(v) for k, v in bank.items()}
+
         return {"bank": bank}, 200
 
 
