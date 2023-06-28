@@ -698,7 +698,12 @@ def bank_details():
         _id = ObjectId(get_jwt_identity())
         form = dict(request.json)
 
-        bank = db.Users.find_one({"_id": _id}, {"_id": 0, "bank": 1})["bank"]
+        user = db.Users.find_one({"_id": _id}, {"_id": 0, "bank": 1})
+        if "bank" in user:
+            bank = user["bank"]
+        else:
+            bank = {}
+            
         if "accountNumber" in form and form["accountNumber"]:
             bank["accountNumber"] = encrypt(form["accountNumber"])
         if "routingNumber" in form and form["routingNumber"]:
