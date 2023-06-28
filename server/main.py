@@ -91,10 +91,13 @@ def check_password(plain_text_password, hashed_password):
 
 
 def encrypt(n):
-    return f.encrypt(int(n).to_bytes(8, "little"))
+    return f.encrypt(bytes(n, "utf-8"))
 
 
 def decrypt(c):
+    return f.decrypt(c).decode()
+
+def old_decrypt(c):
     return int.from_bytes(f.decrypt(c), "little")
 
 
@@ -720,9 +723,7 @@ def bank_details():
             },
         )
 
-        bank = {k: str(v) for k, v in bank.items()}
-
-        return {"bank": bank}, 200
+        return {}, 200
 
 
 if __name__ == "__main__":
