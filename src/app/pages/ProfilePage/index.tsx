@@ -55,9 +55,11 @@ export function ProfilePage(props: Props) {
       }
 
       setUser(res);
-      setAccountNumber(res.bank.accountNumber);
-      setRoutingNumber(res.bank.routingNumber);
-      setBankName(res.bank.bankName);
+      if (res.bank) {
+        setAccountNumber(res.bank.accountNumber);
+        setRoutingNumber(res.bank.routingNumber);
+        setBankName(res.bank.bankName);
+      }
 
       setCurProfile(res.venmo);
     };
