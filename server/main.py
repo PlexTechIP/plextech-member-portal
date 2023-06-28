@@ -90,12 +90,13 @@ def check_password(plain_text_password, hashed_password):
     return bcrypt.checkpw(plain_text_password, hashed_password)
 
 
-def encrypt(n):
-    return f.encrypt(bytes(n, "utf-8"))
+def encrypt(p):
+    return f.encrypt(p.encode()).decode()
 
 
 def decrypt(c):
-    return f.decrypt(c).decode()
+    return f.decrypt(c.encode()).decode()
+
 
 def old_decrypt(c):
     return int.from_bytes(f.decrypt(c), "little")
@@ -708,9 +709,9 @@ def bank_details():
             bank = {}
 
         if "accountNumber" in form and form["accountNumber"]:
-            bank["accountNumber"] = encrypt(form["accountNumber"])
+            bank["accountNumber"] = encrypt(str(form["accountNumber"]))
         if "routingNumber" in form and form["routingNumber"]:
-            bank["routingNumber"] = encrypt(form["routingNumber"])
+            bank["routingNumber"] = encrypt(str(form["routingNumber"]))
         if "bankName" in form and form["bankName"]:
             bank["bankName"] = form["bankName"]
 
