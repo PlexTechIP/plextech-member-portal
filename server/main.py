@@ -703,7 +703,7 @@ def bank_details():
             bank = user["bank"]
         else:
             bank = {}
-            
+
         if "accountNumber" in form and form["accountNumber"]:
             bank["accountNumber"] = encrypt(form["accountNumber"])
         if "routingNumber" in form and form["routingNumber"]:
@@ -720,7 +720,7 @@ def bank_details():
             },
         )
 
-        return {}, 200
+        return {"bank": bank}, 200
 
 
 if __name__ == "__main__":

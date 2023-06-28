@@ -127,6 +127,10 @@ export function ProfilePage(props: Props) {
     }));
 
     setSuccess(true);
+
+    setAccountNumber(res.bank.accountNumber);
+    setRoutingNumber(res.bank.routingNumber);
+    setBankName(res.bank.bankName);
   };
 
   return (
