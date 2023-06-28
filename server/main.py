@@ -724,4 +724,4 @@ def bank_details():
 
 
 if __name__ == "__main__":
-    app.run(port=getenv("PORT"), host="0.0.0.0", debug=getenv("DEBUG"))
+    app.run(port=getenv("PORT"), host="0.0.0.0", debug=getenv("ENVIRONMENT") == "local")

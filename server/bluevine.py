@@ -100,7 +100,10 @@ def after_login(
     )
 
     if res.status_code == 412:
-        payee_slug = db.Users.find_one({"_id": user_id})["bluevine_slug"]
+        try:
+            payee_slug = db.Users.find_one({"_id": user_id})["bluevine_slug"]
+        except:
+            return {"error": res.json()["error"]}, 400
     else:
         payee_slug = res.json()["slug"]
         db.Users.update_one({"_id": user_id}, {"$set": {"bluevine_slug": payee_slug}})
