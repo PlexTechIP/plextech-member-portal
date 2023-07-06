@@ -172,7 +172,7 @@ export function RequestsBoard(props: Props) {
 
     setSums((prevState: Sums) => ({
       ...prevState,
-      [sourceStatus]: prevState[sourceStatus] - parseFloat(request.amount),
+      approved: prevState.approved - parseFloat(request.amount),
       paid: prevState.paid + parseFloat(request.amount),
     }));
   };
