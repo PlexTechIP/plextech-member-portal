@@ -106,6 +106,7 @@ def after_login(
         except:
             return {"error": res.json()["error"]}, 400
     else:
+        print(res.text)
         payee_slug = res.json()["slug"]
         db.Users.update_one({"_id": user_id}, {"$set": {"bluevine_slug": payee_slug}})
 
