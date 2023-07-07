@@ -87,6 +87,16 @@ export function RequestsBoard(props: Props) {
 
     const request: any = props.requests![source.droppableId][source.index];
 
+    if (destination.droppableId === 'approved') {
+      setShowApproveModal(true);
+      setRequestedAmount(request.amount);
+      setApproveId(request._id);
+      setSourceStatus(source.droppableId);
+      setSourceIndex(source.index);
+      setDestinationIndex(destination.index);
+      return;
+    }
+
     props.requests![source.droppableId].splice(source.index, 1);
 
     props.requests![destination.droppableId].splice(
@@ -102,16 +112,6 @@ export function RequestsBoard(props: Props) {
       [destination.droppableId]:
         prevState[destination.droppableId] + parseFloat(request.amount),
     }));
-
-    if (destination.droppableId === 'approved') {
-      setShowApproveModal(true);
-      setRequestedAmount(request.amount);
-      setApproveId(request._id);
-      setSourceStatus(source.droppableId);
-      setSourceIndex(source.index);
-      setDestinationIndex(destination.index);
-      return;
-    }
 
     const [success, res] = await apiRequest(
       `/approval/${request._id}/`,

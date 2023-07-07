@@ -37,7 +37,6 @@ export function ApproveMFA(props: Props) {
       return;
     }
     setSuccess(true);
-    props.onClose(true);
   };
 
   return (
