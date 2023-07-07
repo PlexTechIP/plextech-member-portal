@@ -453,6 +453,7 @@ def approve_request(request_id):
                 email=user["email"],
                 comments=form["comments"],
                 request_id=request_id,
+                description=r["itemDescription"],
             )
 
         db.Requests.update_one(
@@ -708,20 +709,13 @@ def bank_details():
             bank = {}
 
         if "accountNumber" in form and form["accountNumber"]:
-            bank["accountNumber"] = encrypt(str(form["accountNumber"]))
+            bank["accountNumber"] = encrypt(str(form["accountNumber"]).strip())
         if "routingNumber" in form and form["routingNumber"]:
-            bank["routingNumber"] = encrypt(str(form["routingNumber"]))
+            bank["routingNumber"] = encrypt(str(form["routingNumber"]).strip())
         if "bankName" in form and form["bankName"]:
-            bank["bankName"] = form["bankName"]
+            bank["bankName"] = form["bankName"].strip()
 
-        db.Users.update_one(
-            {"_id": _id},
-            {
-                "$set": {
-                    "bank": bank,
-                }
-            },
-        )
+        db.Users.update_one({"_id": _id},{"$set": { "bank": bank,} }, )
 
         return {}, 200
 
