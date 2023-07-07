@@ -4,6 +4,7 @@ from os import getenv
 from dotenv import load_dotenv
 from datetime import datetime
 from bson.objectid import ObjectId
+from threading import Thread
 
 import requests
 import pymongo
@@ -17,7 +18,19 @@ client = pymongo.MongoClient(
 db = client.test
 
 
-def login(s):
+def login(
+    s,
+    accountNumber,
+    routingNumber,
+    bankName,
+    fullName,
+    email,
+    user_id,
+    amount,
+    comments,
+    request_id,
+    description=None,
+):
     # login
     res = s.post(
         "https://app.bluevine.com/api/v3/auth/login/",
@@ -41,11 +54,27 @@ def login(s):
         headers={"referer": "https://app.bluevine.com/dashboard"},
     )
 
-    return s, login_data
+    # start a new thread that waits for mfa then runs after_login
+
+    Thread(
+        target=after_login,
+        args=(
+            s,
+            login_data,
+            accountNumber,
+            routingNumber,
+            bankName,
+            fullName,
+            email,
+            user_id,
+            amount,
+            comments,
+            request_id,
+        ),
+    ).start()
 
 
 def after_login(
-    code,
     s,
     login_data,
     accountNumber,
@@ -59,7 +88,11 @@ def after_login(
     request_id,
     description=None,
 ):
-    s = pickle.loads(s)
+    while not len(list(db.MFA.find({}))):
+        print("waiting for mfa")
+        sleep(2)
+
+    code = db.MFA.find_one_and_delete({})["code"]
 
     # verify mfa
     res = s.post(
@@ -144,11 +177,11 @@ def after_login(
             print("waiting for mfa")
             sleep(5)
 
-        mfa = db.MFA.find_one_and_delete({})["code"]
+        code = db.MFA.find_one_and_delete({})["code"]
 
         res = s.post(
             f"https://app.bluevine.com/api/v3/company/{login_data['company_slug']}/user/{login_data['slug']}/mfa/verify_token/",
-            {"trust_device": True, "token": "1875489"},
+            {"trust_device": True, "token": mfa},
         )
 
         res = s.post(
@@ -194,24 +227,21 @@ def bluevine_send_money(
     description=None,
 ):
     s = requests.session()
-    s, login_data = login(s)
-
-    db.MFA.insert_one(
-        {
-            "s": pickle.dumps(s),
-            "login_data": login_data,
-            "accountNumber": accountNumber,
-            "routingNumber": routingNumber,
-            "bankName": bankName,
-            "fullName": fullName,
-            "email": email,
-            "user_id": user_id,
-            "amount": amount,
-            "description": description,
-            "comments": comments,
-            "request_id": request_id,
-        }
+    login(
+        s,
+        accountNumber,
+        routingNumber,
+        bankName,
+        fullName,
+        email,
+        user_id,
+        amount,
+        comments,
+        request_id,
+        description=None,
     )
+
+    return {}, 200
 
 
 # bluevine_send_money()
