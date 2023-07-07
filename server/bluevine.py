@@ -6,6 +6,9 @@ from datetime import datetime
 from bson.objectid import ObjectId
 from threading import Thread
 from send_email import send_email
+from flask import Flask
+
+app = Flask(__name__)
 
 import requests
 import pymongo
@@ -213,12 +216,13 @@ def after_login(
         },
     )
 
-    send_email(
-        email,
-        "Reimbursement Request Approved",
-        f"Hi {fullName}",
-        f'Your reimbursement request of ${amount} for "{description}" has been approved. The ACH transfer may take up to 2 business days to complete. If you do not receive the money by then, please contact info@plextech.berkeley.edu or a PlexTech Executive Board member.',
-    )
+    with app.app_context():
+        send_email(
+            email,
+            "Reimbursement Request Approved",
+            f"Hi {fullName}",
+            f'Your reimbursement request of ${amount} for "{description}" has been approved. The ACH transfer may take up to 2 business days to complete. If you do not receive the money by then, please contact info@plextech.berkeley.edu or a PlexTech Executive Board member.',
+        )
 
     return {}, 200
 
