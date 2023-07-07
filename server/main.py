@@ -467,12 +467,11 @@ def approve_request(request_id):
 
     if request.method == "POST":
         form = dict(request.json)
-        code = form["code"]
+        code = str(form["code"])
 
-        args = db.MFA.find_one_and_delete({})
-        del args["_id"]
+        db.MFA.insert_one({"code": code})
 
-        return after_login(code, **args)
+        return {}, 200
 
 
 @app.route("/requests/", methods=["GET", "POST", "PUT", "DELETE"])

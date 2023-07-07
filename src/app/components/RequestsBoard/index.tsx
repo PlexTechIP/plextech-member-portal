@@ -146,7 +146,7 @@ export function RequestsBoard(props: Props) {
       1,
     )[0];
 
-    props.requests!['approved'].splice(destinationIndex, 0, request);
+    props.requests!.approved.splice(destinationIndex, 0, request);
 
     setSums((prevState: Sums) => ({
       ...prevState,
