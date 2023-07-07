@@ -93,9 +93,12 @@ def after_login(
     request_id,
     description=None,
 ):
+    i = 0
     while not len(list(db.MFA.find({}))):
         print("waiting for mfa")
         sleep(2)
+        if i > 30:
+            return {"error": "mfa timeout"}, 400
 
     code = db.MFA.find_one_and_delete({})["code"]
 
@@ -178,9 +181,12 @@ def after_login(
             },
         )
 
+        i = 0
         while not len(list(db.MFA.find({}))):
             print("waiting for mfa")
-            sleep(5)
+            sleep(2)
+            if i > 30:
+                return {"error": "mfa timeout"}, 400
 
         code = db.MFA.find_one_and_delete({})["code"]
 

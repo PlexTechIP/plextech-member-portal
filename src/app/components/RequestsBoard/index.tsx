@@ -53,6 +53,7 @@ export function RequestsBoard(props: Props) {
   const [sourceIndex, setSourceIndex] = useState<number>(0);
   const [destinationIndex, setDestinationIndex] = useState<number>(0);
   const [showMFA, setShowMFA] = useState<boolean>(false);
+  const [approvedRequest, setApprovedRequest] = useState<Request>();
 
   useEffect(() => {
     const tempSums: Sums = {
@@ -146,6 +147,8 @@ export function RequestsBoard(props: Props) {
       1,
     )[0];
 
+    setApprovedRequest(request);
+
     props.requests!.approved.splice(destinationIndex, 0, request);
 
     setSums((prevState: Sums) => ({
@@ -163,17 +166,17 @@ export function RequestsBoard(props: Props) {
 
     if (!success) return;
 
-    const request: any = props.requests!.approved.splice(
-      destinationIndex,
-      1,
-    )[0];
+    props.requests!.approved = props.requests!.approved.filter(
+      (request: Request) => request._id !== approvedRequest!._id,
+    );
 
-    props.requests!['paid'].splice(0, 0, request);
+    props.requests!['paid'].splice(0, 0, approvedRequest!);
 
     setSums((prevState: Sums) => ({
       ...prevState,
-      approved: prevState.approved - parseFloat(request.amount),
-      paid: prevState.paid + parseFloat(request.amount),
+      approved:
+        prevState.approved - parseFloat((approvedRequest as any)!.amount),
+      paid: prevState.paid + parseFloat((approvedRequest as any)!.amount),
     }));
   };
 
