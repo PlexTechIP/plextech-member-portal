@@ -251,7 +251,7 @@ def bluevine_send_money(
         amount,
         comments,
         request_id,
-        description=None,
+        description,
     )
 
     return {}, 200
