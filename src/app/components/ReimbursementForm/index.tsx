@@ -473,14 +473,13 @@ export function ReimbursementForm(props: Props) {
                   Receipt(s)
                 </Button>
               )}
-              {
-                <p>
-                  Submitted{' '}
-                  {props.request
-                    ? props.request.date.format('MM/DD/YYYY')
-                    : dayjs().format('MM/DD/YYYY')}
-                </p>
-              }
+              <p>
+                Submitted{' '}
+                {props.request
+                  ? props.request.date.format('MM/DD/YYYY')
+                  : dayjs().format('MM/DD/YYYY')}{' '}
+                by {props.request?.firstName} {props.request?.lastName}
+              </p>
             </Stack>
             <Divider />
             {props.canEdit &&
