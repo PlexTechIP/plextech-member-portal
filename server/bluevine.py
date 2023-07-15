@@ -129,27 +129,25 @@ def after_login(
         "address_zip": "94583",
     }
     # body.update(address)
+    user = db.Users.find_one({"_id": user_id}, {"bluevine_slug": 1, "_id": 0})
+    if "bluevine_slug" not in user:
+        # create payee
+        res = s.post(
+            f"https://app.bluevine.com/api/v3/dda-company/{login_data['company_slug']}/dda-user/{login_data['slug']}/payee/",
+            body,
+            headers={
+                "referer": "https://app.bluevine.com/dashboard/payees",
+                "x-csrftoken": s.cookies["csrftoken"],
+            },
+        )
 
-    # create payee
-    res = s.post(
-        f"https://app.bluevine.com/api/v3/dda-company/{login_data['company_slug']}/dda-user/{login_data['slug']}/payee/",
-        body,
-        headers={
-            "referer": "https://app.bluevine.com/dashboard/payees",
-            "x-csrftoken": s.cookies["csrftoken"],
-        },
-    )
-
-    if res.status_code == 412:
-        print(res.text)
-        try:
-            payee_slug = db.Users.find_one({"_id": user_id})["bluevine_slug"]
-        except:
-            return {"error": res.json()["error"]}, 400
-    else:
-        print(res.text)
+        if "slug" not in res.json():
+            return {"error": "failed to create payee: " + res.text}, 400
+        
         payee_slug = res.json()["slug"]
         db.Users.update_one({"_id": user_id}, {"$set": {"bluevine_slug": payee_slug}})
+    else:
+        payee_slug = user["bluevine_slug"]
 
     # send money
     res = s.post(
