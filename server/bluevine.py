@@ -108,6 +108,8 @@ def after_login(
         headers={"referer": "https://app.bluevine.com/dashboard"},
     )
 
+    print(res)
+
     # if not res.ok:
     #     return {"error": "bad mfa"}, 400
 
@@ -148,7 +150,6 @@ def after_login(
     else:
         payee_slug = user["bluevine_slug"]
 
-    print(payee_slug)
     # send money
     res = s.post(
         f"https://app.bluevine.com/api/v3/dda-company/{login_data['company_slug']}/dda-user/{login_data['slug']}/scheduled_payment/",
