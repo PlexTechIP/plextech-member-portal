@@ -130,6 +130,7 @@ def after_login(
     }
     # body.update(address)
     user = db.Users.find_one({"_id": user_id}, {"bluevine_slug": 1, "_id": 0})
+    print(user)
     if "bluevine_slug" not in user:
         # create payee
         res = s.post(
