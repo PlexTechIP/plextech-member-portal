@@ -15,7 +15,7 @@ This project was built with React.js, Flask, and MongoDB (TypeScript + Python). 
 In development:
 
 - Technical interview platform
-- Member resources folder
+- Member resources repository
 
 ## Getting Started
 
