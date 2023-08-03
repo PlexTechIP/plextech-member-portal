@@ -523,6 +523,7 @@ def requests():
                 {"$unwind": "$user_requests"},
                 {
                     "$project": {
+                        "_id": {"$toString": "$_id"},
                         "user_id": {"$toString": "$_id"},
                         "request_id": {"$toString": "$user_requests._id"},
                         "status": "$user_requests.status",
@@ -541,7 +542,6 @@ def requests():
 
             # Grouping requests by status in application layer, since MongoDB doesn't provide an efficient way to do this
             for ur in users_requests:
-                ur["_id"] = str(ur["_id"])
                 res[ur["status"]].append(ur)
 
             ### END CHATGPT MAGIC ###
