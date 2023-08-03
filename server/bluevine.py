@@ -225,7 +225,7 @@ def after_login(
             email,
             "Reimbursement Request Approved",
             f"Hi {fullName},",
-            f'Your reimbursement request of ${amount} for "{description}" has been approved. The ACH transfer may take up to 2 business days to complete. If you do not receive the money by then, please contact info@plextech.berkeley.edu or a PlexTech Executive Board member.',
+            f'Your reimbursement request of ${amount} for "{description}" has been approved. The ACH transfer may take up to 5 business days to complete. If you do not receive the money by then, please contact info@plextech.berkeley.edu or a PlexTech Executive Board member.',
         )
 
     return {}, 200
