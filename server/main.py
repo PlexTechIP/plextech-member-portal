@@ -488,31 +488,66 @@ def requests():
         except:
             return {}, 401
 
+        start = time.time()
         res = {
+            "firstName": user.get("firstName", ""),
+            "lastName": user.get("lastName", ""),
+            "treasurer": user.get("treasurer", False),
             "pendingReview": [],
             "underReview": [],
             "errors": [],
             "approved": [],
             "paid": [],
         }
-        res["firstName"] = user["firstName"]
-        res["lastName"] = user["lastName"]
 
-        if "treasurer" in user and user["treasurer"]:
+        if res["treasurer"]:
             user_filter = request.args.get("user_filter")
-            filter = {"registered": True}
-            if user_filter:
-                filter["_id"] = ObjectId(user_filter)
+            filter = (
+                {"registered": True, "_id": ObjectId(user_filter)}
+                if user_filter
+                else {"registered": True}
+            )
 
-            users = db.Users.find(filter)
-            for user in users:
-                for r in db.Requests.find(
-                    {"_id": {"$in": user["requests"]}}, {"images": 0, "comments": 0}
-                ):
-                    r["user_id"] = str(user["_id"])
-                    r["_id"] = str(r["_id"])
-                    res[r["status"]].append(r)
-            res["treasurer"] = True
+            ### BEGIN CHATGPT MAGIC ###
+
+            pipeline = [
+                {"$match": filter},
+                {
+                    "$lookup": {
+                        "from": "Requests",
+                        "localField": "requests",
+                        "foreignField": "_id",
+                        "as": "user_requests",
+                    }
+                },
+                {"$unwind": "$user_requests"},
+                {
+                    "$project": {
+                        "user_id": {"$toString": "$_id"},
+                        "request_id": {"$toString": "$user_requests._id"},
+                        "status": "$user_requests.status",
+                        "itemDescription": "$user_requests.itemDescription",
+                        "amount": "$user_requests.amount",
+                        "date": "$user_requests.date",
+                        "teams": "$teams",
+                        "firstName": "$firstName",
+                        "lastName": "$lastName",
+                        "email": "$email",
+                    }
+                },
+            ]
+
+            users_requests = list(db.Users.aggregate(pipeline))
+
+            # Grouping requests by status in application layer, since MongoDB doesn't provide an efficient way to do this
+            for ur in users_requests:
+                ur["_id"] = str(ur["_id"])
+                res[ur["status"]].append(ur)
+
+            ### END CHATGPT MAGIC ###
+            end = time.time()
+            print(end - start)
+
         else:
             response = db.Requests.find(
                 {"_id": {"$in": user["requests"]}}, {"images": 0, "comments": 0}

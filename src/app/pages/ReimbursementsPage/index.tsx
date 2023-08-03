@@ -138,6 +138,8 @@ export function HomePage(props: Props) {
 
   // userFilter is a user id
   const refreshRequests = async (userFilter?: string) => {
+    setIsLoading(true);
+
     const [success, res] = await apiRequest(
       `/requests/?user_filter=${userFilter}`,
       'GET',
