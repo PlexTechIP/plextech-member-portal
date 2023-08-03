@@ -22,7 +22,7 @@ from cryptography.fernet import Fernet
 from send_email import gmail_send_message, send_comment_email, send_email
 
 # from venmo import request_money, send_money, search
-from bluevine import bluevine_send_money, after_login
+from bluevine import bluevine_send_money
 
 import time
 import bcrypt
@@ -499,7 +499,12 @@ def requests():
         res["lastName"] = user["lastName"]
 
         if "treasurer" in user and user["treasurer"]:
-            users = db.Users.find({"registered": True})
+            user_filter = request.args.get("user_filter")
+            filter = {"registered": True}
+            if user_filter:
+                filter["_id"] = ObjectId(user_filter)
+
+            users = db.Users.find(filter)
             for user in users:
                 for r in db.Requests.find(
                     {"_id": {"$in": user["requests"]}}, {"images": 0, "comments": 0}
@@ -614,12 +619,17 @@ def requests():
         return {}, 200
 
 
-@app.route("/forum/", methods=["GET", "POST", "PUT"])
+@app.route("/forum/", methods=["GET", "POST", "PUT", "PATCH"])
 @jwt_required()
 def forum():
     if request.method == "OPTIONS":
         return {}, 200
     id = ObjectId(get_jwt_identity())
+
+    # get user name
+    if request.method == "PATCH":
+        user = db.Users.find_one({"_id": id})
+        return {"firstName": user["firstName"], "lastName": user["lastName"]}, 200
 
     if request.method == "GET":
         res = list(db.Posts.find({}))
@@ -715,7 +725,14 @@ def bank_details():
         if "bankName" in form and form["bankName"]:
             bank["bankName"] = form["bankName"].strip()
 
-        db.Users.update_one({"_id": _id},{"$set": { "bank": bank,} }, )
+        db.Users.update_one(
+            {"_id": _id},
+            {
+                "$set": {
+                    "bank": bank,
+                }
+            },
+        )
 
         return {}, 200
 

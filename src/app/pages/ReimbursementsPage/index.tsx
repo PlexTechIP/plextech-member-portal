@@ -136,6 +136,56 @@ export function HomePage(props: Props) {
     setShowModal(true);
   };
 
+  // userFilter is a user id
+  const refreshRequests = async (userFilter?: string) => {
+    const [success, res] = await apiRequest(
+      `/requests/?user_filter=${userFilter}`,
+      'GET',
+    );
+
+    if (!success) {
+      setError(res.error);
+      return;
+    }
+
+    setIsTreasurer(res.treasurer);
+    setTeams(res.teams);
+    setUserName({ firstName: res.firstName, lastName: res.lastName });
+
+    delete res.treasurer;
+    delete res.teams;
+    delete res.firstName;
+    delete res.lastName;
+    setRequests({
+      pendingReview: res.pendingReview.map((request: Request) => ({
+        ...request,
+        amount: request.amount.toFixed(2),
+        date: dayjs(request.date),
+      })),
+      underReview: res.underReview.map((request: Request) => ({
+        ...request,
+        amount: request.amount.toFixed(2),
+        date: dayjs(request.date),
+      })),
+      errors: res.errors.map((request: Request) => ({
+        ...request,
+        amount: request.amount.toFixed(2),
+        date: dayjs(request.date),
+      })),
+      approved: res.approved.map((request: Request) => ({
+        ...request,
+        amount: request.amount.toFixed(2),
+        date: dayjs(request.date),
+      })),
+      paid: res.paid.map((request: Request) => ({
+        ...request,
+        amount: request.amount.toFixed(2),
+        date: dayjs(request.date),
+      })),
+    });
+    setIsLoading(false);
+  };
+
   return (
     <>
       <Helmet>
@@ -169,6 +219,7 @@ export function HomePage(props: Props) {
               onRequest={onRequest}
               isTreasurer={isTreasurer}
               userName={userName}
+              refreshRequests={refreshRequests}
             />
           </StyledStack>
           <BackToTopButton />

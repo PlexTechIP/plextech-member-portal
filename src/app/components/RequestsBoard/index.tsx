@@ -25,6 +25,7 @@ interface Props {
   onRequest: () => void;
   isTreasurer: boolean;
   userName: { firstName: string; lastName: string };
+  refreshRequests: (userFilter: string) => void;
 }
 
 const statuses = ['pendingReview', 'underReview', 'errors', 'approved', 'paid'];
@@ -180,6 +181,28 @@ export function RequestsBoard(props: Props) {
     }));
   };
 
+  const onClickName = (request: Request) => {
+    props.refreshRequests(request.user_id);
+
+    const tempSums: Sums = {
+      pendingReview: 0,
+      underReview: 0,
+      errors: 0,
+      approved: 0,
+      paid: 0,
+    };
+
+    if (props.requests) {
+      statuses.forEach((statusKey: string) => {
+        props.requests![statusKey].forEach(
+          (request: any) => (tempSums[statusKey] += parseFloat(request.amount)),
+        );
+      });
+
+      setSums(tempSums);
+    }
+  };
+
   return (
     <>
       {error && <ErrorModal open={!!error} error={error} />}
@@ -241,6 +264,7 @@ export function RequestsBoard(props: Props) {
                                   request.user_id ===
                                     (jwt_decode(getToken()!) as any).sub
                                 }
+                                onClickName={() => onClickName(request)}
                               />
                             ))}
                         {provided.placeholder}

@@ -17,6 +17,7 @@ interface Props {
   onEdit: (mine: boolean) => void;
   mine: boolean;
   index: number;
+  onClickName: () => void;
 }
 
 export function RequestCard(props: Props) {
@@ -92,7 +93,9 @@ export function RequestCard(props: Props) {
                   Receipt(s)
                 </Button>
               ) : (
-                <P>{props.request.firstName}</P>
+                <P onClick={props.onClickName}>
+                  {props.request.firstName} {props.request.lastName?.charAt(0)}
+                </P>
               )}
               <Button
                 style={{ color: theme.palette.text.primary, zIndex: 999 }}

@@ -22,7 +22,7 @@ interface Props {
 export function ForumPostForm(props: Props) {
   useEffect(() => {
     const f = async () => {
-      const [success, res] = await apiRequest(`/requests/`, 'GET');
+      const [success, res] = await apiRequest(`/forum/`, 'PATCH');
 
       if (!success) {
         setError(res.error);
