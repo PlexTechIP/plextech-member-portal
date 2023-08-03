@@ -6,7 +6,6 @@
 import * as React from 'react';
 // import styled from 'styled-components';
 import { styled as muiStyled } from '@mui/system';
-import { useEffect, useState } from 'react';
 import { Button } from '@mui/material';
 
 interface Props {
