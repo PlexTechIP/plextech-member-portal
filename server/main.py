@@ -488,7 +488,6 @@ def requests():
         except:
             return {}, 401
 
-        start = time.time()
         res = {
             "firstName": user.get("firstName", ""),
             "lastName": user.get("lastName", ""),
@@ -545,9 +544,6 @@ def requests():
                 res[ur["status"]].append(ur)
 
             ### END CHATGPT MAGIC ###
-            end = time.time()
-            print(end - start)
-
         else:
             response = db.Requests.find(
                 {"_id": {"$in": user["requests"]}}, {"images": 0, "comments": 0}
