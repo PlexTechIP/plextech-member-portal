@@ -167,31 +167,11 @@ export function HomePage(props: Props) {
     delete res.firstName;
     delete res.lastName;
     setRequests({
-      pendingReview: res.pendingReview.map((request: Request) => ({
-        ...request,
-        amount: request.amount.toFixed(2),
-        date: dayjs(request.date),
-      })),
-      underReview: res.underReview.map((request: Request) => ({
-        ...request,
-        amount: request.amount.toFixed(2),
-        date: dayjs(request.date),
-      })),
-      errors: res.errors.map((request: Request) => ({
-        ...request,
-        amount: request.amount.toFixed(2),
-        date: dayjs(request.date),
-      })),
-      approved: res.approved.map((request: Request) => ({
-        ...request,
-        amount: request.amount.toFixed(2),
-        date: dayjs(request.date),
-      })),
-      paid: res.paid.map((request: Request) => ({
-        ...request,
-        amount: request.amount.toFixed(2),
-        date: dayjs(request.date),
-      })),
+      pendingReview: res.pendingReview.map(transformRequestItem),
+      underReview: res.underReview.map(transformRequestItem),
+      errors: res.errors.map(transformRequestItem),
+      approved: res.approved.map(transformRequestItem),
+      paid: res.paid.map(transformRequestItem),
     });
     setIsLoading(false);
   };
