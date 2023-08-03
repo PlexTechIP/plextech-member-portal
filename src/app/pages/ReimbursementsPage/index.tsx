@@ -52,7 +52,7 @@ export function HomePage(props: Props) {
     return () => window.removeEventListener('scroll', toggleVisibility);
   }, []);
 
-  const transformRequestItem = request => ({
+  const transformRequestItem = (request: Request) => ({
     ...request,
     amount: request.amount.toFixed(2),
     date: dayjs(request.date),
