@@ -522,7 +522,7 @@ def requests():
                 {"$unwind": "$user_requests"},
                 {
                     "$project": {
-                        "_id": {"$toString": "$_id"},
+                        "_id": {"$toString": "$user_requests._id"},
                         "user_id": {"$toString": "$_id"},
                         "request_id": {"$toString": "$user_requests._id"},
                         "status": "$user_requests.status",
