@@ -21,7 +21,7 @@
     "cross-env": "7.0.3",
     "dayjs": "1.11.7",
     "fontfaceobserver": "2.3.0",
-    "husky": "8.0.1",
+    "husky": "8.0.3",
     "i18next": "21.9.2",
     "i18next-browser-languagedetector": "6.1.5",
     "i18next-scanner": "4.0.0",

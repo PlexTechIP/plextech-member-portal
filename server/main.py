@@ -22,7 +22,7 @@ from cryptography.fernet import Fernet
 from send_email import gmail_send_message, send_comment_email, send_email
 
 # from venmo import request_money, send_money, search
-from bluevine import bluevine_send_money, after_login
+from bluevine import bluevine_send_money
 
 import time
 import bcrypt
@@ -489,25 +489,61 @@ def requests():
             return {}, 401
 
         res = {
+            "firstName": user.get("firstName", ""),
+            "lastName": user.get("lastName", ""),
+            "treasurer": user.get("treasurer", False),
             "pendingReview": [],
             "underReview": [],
             "errors": [],
             "approved": [],
             "paid": [],
         }
-        res["firstName"] = user["firstName"]
-        res["lastName"] = user["lastName"]
 
-        if "treasurer" in user and user["treasurer"]:
-            users = db.Users.find({"registered": True})
-            for user in users:
-                for r in db.Requests.find(
-                    {"_id": {"$in": user["requests"]}}, {"images": 0, "comments": 0}
-                ):
-                    r["user_id"] = str(user["_id"])
-                    r["_id"] = str(r["_id"])
-                    res[r["status"]].append(r)
-            res["treasurer"] = True
+        if res["treasurer"]:
+            user_filter = request.args.get("user_filter")
+            filter = (
+                {"registered": True, "_id": ObjectId(user_filter)}
+                if user_filter
+                else {"registered": True}
+            )
+
+            ### BEGIN CHATGPT MAGIC ###
+
+            pipeline = [
+                {"$match": filter},
+                {
+                    "$lookup": {
+                        "from": "Requests",
+                        "localField": "requests",
+                        "foreignField": "_id",
+                        "as": "user_requests",
+                    }
+                },
+                {"$unwind": "$user_requests"},
+                {
+                    "$project": {
+                        "_id": {"$toString": "$user_requests._id"},
+                        "user_id": {"$toString": "$_id"},
+                        "request_id": {"$toString": "$user_requests._id"},
+                        "status": "$user_requests.status",
+                        "itemDescription": "$user_requests.itemDescription",
+                        "amount": "$user_requests.amount",
+                        "date": "$user_requests.date",
+                        "teams": "$teams",
+                        "firstName": "$firstName",
+                        "lastName": "$lastName",
+                        "email": "$email",
+                    }
+                },
+            ]
+
+            users_requests = list(db.Users.aggregate(pipeline))
+
+            # Grouping requests by status in application layer, since MongoDB doesn't provide an efficient way to do this
+            for ur in users_requests:
+                res[ur["status"]].append(ur)
+
+            ### END CHATGPT MAGIC ###
         else:
             response = db.Requests.find(
                 {"_id": {"$in": user["requests"]}}, {"images": 0, "comments": 0}
@@ -614,12 +650,17 @@ def requests():
         return {}, 200
 
 
-@app.route("/forum/", methods=["GET", "POST", "PUT"])
+@app.route("/forum/", methods=["GET", "POST", "PUT", "PATCH"])
 @jwt_required()
 def forum():
     if request.method == "OPTIONS":
         return {}, 200
     id = ObjectId(get_jwt_identity())
+
+    # get user name
+    if request.method == "PATCH":
+        user = db.Users.find_one({"_id": id})
+        return {"firstName": user["firstName"], "lastName": user["lastName"]}, 200
 
     if request.method == "GET":
         res = list(db.Posts.find({}))
@@ -715,7 +756,14 @@ def bank_details():
         if "bankName" in form and form["bankName"]:
             bank["bankName"] = form["bankName"].strip()
 
-        db.Users.update_one({"_id": _id},{"$set": { "bank": bank,} }, )
+        db.Users.update_one(
+            {"_id": _id},
+            {
+                "$set": {
+                    "bank": bank,
+                }
+            },
+        )
 
         return {}, 200
 

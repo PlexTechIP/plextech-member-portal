@@ -1,4 +1,4 @@
-import { Stack, Button, Card, useTheme } from '@mui/material';
+import { Stack, Button, Card, useTheme, Tooltip } from '@mui/material';
 import * as React from 'react';
 import styled from 'styled-components';
 import { Error, Image, Request } from '../../../types/types';
@@ -17,6 +17,7 @@ interface Props {
   onEdit: (mine: boolean) => void;
   mine: boolean;
   index: number;
+  onClickName: () => void;
 }
 
 export function RequestCard(props: Props) {
@@ -92,7 +93,14 @@ export function RequestCard(props: Props) {
                   Receipt(s)
                 </Button>
               ) : (
-                <P>{props.request.firstName}</P>
+                <Tooltip
+                  title={`Filter requests by ${props.request.firstName}`}
+                >
+                  <P onClick={props.onClickName}>
+                    {props.request.firstName}{' '}
+                    {props.request.lastName?.charAt(0)}
+                  </P>
+                </Tooltip>
               )}
               <Button
                 style={{ color: theme.palette.text.primary, zIndex: 999 }}

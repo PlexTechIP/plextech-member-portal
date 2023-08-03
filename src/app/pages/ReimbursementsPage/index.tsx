@@ -9,8 +9,10 @@ import { AllRequests, Error, Request } from 'types/types';
 import { ErrorModal } from 'app/components/ErrorModal';
 import { styled as muiStyled } from '@mui/system';
 import dayjs from 'dayjs';
-import { BackToTopButton } from 'app/components/BackToTopButton';
+import { BottomButton } from 'app/components/BottomButton';
 import { apiRequest } from 'utils/apiRequest';
+import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
+import KeyboardArrowLeftIcon from '@mui/icons-material/KeyboardArrowLeft';
 
 interface Props {}
 
@@ -33,6 +35,28 @@ export function HomePage(props: Props) {
     firstName: string;
     lastName: string;
   }>({ firstName: '', lastName: '' });
+  const [filter, setFilter] = useState<boolean>(false);
+  const [backToTopButtonVisible, setBackToTopButtonVisible] = useState(false);
+
+  useEffect(() => {
+    const toggleVisibility = () => {
+      if (window.scrollY > 300) {
+        setBackToTopButtonVisible(true);
+      } else {
+        setBackToTopButtonVisible(false);
+      }
+    };
+
+    window.addEventListener('scroll', toggleVisibility);
+
+    return () => window.removeEventListener('scroll', toggleVisibility);
+  }, []);
+
+  const transformRequestItem = (request: Request) => ({
+    ...request,
+    amount: request.amount.toFixed(2),
+    date: dayjs(request.date),
+  });
 
   useEffect(() => {
     const f = async () => {
@@ -41,6 +65,7 @@ export function HomePage(props: Props) {
 
       if (!success) {
         setError(res.error);
+        setIsLoading(false);
         return;
       }
 
@@ -52,33 +77,15 @@ export function HomePage(props: Props) {
       delete res.teams;
       delete res.firstName;
       delete res.lastName;
+
       setRequests({
-        pendingReview: res.pendingReview.map((request: Request) => ({
-          ...request,
-          amount: request.amount.toFixed(2),
-          date: dayjs(request.date),
-        })),
-        underReview: res.underReview.map((request: Request) => ({
-          ...request,
-          amount: request.amount.toFixed(2),
-          date: dayjs(request.date),
-        })),
-        errors: res.errors.map((request: Request) => ({
-          ...request,
-          amount: request.amount.toFixed(2),
-          date: dayjs(request.date),
-        })),
-        approved: res.approved.map((request: Request) => ({
-          ...request,
-          amount: request.amount.toFixed(2),
-          date: dayjs(request.date),
-        })),
-        paid: res.paid.map((request: Request) => ({
-          ...request,
-          amount: request.amount.toFixed(2),
-          date: dayjs(request.date),
-        })),
+        pendingReview: res.pendingReview.map(transformRequestItem),
+        underReview: res.underReview.map(transformRequestItem),
+        errors: res.errors.map(transformRequestItem),
+        approved: res.approved.map(transformRequestItem),
+        paid: res.paid.map(transformRequestItem),
       });
+
       setIsLoading(false);
     };
 
@@ -136,6 +143,39 @@ export function HomePage(props: Props) {
     setShowModal(true);
   };
 
+  // userFilter is a user id
+  const refreshRequests = async (userFilter?: string) => {
+    setFilter(!!userFilter);
+    setIsLoading(true);
+
+    const [success, res] = await apiRequest(
+      userFilter ? `/requests/?user_filter=${userFilter}` : `/requests/`,
+      'GET',
+    );
+
+    if (!success) {
+      setError(res.error);
+      return;
+    }
+
+    setIsTreasurer(res.treasurer);
+    setTeams(res.teams);
+    setUserName({ firstName: res.firstName, lastName: res.lastName });
+
+    delete res.treasurer;
+    delete res.teams;
+    delete res.firstName;
+    delete res.lastName;
+    setRequests({
+      pendingReview: res.pendingReview.map(transformRequestItem),
+      underReview: res.underReview.map(transformRequestItem),
+      errors: res.errors.map(transformRequestItem),
+      approved: res.approved.map(transformRequestItem),
+      paid: res.paid.map(transformRequestItem),
+    });
+    setIsLoading(false);
+  };
+
   return (
     <>
       <Helmet>
@@ -161,6 +201,18 @@ export function HomePage(props: Props) {
             </>
           </StyledModal>
           {isLoading && <StyledCircularProgress />}
+          {filter && (
+            <BottomButton
+              text="Back to All"
+              onClick={() => refreshRequests()}
+              icon={<KeyboardArrowLeftIcon />}
+              sx={{
+                '&:hover': {
+                  background: 'transparent',
+                },
+              }}
+            />
+          )}
 
           <StyledStack justifyContent="space-between">
             <RequestsBoard
@@ -169,9 +221,25 @@ export function HomePage(props: Props) {
               onRequest={onRequest}
               isTreasurer={isTreasurer}
               userName={userName}
+              refreshRequests={refreshRequests}
             />
           </StyledStack>
-          <BackToTopButton />
+          <BottomButton
+            text="Back to Top"
+            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+            icon={<KeyboardArrowUpIcon />}
+            sx={{
+              transform: `translateX(-50%) ${
+                backToTopButtonVisible ? 'translateY(0%)' : 'translateY(100%)'
+              }`,
+              transition: backToTopButtonVisible
+                ? 'transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)'
+                : 'transform 0.3s cubic-bezier(0.6, -0.28, 0.735, 0.045)',
+              '&:hover': {
+                background: 'transparent',
+              },
+            }}
+          />
         </>
       )}
     </>
