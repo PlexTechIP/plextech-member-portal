@@ -207,6 +207,7 @@ export function HomePage(props: Props) {
               onClick={() => refreshRequests()}
               icon={<KeyboardArrowLeftIcon />}
               sx={{
+                transform: 'translateX(-50%)',
                 '&:hover': {
                   background: 'transparent',
                 },
