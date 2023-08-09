@@ -18,7 +18,6 @@ from flask import render_template
 
 SCOPES = ["https://www.googleapis.com/auth/gmail.send"]
 
-
 def gmail_send_message(to, subject, message_content):
     creds = None
     # The file token.json stores the user's access and refresh tokens, and is

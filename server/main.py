@@ -20,6 +20,7 @@ from random import randint
 from cryptography.fernet import Fernet
 
 from send_email import gmail_send_message, send_comment_email, send_email
+from sheets import add_row_to_sheet
 
 # from venmo import request_money, send_money, search
 from bluevine import bluevine_send_money
@@ -604,6 +605,17 @@ def requests():
             request_id = str(res.inserted_id)
             db.Users.update_one(
                 {"_id": id}, {"$push": {"requests": ObjectId(request_id)}}
+            )
+
+            add_row_to_sheet(
+                [
+                    form["itemDescription"],
+                    form["amount"],
+                    form["date"],
+                    form["teamBudget"],
+                    form["firstName"],
+                    form["lastName"],
+                ]
             )
 
             form["_id"] = request_id
