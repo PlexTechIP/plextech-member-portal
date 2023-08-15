@@ -4,6 +4,7 @@ import styled from 'styled-components';
 import { Error, Image, Request } from '../../../types/types';
 import EditIcon from '@mui/icons-material/Edit';
 import ImageIcon from '@mui/icons-material/Image';
+import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
 import { useState } from 'react';
 import { styled as muiStyled } from '@mui/system';
 import { Visibility } from '@mui/icons-material';
@@ -102,6 +103,19 @@ export function RequestCard(props: Props) {
                   </P>
                 </Tooltip>
               )}
+              {props.request.comments.length > 0 && (
+                <CommentStack
+                  direction="row"
+                  spacing={1}
+                  onClick={() => props.onEdit(props.mine)}
+                  alignItems="center"
+                >
+                  <ChatBubbleOutlineIcon fontSize="small" />
+                  <CommentLengthP>
+                    {props.request.comments.length}
+                  </CommentLengthP>
+                </CommentStack>
+              )}
               <Button
                 style={{ color: theme.palette.text.primary, zIndex: 999 }}
                 size="small"
@@ -144,4 +158,14 @@ const StyledStack = styled(Stack)`
 const P = styled.p`
   margin: 0;
   overflow: hidden;
+`;
+
+const CommentStack = styled(Stack)`
+  color: grey;
+`;
+
+const CommentLengthP = styled.p`
+  margin: 0;
+  overflow: hidden;
+  font-size: 12px;
 `;

@@ -534,6 +534,7 @@ def requests():
                         "firstName": "$firstName",
                         "lastName": "$lastName",
                         "email": "$email",
+                        "comments": "$user_requests.comments",
                     }
                 },
             ]
@@ -547,7 +548,7 @@ def requests():
             ### END CHATGPT MAGIC ###
         else:
             response = db.Requests.find(
-                {"_id": {"$in": user["requests"]}}, {"images": 0, "comments": 0}
+                {"_id": {"$in": user["requests"]}}, {"images": 0}
             )
 
             for r in response:
