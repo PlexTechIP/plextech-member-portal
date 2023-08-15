@@ -99,10 +99,6 @@ def decrypt(c):
     return f.decrypt(c.encode()).decode()
 
 
-def old_decrypt(c):
-    return int.from_bytes(f.decrypt(c), "little")
-
-
 @app.route("/logout/", methods=["POST", "OPTIONS"])
 @jwt_required()
 def logout():
