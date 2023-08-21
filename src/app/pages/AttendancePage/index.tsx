@@ -38,6 +38,8 @@ import { AttendeesDisplay } from './AttendeesDisplay';
 import { QRLandingPage } from './QRLandingPage';
 import { getToken } from 'utils/useToken';
 
+const TIME_TO_REFRESH = 20;
+
 interface Props {}
 
 export function AttendancePage(props: Props) {
@@ -50,7 +52,7 @@ export function AttendancePage(props: Props) {
   const [meetingName, setMeetingName] = useState<string>('');
 
   const [isSessionActive, setIsSessionActive] = useState<boolean>(false);
-  const [remainingTime, setRemainingTime] = useState<number>(10);
+  const [remainingTime, setRemainingTime] = useState<number>(TIME_TO_REFRESH);
 
   const handleSessionButtonClick = async () => {
     setIsLoading(true);
@@ -141,13 +143,13 @@ export function AttendancePage(props: Props) {
 
       setCode(res.code);
       setAttendees(res.attendees);
-      setRemainingTime(10);
+      setRemainingTime(TIME_TO_REFRESH);
       setIsLoading(false);
     };
 
     if (isSessionActive) {
       updateQRCode();
-      qrCodeUpdateInterval = setInterval(updateQRCode, 10000); // update every 100 seconds
+      qrCodeUpdateInterval = setInterval(updateQRCode, TIME_TO_REFRESH * 1000); // update every 20 seconds
       timerUpdateInterval = setInterval(
         () =>
           setRemainingTime((prevTime: number) =>
