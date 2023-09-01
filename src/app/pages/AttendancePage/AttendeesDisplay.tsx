@@ -10,19 +10,6 @@ interface Props {
   startTime: Dayjs;
 }
 
-// const attendees = {
-//   1: ['12:00:00 PM', 'John Doe'],
-//   2: ['12:00:00 PM', 'Jane Doe'],
-//   3: ['12:00:00 PM', 'John Smith'],
-//   4: ['12:00:00 PM', 'Jane Smith'],
-//   5: ['12:00:00 PM', 'John Doe'],
-//   6: ['12:00:00 PM', 'Jane Doe'],
-//   7: ['12:00:00 PM', 'John Smith'],
-//   8: ['12:00:00 PM', 'Jane Smith'],
-//   9: ['12:00:00 PM', 'John Doe'],
-//   10: ['12:00:00 PM', 'Jane Doe'],
-// };
-
 export function AttendeesDisplay(props: Props) {
   const { attendees, startTime } = props;
 

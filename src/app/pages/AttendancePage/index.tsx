@@ -37,6 +37,7 @@ import jwt_decode from 'jwt-decode';
 import { AttendeesDisplay } from './AttendeesDisplay';
 import { QRLandingPage } from './QRLandingPage';
 import { getToken } from 'utils/useToken';
+import { AbsentDisplay } from './AbsentDisplay';
 
 const TIME_TO_REFRESH = 20;
 
@@ -46,6 +47,7 @@ export function AttendancePage(props: Props) {
   const [code, setCode] = useState<string>('hi');
   const [meetingId, setMeetingId] = useState<string>('');
   const [attendees, setAttendees] = useState<any>({});
+  const [absent, setAbsent] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<Error>();
   const [startTime, setStartTime] = useState<Dayjs | null>(dayjs());
@@ -75,6 +77,7 @@ export function AttendancePage(props: Props) {
       setCode(res.code);
       setMeetingId(res.id);
       setAttendees(res.attendees);
+      setAbsent(res.absent);
     } else {
       // Stop session
       setIsSessionActive(false);
@@ -92,6 +95,7 @@ export function AttendancePage(props: Props) {
       setCode('');
       setMeetingId('');
       setAttendees([]);
+      setAbsent([]);
     }
     setIsLoading(false);
   };
@@ -143,6 +147,7 @@ export function AttendancePage(props: Props) {
 
       setCode(res.code);
       setAttendees(res.attendees);
+      setAbsent(res.absent);
       setRemainingTime(TIME_TO_REFRESH);
       setIsLoading(false);
     };
@@ -156,7 +161,7 @@ export function AttendancePage(props: Props) {
             prevTime ? prevTime - 1 : prevTime,
           ),
         1000,
-      ); // update every 10 seconds
+      ); // update every 20 seconds
     }
 
     return () => {
@@ -262,6 +267,7 @@ export function AttendancePage(props: Props) {
           {startTime && (
             <AttendeesDisplay attendees={attendees} startTime={startTime!} />
           )}
+          {startTime && <AbsentDisplay absent={absent} />}
         </Stack>
       )}
       {error && <ErrorModal open={!!error} error={error} />}

@@ -370,6 +370,12 @@ def attendance():
             "code": str(attendance_info["code"]),
             "id": str(aid),
             "attendees": attendance_info["attendees"],
+            "absent": [
+                user["firstName"] + " " + user["lastName"]
+                for user in db.Users.find({"registered": True})
+                if str(user["_id"]) not in attendance_info["attendees"]
+            ]
+            + [user["email"] for user in db.Users.find({"registered": False})],
         }, 200
 
     if request.method == "GET":
