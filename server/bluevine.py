@@ -33,8 +33,8 @@ def login(
     amount,
     comments,
     request_id,
-    bluevineEmail,
-    bluevinePassword,
+    bluevineEmail=None,
+    bluevinePassword=None,
     description=None,
 ):
     # login
@@ -243,6 +243,8 @@ def bluevine_send_money(
     amount,
     comments,
     request_id,
+    bluevineEmail,
+    bluevinePassword,
     description=None,
 ):
     s = requests.session()
@@ -258,6 +260,8 @@ def bluevine_send_money(
         comments,
         request_id,
         description,
+        bluevineEmail,
+        bluevinePassword,
     )
 
     return {}, 200
