@@ -33,11 +33,10 @@ def login(
     amount,
     comments,
     request_id,
+    description=None,
     bluevineEmail=None,
     bluevinePassword=None,
-    description=None,
 ):
-    print(bluevineEmail, bluevinePassword)
     # login
     res = s.post(
         "https://app.bluevine.com/api/v3/auth/login/",
@@ -244,9 +243,9 @@ def bluevine_send_money(
     amount,
     comments,
     request_id,
-    bluevineEmail,
-    bluevinePassword,
     description=None,
+    bluevineEmail=bluevineEmail,
+    bluevinePassword=bluevinePassword,
 ):
     s = requests.session()
     login(
@@ -261,8 +260,8 @@ def bluevine_send_money(
         comments,
         request_id,
         description,
-        bluevineEmail,
-        bluevinePassword,
+        bluevineEmail=bluevineEmail,
+        bluevinePassword=bluevinePassword,
     )
 
     return {}, 200
