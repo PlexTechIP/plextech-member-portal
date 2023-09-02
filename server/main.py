@@ -424,7 +424,7 @@ def approve_request(request_id):
         )
 
         if form["status"] == "approved":
-            user = db.Users.find_one({"_id": r["user_id"]})
+            requester = db.Users.find_one({"_id": r["user_id"]})
             # if "venmo" not in user:
             #     r = db.Requests.find_one_and_update(
             #         {"_id": ObjectId(request_id)},
@@ -434,11 +434,11 @@ def approve_request(request_id):
             #         },
             #     )
             #     return {"error": "Need to set venmo username"}, 407
-            if "bank" not in user:
+            if "bank" not in requester:
                 send_email(
-                    user["email"],
+                    requester["email"],
                     "PlexTech Reimbursement Error",
-                    f'Hi {user["firstName"]},',
+                    f'Hi {requester["firstName"]},',
                     'You need to set your bank account information in order to be reimbursed. Please go to <a href="https://plextech-member-portal.vercel.app/">https://plextech-member-portal.vercel.app/</a> to set your bank account information.',
                 )
                 return {"error": "Need to set bank info"}, 407
@@ -447,16 +447,18 @@ def approve_request(request_id):
             # db.PaymentQueue.insert_one({'_id': ObjectId(request_id), 'venmo_id': user['venmo']['id'], 'amount': float(
             #     form['amount']), 'subject': r["itemDescription"], 'successes': 0})
             bluevine_send_money(
-                fullName=user["firstName"] + " " + user["lastName"],
-                accountNumber=decrypt(user["bank"]["accountNumber"]),
-                routingNumber=decrypt(user["bank"]["routingNumber"]),
-                bankName=user["bank"]["bankName"],
+                fullName=requester["firstName"] + " " + requester["lastName"],
+                accountNumber=decrypt(requester["bank"]["accountNumber"]),
+                routingNumber=decrypt(requester["bank"]["routingNumber"]),
+                bankName=requester["bank"]["bankName"],
                 amount=form["amount"],
-                user_id=user["_id"],
-                email=user["email"],
+                user_id=requester["_id"],
+                email=requester["email"],
                 comments=form["comments"],
                 request_id=request_id,
                 description=r["itemDescription"],
+                bluevineEmail=user['bluevineEmail'],
+                bluevinePassword=decrypt(user['bluevinePassword'])
             )
 
         db.Requests.update_one(

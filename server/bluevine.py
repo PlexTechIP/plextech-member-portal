@@ -33,12 +33,14 @@ def login(
     amount,
     comments,
     request_id,
+    bluevineEmail,
+    bluevinePassword,
     description=None,
 ):
     # login
     res = s.post(
         "https://app.bluevine.com/api/v3/auth/login/",
-        {"email": getenv("BLUEVINE_EMAIL"), "password": getenv("BLUEVINE_PASSWORD")},
+        {"email": bluevineEmail, "password": bluevinePassword},
         headers={"referer": "https://app.bluevine.com/dashboard"},
     )
     if res.status_code != 200:
