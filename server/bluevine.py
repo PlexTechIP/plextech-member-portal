@@ -244,8 +244,8 @@ def bluevine_send_money(
     comments,
     request_id,
     description=None,
-    bluevineEmail=bluevineEmail,
-    bluevinePassword=bluevinePassword,
+    bluevineEmail=None,
+    bluevinePassword=None,
 ):
     s = requests.session()
     login(
