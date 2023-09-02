@@ -37,6 +37,7 @@ def login(
     bluevinePassword=None,
     description=None,
 ):
+    print(bluevineEmail, bluevinePassword)
     # login
     res = s.post(
         "https://app.bluevine.com/api/v3/auth/login/",
