@@ -132,7 +132,7 @@ def after_login(
         "address_zip": "94583",
     }
     # body.update(address)
-    user = db.Users.find_one({"_id": user_id}, {"bluevine_slug": 1, "_id": 0})
+    user = db.Users.find_one({"_id": ObjectId(user_id)}, {"bluevine_slug": 1, "_id": 0})
     if "bluevine_slug" not in user:
         # create payee
         res = s.post(
@@ -143,6 +143,8 @@ def after_login(
                 "x-csrftoken": s.cookies["csrftoken"],
             },
         )
+
+        print(res.text)
 
         if "slug" not in res.json():
             return {"error": "failed to create payee: " + res.text}, 400
