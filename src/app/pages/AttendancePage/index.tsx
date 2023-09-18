@@ -39,7 +39,7 @@ import { QRLandingPage } from './QRLandingPage';
 import { getToken } from 'utils/useToken';
 import { AbsentDisplay } from './AbsentDisplay';
 
-const TIME_TO_REFRESH = 20;
+const TIME_TO_REFRESH = 60;
 
 interface Props {}
 
@@ -154,14 +154,14 @@ export function AttendancePage(props: Props) {
 
     if (isSessionActive) {
       updateQRCode();
-      qrCodeUpdateInterval = setInterval(updateQRCode, TIME_TO_REFRESH * 1000); // update every 20 seconds
+      qrCodeUpdateInterval = setInterval(updateQRCode, TIME_TO_REFRESH * 1000);
       timerUpdateInterval = setInterval(
         () =>
           setRemainingTime((prevTime: number) =>
             prevTime ? prevTime - 1 : prevTime,
           ),
         1000,
-      ); // update every 20 seconds
+      );
     }
 
     return () => {
