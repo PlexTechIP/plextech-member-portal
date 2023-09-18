@@ -92,12 +92,59 @@ export function AttendancePage(props: Props) {
         setIsSessionActive(true);
         return;
       }
+
+      // Copy attendees and absent list to clipboard
+      const clipboardData = {
+        attendees: Object.values(attendees).map((item: any) => item[1]),
+        absent: absent,
+      };
+      await navigator.clipboard.writeText(JSON.stringify(clipboardData));
+
+      // Show popup that says copied attendance data to clipboard
+      // const showCopiedPopup = () => {
+      //   alert('Attendance data copied to clipboard');
+      // };
+      // showCopiedPopup();
+
       setCode('');
       setMeetingId('');
       setAttendees([]);
       setAbsent([]);
     }
     setIsLoading(false);
+  };
+
+  const handleExportToCSV = () => {
+    const csvContent =
+      'Name,Arrival Time\n' +
+      Object.values(attendees)
+        .map((attendee: any) => {
+          const arrivalTime = attendee[0];
+          const name = attendee[1];
+          return `${name},${arrivalTime}`;
+        })
+        .join('\n');
+
+    const absentList = 'Name/Email\n' + absent.join('\n');
+
+    const csvBlob = new Blob([csvContent], { type: 'text/csv;charset=utf-8' });
+    const absentBlob = new Blob([absentList], {
+      type: 'text/csv;charset=utf-8',
+    });
+
+    const linkAbsent = document.createElement('a');
+    linkAbsent.href = URL.createObjectURL(absentBlob);
+    linkAbsent.download = 'absent.csv';
+    document.body.appendChild(linkAbsent);
+    linkAbsent.click();
+    document.body.removeChild(linkAbsent);
+
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(csvBlob);
+    link.download = 'attendees.csv';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   const searchParams = new URLSearchParams(window.location.search);
@@ -253,12 +300,17 @@ export function AttendancePage(props: Props) {
                       </div>
                     )}
                   </div>
-                  <Button
-                    variant="contained"
-                    onClick={handleSessionButtonClick}
-                  >
-                    Stop Session
-                  </Button>
+                  <Stack direction="row" spacing={2} alignItems="center">
+                    <Button
+                      variant="contained"
+                      onClick={handleSessionButtonClick}
+                    >
+                      Stop Session
+                    </Button>
+                    <Button variant="contained" onClick={handleExportToCSV}>
+                      Export to CSV
+                    </Button>
+                  </Stack>
                 </>
               )}
             </Stack>
