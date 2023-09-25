@@ -94,14 +94,21 @@ export function RequestCard(props: Props) {
                   Receipt(s)
                 </Button>
               ) : (
-                <Tooltip
-                  title={`Filter requests by ${props.request.firstName}`}
-                >
-                  <P onClick={props.onClickName}>
-                    {props.request.firstName}{' '}
-                    {props.request.lastName?.charAt(0)}
-                  </P>
-                </Tooltip>
+                <Stack direction="row" spacing={1}>
+                  <Tooltip
+                    title={`Filter requests by ${props.request.firstName}`}
+                  >
+                    <P onClick={props.onClickName}>
+                      {props.request.firstName}{' '}
+                      {props.request.lastName?.charAt(0)}
+                    </P>
+                  </Tooltip>
+                  {!props.request.bank_set && (
+                    <Tooltip title="Bank info not set">
+                      <P style={{ color: 'red' }}>!</P>
+                    </Tooltip>
+                  )}
+                </Stack>
               )}
               {props.request.comments.length > 0 && (
                 <CommentStack

@@ -539,6 +539,7 @@ def requests():
                         "lastName": "$lastName",
                         "email": "$email",
                         "comments": "$user_requests.comments",
+                        "bank_set": "$bank",
                     }
                 },
             ]

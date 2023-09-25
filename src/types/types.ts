@@ -13,6 +13,7 @@ export interface Request {
   date: Dayjs;
   firstName?: string;
   lastName?: string;
+  bank_set?: boolean;
 }
 
 export interface Comment {
