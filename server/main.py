@@ -435,12 +435,12 @@ def approve_request(request_id):
             #     )
             #     return {"error": "Need to set venmo username"}, 407
             if "bank" not in requester:
-                send_email(
-                    requester["email"],
-                    "PlexTech Reimbursement Error",
-                    f'Hi {requester["firstName"]},',
-                    'You need to set your bank account information in order to be reimbursed. Please go to <a href="https://plextech-member-portal.vercel.app/">https://plextech-member-portal.vercel.app/</a> to set your bank account information.',
-                )
+                # send_email(
+                #     requester["email"],
+                #     "PlexTech Reimbursement Error",
+                #     f'Hi {requester["firstName"]},',
+                #     'You need to set your bank account information in order to be reimbursed. Please go to <a href="https://plextech-member-portal.vercel.app/">https://plextech-member-portal.vercel.app/</a> to set your bank account information.',
+                # )
                 return {"error": "Need to set bank info"}, 407
             # send_money(user['venmo']['id'], form['amount'],
             #             f'PlexTech Reimbursement: {r["itemDescription"]}')
