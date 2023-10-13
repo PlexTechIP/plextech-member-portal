@@ -1,6 +1,6 @@
 [<img src="https://plextech.berkeley.edu/images/PlexTechLogo.png" width="100" alt="PlexTech Logo">](https://plextech-member-portal.vercel.app)
 
-# [PlexTech Member Portal](https://plextech-member-portal.vercel.app)
+# [PlexTech Member Portal](https://plextech.berkeley.edu/members)
 
 The PlexTech Member Portal is a web application designed to provide members of PlexTech with a hub for all of the necessary resources. PlexTech is a student organization at the University of California, Berkeley that provides software consulting services to various companies. If you're interested in these services, please contact [info@plextech.berkeley.edu](mailto:info@plextech.berkeley.edu).
 
