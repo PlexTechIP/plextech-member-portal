@@ -328,10 +328,10 @@ def attendance():
                     redirect("https://plextech-member-portal.vercel.app/")
                 )
                 response.set_cookie(
-                    "attendanceTime", form["time"], httpOnly=True, secure=True
+                    "attendanceTime", form["time"], secure=True
                 )
                 response.set_cookie(
-                    "attendanceId", str(aid), httpOnly=True, secure=True
+                    "attendanceId", str(aid), secure=True
                 )
                 return response
         else:
