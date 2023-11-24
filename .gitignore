@@ -39,6 +39,8 @@ server/env/
 server/.env
 server/index.html
 server/bluevine/
+server/backup
+server/backup.tar.gz
 
 .husky/
 .vscode/
