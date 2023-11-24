@@ -78,7 +78,7 @@ def after_request(response):
 
 
 client = pymongo.MongoClient(
-    f'mongodb+srv://{getenv("MONGO_USERNAME")}:{getenv("MONGO_PASSWORD")}@cluster0.mkbc83o.mongodb.net/?retryWrites=true&w=majority'
+    f"mongodb://{getenv('MONGOUSER')}:{getenv('MONGOPASSWORD')}@{getenv('MONGOHOST')}:{getenv('MONGOPORT')}"
 )
 db = client.test
 
@@ -327,12 +327,8 @@ def attendance():
                 response = make_response(
                     redirect("https://plextech-member-portal.vercel.app/")
                 )
-                response.set_cookie(
-                    "attendanceTime", form["time"], secure=True
-                )
-                response.set_cookie(
-                    "attendanceId", str(aid), secure=True
-                )
+                response.set_cookie("attendanceTime", form["time"], secure=True)
+                response.set_cookie("attendanceId", str(aid), secure=True)
                 return response
         else:
             return {"error": "invalid code"}, 402
@@ -457,8 +453,8 @@ def approve_request(request_id):
                 comments=form["comments"],
                 request_id=request_id,
                 description=r["itemDescription"],
-                bluevineEmail=user['bluevineEmail'],
-                bluevinePassword=decrypt(user['bluevinePassword'])
+                bluevineEmail=user["bluevineEmail"],
+                bluevinePassword=decrypt(user["bluevinePassword"]),
             )
 
         db.Requests.update_one(
