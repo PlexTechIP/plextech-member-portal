@@ -77,9 +77,7 @@ def after_request(response):
         return response
 
 
-client = pymongo.MongoClient(
-    f"mongodb://{getenv('MONGOUSER')}:{getenv('MONGOPASSWORD')}@{getenv('MONGOHOST')}:{getenv('MONGOPORT')}"
-)
+client = pymongo.MongoClient(getenv("MONGO_URL"))
 db = client.test
 
 
