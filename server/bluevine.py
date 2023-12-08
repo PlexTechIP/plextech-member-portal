@@ -16,9 +16,7 @@ import pickle
 
 load_dotenv()
 
-client = pymongo.MongoClient(
-    f'mongodb+srv://{getenv("MONGO_USERNAME")}:{getenv("MONGO_PASSWORD")}@cluster0.mkbc83o.mongodb.net/?retryWrites=true&w=majority'
-)
+client = pymongo.MongoClient(getenv("MONGO_URL"))
 db = client.test
 
 
@@ -194,7 +192,7 @@ def after_login(
 
         res = s.post(
             f"https://app.bluevine.com/api/v3/company/{login_data['company_slug']}/user/{login_data['slug']}/mfa/verify_token/",
-            {"trust_device": True, "token": mfa},
+            {"trust_device": True, "token": code},
         )
 
         res = s.post(
