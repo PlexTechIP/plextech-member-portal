@@ -41,6 +41,7 @@ def login(
         {"email": bluevineEmail, "password": bluevinePassword},
         headers={"referer": "https://app.bluevine.com/dashboard"},
     )
+    print(res.text)
     if res.status_code != 200:
         raise Exception("Failed to login to bluevine: " + str(res.json()))
     s.headers.update({"x-csrftoken": s.cookies["csrftoken"]})
@@ -95,8 +96,8 @@ def after_login(
 ):
     i = 0
     while not len(list(db.MFA.find({}))):
-        sleep(2)
-        if i > 30:
+        sleep(1)
+        if i > 60:
             return {"error": "mfa timeout"}, 400
 
     code = db.MFA.find_one_and_delete({})["code"]
@@ -107,8 +108,6 @@ def after_login(
         {"token": code, "trust_device": True},
         headers={"referer": "https://app.bluevine.com/dashboard"},
     )
-
-    print(res)
 
     # if not res.ok:
     #     return {"error": "bad mfa"}, 400
@@ -142,11 +141,9 @@ def after_login(
             },
         )
 
-        print(res.text)
-
         if "slug" not in res.json():
             return {"error": "failed to create payee: " + res.text}, 400
-        
+
         payee_slug = res.json()["slug"]
         db.Users.update_one({"_id": user_id}, {"$set": {"bluevine_slug": payee_slug}})
     else:
@@ -164,7 +161,6 @@ def after_login(
             "is_continuously_recurring": False,
             "funds_source": "dda",
             "send_email_to_payee": True,
-            "account": "dcce374f0a9f45d0984c59ae9e33d27d",
         },
         headers={
             "referer": "https://app.bluevine.com/dashboard/payees",

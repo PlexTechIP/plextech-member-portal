@@ -1,5 +1,3 @@
-# type: ignore
-
 from flask import Flask, request, jsonify, make_response, redirect
 from dotenv import load_dotenv
 from bson.objectid import ObjectId
@@ -198,39 +196,39 @@ def login_signup_add_PIC():
             user["google"] = True
             db.Users.update_one({"email": form["email"]}, {"$set": {"google": True}})
 
-        try:
-            if (
-                "google" in user and user["google"] and form["google"]
-            ) or check_password(form["password"].encode("utf-8"), user["password"]):
-                access_token = create_access_token(identity=str(user["_id"]))
-                res = {"access_token": access_token}
+        # try:
+        if (
+            "google" in user and user["google"] and form["google"]
+        ) or check_password(form["password"].encode("utf-8"), user["password"].encode("utf-8")):
+            access_token = create_access_token(identity=str(user["_id"]))
+            res = {"access_token": access_token}
 
-                if request.cookies.get("attendanceId"):
-                    attendance_info = db.Attendance.find_one(
-                        {"_id": request.cookies.get("attendanceId")}
-                    )
+            if request.cookies.get("attendanceId"):
+                attendance_info = db.Attendance.find_one(
+                    {"_id": request.cookies.get("attendanceId")}
+                )
 
-                    attendance_info["attendees"][user["_id"]] = (
-                        request.cookies.get("attendanceTime"),
-                        f"{user['firstName']} {user['lastName']}",
-                    )
-                    res.update(
-                        {
-                            "startTime": attendance_info["startTime"],
-                            "attendanceTime": request.cookies.get("attendanceTime"),
-                        }
-                    )
+                attendance_info["attendees"][user["_id"]] = (
+                    request.cookies.get("attendanceTime"),
+                    f"{user['firstName']} {user['lastName']}",
+                )
+                res.update(
+                    {
+                        "startTime": attendance_info["startTime"],
+                        "attendanceTime": request.cookies.get("attendanceTime"),
+                    }
+                )
 
-                response = make_response(res)
-                response.delete_cookie("attendance")
-                return response
-            else:
-                return {"error": "Incorrect password"}, 401
+            response = make_response(res)
+            response.delete_cookie("attendance")
+            return response
+        else:
+            return {"error": "Incorrect password"}, 401
 
-        except:
-            return {
-                "error": "Tried to log in with password but signed up with Google."
-            }, 400
+        # except:
+        #     return {
+        #         "error": "Tried to log in with password but signed up with Google."
+        #     }, 400
 
     if form["method"] == "signup":
         del form["method"]
@@ -576,27 +574,27 @@ def requests():
             user = db.Users.find_one(
                 {"_id": id}, {"_id": 1, "firstName": 1, "lastName": 1, "email": 1}
             )
-            if user["_id"] == request_user["_id"]:
-                for user in db.Users.find({"treasurer": True}, {"_id": 0, "email": 1}):
-                    send_comment_email(
-                        user["email"],
-                        f'[PlexTech] {user["firstName"]} commented on your request',
-                        request_user["firstName"],
-                        user["firstName"],
-                        user["lastName"],
-                        req["itemDescription"],
-                        form["comment"]["message"],
-                    )
-            else:
-                send_comment_email(
-                    request_user["email"],
-                    f'[PlexTech] {user["firstName"]} commented on your request',
-                    request_user["firstName"],
-                    user["firstName"],
-                    user["lastName"],
-                    req["itemDescription"],
-                    form["comment"]["message"],
-                )
+            # if user["_id"] == request_user["_id"]:
+            #     for user in db.Users.find({"treasurer": True}, {"_id": 0, "email": 1}):
+            #         send_comment_email(
+            #             user["email"],
+            #             f'[PlexTech] {user["firstName"]} commented on your request',
+            #             request_user["firstName"],
+            #             user["firstName"],
+            #             user["lastName"],
+            #             req["itemDescription"],
+            #             form["comment"]["message"],
+            #         )
+            # else:
+            #     send_comment_email(
+            #         request_user["email"],
+            #         f'[PlexTech] {user["firstName"]} commented on your request',
+            #         request_user["firstName"],
+            #         user["firstName"],
+            #         user["lastName"],
+            #         req["itemDescription"],
+            #         form["comment"]["message"],
+            #     )
             return {}, 200
         else:
             form["user_id"] = id
