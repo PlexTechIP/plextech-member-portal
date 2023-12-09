@@ -197,9 +197,9 @@ def login_signup_add_PIC():
             db.Users.update_one({"email": form["email"]}, {"$set": {"google": True}})
 
         # try:
-        if (
-            "google" in user and user["google"] and form["google"]
-        ) or check_password(form["password"].encode("utf-8"), user["password"].encode("utf-8")):
+        if ("google" in user and user["google"] and form["google"]) or check_password(
+            form["password"].encode("utf-8"), user["password"].encode("utf-8")
+        ):
             access_token = create_access_token(identity=str(user["_id"]))
             res = {"access_token": access_token}
 
@@ -509,9 +509,19 @@ def requests():
             pipeline = [
                 {"$match": filter},
                 {
+                    "$addFields": {
+                        "convertedRequests": {
+                            "$map": {
+                                "input": "$requests",
+                                "in": {"$toObjectId": "$$this"},
+                            }
+                        }
+                    }
+                },
+                {
                     "$lookup": {
                         "from": "Requests",
-                        "localField": "requests",
+                        "localField": "convertedRequests",
                         "foreignField": "_id",
                         "as": "user_requests",
                     }
@@ -545,7 +555,7 @@ def requests():
             ### END CHATGPT MAGIC ###
         else:
             response = db.Requests.find(
-                {"_id": {"$in": user["requests"]}}, {"images": 0}
+                {"_id": {"$in": [ObjectId(r) for r in user["requests"]]}}, {"images": 0}
             )
 
             for r in response:
