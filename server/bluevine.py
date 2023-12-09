@@ -95,6 +95,8 @@ def after_login(
     request_id,
     description=None,
 ):
+    print('after_login started')
+
     i = 0
     while not len(list(db.MFA.find({}))):
         sleep(1)
