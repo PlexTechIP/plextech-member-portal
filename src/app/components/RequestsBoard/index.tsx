@@ -203,13 +203,6 @@ export function RequestsBoard(props: Props) {
     }
   };
 
-  if (props.requests) {
-    const matchingRequest = props.requests.paid.filter(
-      (request: Request) => request.firstName?.toLowerCase() === 'shamith',
-    );
-    console.log(matchingRequest);
-  }
-
   return (
     <>
       {error && <ErrorModal open={!!error} error={error} />}

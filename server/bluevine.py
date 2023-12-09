@@ -12,7 +12,6 @@ app = Flask(__name__)
 
 import requests
 import pymongo
-import pickle
 
 load_dotenv()
 
