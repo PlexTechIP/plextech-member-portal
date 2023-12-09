@@ -52,12 +52,14 @@ def login(
         f"https://app.bluevine.com/api/v3/company/{login_data['company_slug']}/user/{login_data['slug']}/mfa/",
         headers={"referer": "https://app.bluevine.com/dashboard"},
     )
+    print(res.text)
 
     # get mfa
     res = s.post(
         f"https://app.bluevine.com/api/v3/company/{login_data['company_slug']}/user/{login_data['slug']}/mfa/send_token/",
         headers={"referer": "https://app.bluevine.com/dashboard"},
     )
+    print(res.text)
 
     # start a new thread that waits for mfa then runs after_login
 
@@ -108,6 +110,7 @@ def after_login(
         {"token": code, "trust_device": True},
         headers={"referer": "https://app.bluevine.com/dashboard"},
     )
+    print(res.text)
 
     # if not res.ok:
     #     return {"error": "bad mfa"}, 400
@@ -140,6 +143,7 @@ def after_login(
                 "x-csrftoken": s.cookies["csrftoken"],
             },
         )
+        print(res.text)
 
         if "slug" not in res.json():
             return {"error": "failed to create payee: " + res.text}, 400
