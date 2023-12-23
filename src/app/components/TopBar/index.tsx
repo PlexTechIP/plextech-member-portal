@@ -45,6 +45,7 @@ const iconMap = {
   Profile: <PersonIcon />,
   Attendance: <RecentActorsIcon />,
   Reimbursements: <AttachMoneyIcon />,
+  Categories: <AttachMoneyIcon />,
   Forum: <ForumIcon />,
 };
 
