@@ -99,6 +99,7 @@ def after_login(
 
     i = 0
     while not len(list(db.MFA.find({}))):
+        print('waiting for mfa')
         sleep(1)
         if i > 60:
             return {"error": "mfa timeout"}, 400
