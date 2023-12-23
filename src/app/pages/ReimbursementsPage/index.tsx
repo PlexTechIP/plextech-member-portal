@@ -29,7 +29,6 @@ export function HomePage(props: Props) {
   const [request, setRequest] = useState<Request | null>(null);
   const [error, setError] = useState<Error>();
   const [isTreasurer, setIsTreasurer] = useState<boolean>(false);
-  const [teams, setTeams] = useState<string[]>([]);
   const [canEdit, setCanEdit] = useState<boolean>(false);
   const [userName, setUserName] = useState<{
     firstName: string;
@@ -70,11 +69,9 @@ export function HomePage(props: Props) {
       }
 
       setIsTreasurer(res.treasurer);
-      setTeams(res.teams);
       setUserName({ firstName: res.firstName, lastName: res.lastName });
 
       delete res.treasurer;
-      delete res.teams;
       delete res.firstName;
       delete res.lastName;
 
@@ -159,11 +156,9 @@ export function HomePage(props: Props) {
     }
 
     setIsTreasurer(res.treasurer);
-    setTeams(res.teams);
     setUserName({ firstName: res.firstName, lastName: res.lastName });
 
     delete res.treasurer;
-    delete res.teams;
     delete res.firstName;
     delete res.lastName;
     setRequests({
@@ -190,7 +185,6 @@ export function HomePage(props: Props) {
             <>
               <ReimbursementForm
                 request={request}
-                teams={teams}
                 setRequests={setRequests}
                 onClose={onClose}
                 onSubmit={onSubmit}

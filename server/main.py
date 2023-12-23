@@ -536,7 +536,6 @@ def requests():
                         "itemDescription": "$user_requests.itemDescription",
                         "amount": "$user_requests.amount",
                         "date": "$user_requests.date",
-                        "teams": "$teams",
                         "firstName": "$firstName",
                         "lastName": "$lastName",
                         "email": "$email",
@@ -564,7 +563,6 @@ def requests():
                 res[r["status"]].append(r)
             res["treasurer"] = False
 
-        res["teams"] = user["teams"]
         return res, 200
 
     form = dict(request.json)

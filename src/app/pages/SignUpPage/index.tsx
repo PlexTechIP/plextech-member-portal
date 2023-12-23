@@ -30,16 +30,6 @@ import jwt_decode from 'jwt-decode';
 import { apiRequest } from 'utils/apiRequest';
 import { setToken } from 'utils/useToken';
 
-const possibleTeams = [
-  'Exec',
-  'Zendesk',
-  'CFS Energy',
-  'Songtradr',
-  'Angaza',
-  "Jeremy's Curriculum Team",
-  "Tommy's Curriculum Team",
-];
-
 interface Props {
   onBack: () => void;
 }
@@ -52,7 +42,6 @@ export function SignUpPage(props: Props) {
     lastName: '',
     email: '',
     password: '',
-    teams: [],
   });
   const [error, setError] = useState<Error>();
   const [incorrect, setIncorrect] = useState<boolean>(false);
@@ -162,16 +151,6 @@ export function SignUpPage(props: Props) {
     setSubmitted(false);
   };
 
-  const handleChange = event => {
-    const {
-      target: { value },
-    } = event;
-    setFormData((prevState: SignUpData) => ({
-      ...prevState,
-      teams: value,
-    }));
-  };
-
   return (
     <>
       <Helmet>
@@ -200,20 +179,6 @@ export function SignUpPage(props: Props) {
                 </StyledStack>
                 <H1>Sign Up</H1>
                 {formData.google && <p>Signed in with Google.</p>}
-                <StyledStack>
-                  <p>Project/Curriculum Team</p>
-                  <Select
-                    multiple
-                    value={formData.teams}
-                    onChange={handleChange}
-                  >
-                    {possibleTeams.map(name => (
-                      <MenuItem key={name} value={name}>
-                        {name}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </StyledStack>
                 <StyledDivider variant="middle" light />
                 {formData.google ? (
                   <Button variant="contained" onClick={onSubmit}>

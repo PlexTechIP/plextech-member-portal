@@ -55,7 +55,6 @@ export interface SignUpData {
   email: string;
   password: string;
   google?: boolean;
-  teams: string[];
 }
 
 export interface LoginData {

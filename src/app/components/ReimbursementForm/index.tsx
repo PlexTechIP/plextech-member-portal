@@ -41,7 +41,6 @@ import { Error } from '../../../types/types';
 import { getToken } from 'utils/useToken';
 
 interface Props {
-  teams: string[];
   setRequests: any;
   onClose: () => void;
   request: Request | null;
@@ -60,6 +59,8 @@ export const initialState: FormData = {
   status: 'pendingReview',
   comments: [],
 };
+
+const categories = ['NMEP'];
 
 export function ReimbursementForm(props: Props) {
   const [formData, setFormData] = useState<FormData>(initialState);
@@ -397,43 +398,24 @@ export function ReimbursementForm(props: Props) {
               row
               aria-labelledby="demo-row-radio-buttons-group-label"
               name="row-radio-buttons-group"
-              defaultValue="No budget"
               onChange={onTeamBudgetChange}
             >
-              <FormControlLabel
-                value="No budget"
-                control={<Radio disabled={!props.canEdit} />}
-                label="No budget"
-              />
-              <FormControlLabel
-                value="NMEP"
-                control={<Radio disabled={!props.canEdit} />}
-                label="NMEP"
-              />
-              {props.teams.map(team => (
+              {categories.map(c => (
                 <FormControlLabel
-                  key={team}
-                  value={team}
+                  key={c}
+                  value={c}
                   control={<Radio disabled={!props.canEdit} />}
-                  label={team}
+                  label={c}
                   disabled={!props.canEdit}
                 />
               ))}
+              <FormControlLabel
+                value="Miscellaneous"
+                control={<Radio disabled={!props.canEdit} />}
+                label="Miscellaneous"
+              />
             </RadioGroup>
           </FormControl>
-
-          {/* Is Food? */}
-          {formData.teamBudget !== 'No budget' && (
-            <Stack spacing={1} direction="row" alignItems="center">
-              <FormLabel disabled={!props.canEdit}>Food?</FormLabel>
-              <Checkbox
-                disabled={!props.canEdit}
-                checked={formData.isFood}
-                onChange={onIsFoodChange}
-              />
-            </Stack>
-          )}
-
           <StyledDivider variant="middle" light />
 
           {/* Receipt Upload */}
