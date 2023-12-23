@@ -30,14 +30,8 @@ export function CategoriesPage(props: Props) {
 
   useEffect(() => {
     const f = async () => {
-      setIsLoading(true);
       const [success, res] = await apiRequest(`/requests/`, 'GET');
-
-      if (!success) {
-        setError(res.error);
-        setIsLoading(false);
-        return;
-      }
+      console.log(res.pendingReview[0]);
 
       setIsTreasurer(res.treasurer);
 
@@ -52,16 +46,10 @@ export function CategoriesPage(props: Props) {
         approved: res.approved.map(transformRequestItem),
         paid: res.paid.map(transformRequestItem),
       });
-
-      setIsLoading(false);
     };
 
     f();
   }, [props]);
-
-  const onError = (error: Error) => {
-    setError(error);
-  };
 
   return (
     <>
@@ -80,9 +68,9 @@ export function CategoriesPage(props: Props) {
             {},
           ),
         ).map((totalAmount: number, index: number) => (
-          <p key={index}>{`Total amount for team budget ${
+          <p key={index}>{`Total amount for category ${
             requests.pendingReview[index].teamBudget
-          }: ${totalAmount.toFixed(2)}`}</p>
+          }: $${totalAmount.toFixed(2)}`}</p>
         ))
       ) : (
         <p>You do not have access to this section.</p>

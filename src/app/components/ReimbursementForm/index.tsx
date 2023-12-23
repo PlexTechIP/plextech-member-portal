@@ -53,7 +53,7 @@ interface Props {
 export const initialState: FormData = {
   itemDescription: '',
   amount: '',
-  teamBudget: 'No budget',
+  teamBudget: '',
   isFood: false,
   images: [],
   status: 'pendingReview',
@@ -219,7 +219,8 @@ export function ReimbursementForm(props: Props) {
       formData.amount === '' ||
       formData.itemDescription === '' ||
       formData.images.length === 0 ||
-      imageLoading
+      imageLoading ||
+      formData.teamBudget === ''
     ) {
       setSubmitted(true);
       return;
