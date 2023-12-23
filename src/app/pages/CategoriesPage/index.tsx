@@ -2,19 +2,15 @@ import * as React from 'react';
 import { Helmet } from 'react-helmet-async';
 import styled from 'styled-components';
 import { Stack, Modal, CircularProgress } from '@mui/material';
-import { RequestsBoard } from 'app/components/RequestsBoard';
 import { useEffect, useState } from 'react';
-import { ReimbursementForm } from 'app/components/ReimbursementForm';
 import { AllRequests, Error, Request } from 'types/types';
-import { ErrorModal } from 'app/components/ErrorModal';
 import { styled as muiStyled } from '@mui/system';
 import dayjs from 'dayjs';
-import { BottomButton } from 'app/components/BottomButton';
 import { apiRequest } from 'utils/apiRequest';
-import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
-import KeyboardArrowLeftIcon from '@mui/icons-material/KeyboardArrowLeft';
 
 interface Props {}
+
+export const categories = ['NMEP'];
 
 export function CategoriesPage(props: Props) {
   const [requests, setRequests] = useState<AllRequests>({
@@ -24,9 +20,6 @@ export function CategoriesPage(props: Props) {
     approved: [],
     paid: [],
   });
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [request, setRequest] = useState<Request | null>(null);
-  const [error, setError] = useState<Error>();
   const [isTreasurer, setIsTreasurer] = useState<boolean>(false);
 
   const transformRequestItem = (request: Request) => ({
@@ -70,28 +63,30 @@ export function CategoriesPage(props: Props) {
     setError(error);
   };
 
-  console.log(requests);
-
   return (
     <>
       <Helmet>
         <title>Categories</title>
         <meta name="description" content="Your finance dashboard" />
       </Helmet>
-      {Object.values(
-        requests.pendingReview.reduce(
-          (acc: Record<string, number>, r: Request) => {
-            const key = r.teamBudget;
-            acc[key] = (acc[key] || 0) + Number(r.amount);
-            return acc;
-          },
-          {},
-        ),
-      ).map((totalAmount: number, index: number) => (
-        <p key={index}>{`Total amount for team budget ${
-          requests.pendingReview[index].teamBudget
-        }: ${totalAmount.toFixed(2)}`}</p>
-      ))}
+      {isTreasurer ? (
+        Object.values(
+          requests.pendingReview.reduce(
+            (acc: Record<string, number>, r: Request) => {
+              const key = r.teamBudget;
+              acc[key] = (acc[key] || 0) + Number(r.amount);
+              return acc;
+            },
+            {},
+          ),
+        ).map((totalAmount: number, index: number) => (
+          <p key={index}>{`Total amount for team budget ${
+            requests.pendingReview[index].teamBudget
+          }: ${totalAmount.toFixed(2)}`}</p>
+        ))
+      ) : (
+        <p>You do not have access to this section.</p>
+      )}
     </>
   );
 }

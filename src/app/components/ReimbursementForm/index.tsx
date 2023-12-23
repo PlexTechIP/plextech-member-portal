@@ -38,6 +38,7 @@ import { CommentForm } from '../CommentForm';
 import { apiRequest } from 'utils/apiRequest';
 import { Error } from '../../../types/types';
 import { getToken } from 'utils/useToken';
+import { categories } from '../../pages/CategoriesPage/index';
 
 interface Props {
   setRequests: any;
@@ -58,8 +59,6 @@ export const initialState: FormData = {
   status: 'pendingReview',
   comments: [],
 };
-
-const categories = ['NMEP'];
 
 export function ReimbursementForm(props: Props) {
   const [formData, setFormData] = useState<FormData>(initialState);
