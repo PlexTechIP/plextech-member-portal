@@ -112,7 +112,7 @@ def after_login(
         {"token": code, "trust_device": True},
         headers={"referer": "https://app.bluevine.com/dashboard"},
     )
-    print(res.text)
+    print('verify mfa', res.text)
 
     # if not res.ok:
     #     return {"error": "bad mfa"}, 400
@@ -145,7 +145,6 @@ def after_login(
                 "x-csrftoken": s.cookies["csrftoken"],
             },
         )
-        print(res.text)
 
         if "slug" not in res.json():
             return {"error": "failed to create payee: " + res.text}, 400
@@ -173,7 +172,7 @@ def after_login(
             "x-csrftoken": s.cookies["csrftoken"],
         },
     )
-    print(res.text)
+    print('send money', res.text)
 
     if res.status_code == 428:
         res = s.post(
