@@ -57,7 +57,9 @@ cd server
 pip install -r requirements.txt
 ```
 
-7. Run the server:
+7. Add the .env file to the server directory (this contains sensitive information)
+
+8. Run the server:
 
 ```bash
 python main.py
