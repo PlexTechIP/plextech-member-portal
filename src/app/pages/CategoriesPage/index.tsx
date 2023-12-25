@@ -3,7 +3,7 @@ import { Helmet } from 'react-helmet-async';
 import styled from 'styled-components';
 import { Stack, Modal, CircularProgress } from '@mui/material';
 import { useEffect, useState } from 'react';
-import { AllRequests, Error, Request } from 'types/types';
+import { AllRequests, Request } from 'types/types';
 import { styled as muiStyled } from '@mui/system';
 import dayjs from 'dayjs';
 import { apiRequest } from 'utils/apiRequest';
@@ -30,8 +30,7 @@ export function CategoriesPage(props: Props) {
 
   useEffect(() => {
     const f = async () => {
-      const [success, res] = await apiRequest(`/requests/`, 'GET');
-      console.log(res.pendingReview[0]);
+      const [_, res] = await apiRequest(`/requests/`, 'GET');
 
       setIsTreasurer(res.treasurer);
 
@@ -78,40 +77,3 @@ export function CategoriesPage(props: Props) {
     </>
   );
 }
-
-const StyledStack = styled(Stack)`
-  width: 100%;
-  height: 100%;
-  padding-top: 24px;
-  padding-left: 48px;
-  padding-right: 48px;
-`;
-
-const StyledModal = styled(Modal)`
-  width: 50%;
-  min-width: 500px;
-  height: 100%;
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  margin: auto;
-  padding: 64px;
-  overflow: auto;
-  -ms-overflow-style: none; /* IE and Edge */
-  scrollbar-width: none;
-  ::-webkit-scrollbar {
-    display: none;
-  }
-`;
-
-const StyledCircularProgress = muiStyled(CircularProgress)`
-  color: rgb(255, 138, 0);
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  margin: auto;
-`;

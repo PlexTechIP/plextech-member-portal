@@ -192,13 +192,6 @@ export function ReimbursementForm(props: Props) {
     }));
   };
 
-  const onIsFoodChange = () => {
-    setFormData(prevState => ({
-      ...prevState,
-      isFood: !prevState.isFood,
-    }));
-  };
-
   const getBase64 = (file: any) => {
     return new Promise(resolve => {
       let baseURL = '';

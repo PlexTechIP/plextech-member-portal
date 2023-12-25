@@ -10,9 +10,7 @@ import {
   Divider,
   IconButton,
   InputAdornment,
-  MenuItem,
   Paper,
-  Select,
   Stack,
   TextField,
 } from '@mui/material';
