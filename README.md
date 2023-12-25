@@ -39,10 +39,28 @@ cd plextech-member-portal
 yarn install
 ```
 
-4. Run the application:
+4. Run the frontend:
 
 ```bash
 yarn start
+```
+
+5. Navigate to the server directory
+
+```bash
+cd server
+```
+
+6. Install dependencies (make sure you have python installed on your machine):
+
+```bash
+pip install -r requirements.txt
+```
+
+7. Run the server:
+
+```bash
+python main.py
 ```
 
 ## License
