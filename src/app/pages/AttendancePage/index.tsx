@@ -67,6 +67,7 @@ export function AttendancePage(props: Props) {
         name: meetingName,
         meetingLeader: (jwt_decode(getToken()!) as { sub: string }).sub,
         startTime: startTime?.format('h:mm:ss A'),
+        set: true,
       });
       if (!success) {
         setError(res.error);
@@ -175,14 +176,16 @@ export function AttendancePage(props: Props) {
 
   useEffect(() => {
     let qrCodeUpdateInterval: NodeJS.Timeout | null = null;
+    let attendanceUpdateInterval: NodeJS.Timeout | null = null;
     let timerUpdateInterval: NodeJS.Timeout | null = null;
 
     if (!isSessionActive || !meetingId) return;
 
-    const updateQRCode = async () => {
-      setIsLoading(true);
+    const updateQRCode = async (set: boolean) => {
+      if (set) setIsLoading(true);
       const [success, res] = await apiRequest('/attendance/', 'POST', {
         id: meetingId,
+        set,
       });
 
       if (!success) {
@@ -191,17 +194,23 @@ export function AttendancePage(props: Props) {
         clearInterval(qrCodeUpdateInterval!);
         return;
       }
-
-      setCode(res.code);
       setAttendees(res.attendees);
       setAbsent(res.absent);
-      setRemainingTime(TIME_TO_REFRESH);
-      setIsLoading(false);
+
+      if (set) {
+        setCode(res.code);
+        setRemainingTime(TIME_TO_REFRESH);
+        setIsLoading(false);
+      }
     };
 
     if (isSessionActive) {
-      updateQRCode();
-      qrCodeUpdateInterval = setInterval(updateQRCode, TIME_TO_REFRESH * 1000);
+      updateQRCode(true);
+      qrCodeUpdateInterval = setInterval(
+        () => updateQRCode(true),
+        TIME_TO_REFRESH * 1000,
+      );
+      attendanceUpdateInterval = setInterval(() => updateQRCode(false), 1000);
       timerUpdateInterval = setInterval(
         () =>
           setRemainingTime((prevTime: number) =>
@@ -213,6 +222,7 @@ export function AttendancePage(props: Props) {
 
     return () => {
       clearInterval(qrCodeUpdateInterval!);
+      clearInterval(attendanceUpdateInterval!);
       clearInterval(timerUpdateInterval!);
     };
   }, [isSessionActive, meetingId, props]);

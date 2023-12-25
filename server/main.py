@@ -342,8 +342,9 @@ def attendance():
         if "id" in form:
             aid = ObjectId(form.get("id"))
             attendance_info = db.Attendance.find_one({"_id": aid})
-            attendance_info["code"] = ObjectId()
-            db.Attendance.replace_one({"_id": aid}, attendance_info)
+            if form['set']:
+                attendance_info["code"] = ObjectId()
+                db.Attendance.replace_one({"_id": aid}, attendance_info)
         else:
             aid = ObjectId()
             attendance_info = {
@@ -353,10 +354,9 @@ def attendance():
                 "startTime": form.get("startTime"),
                 "attendees": {},
             }
-            attendance_info["code"] = ObjectId()
-            db.Attendance.insert_one(attendance_info)
-
-            print(attendance_info)
+            if form['set']:
+                attendance_info["code"] = ObjectId()
+                db.Attendance.insert_one(attendance_info)
 
         return {
             "code": str(attendance_info["code"]),
