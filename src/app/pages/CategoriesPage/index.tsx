@@ -1,10 +1,7 @@
 import * as React from 'react';
 import { Helmet } from 'react-helmet-async';
-import styled from 'styled-components';
-import { Stack, Modal, CircularProgress } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { AllRequests, Request } from 'types/types';
-import { styled as muiStyled } from '@mui/system';
 import dayjs from 'dayjs';
 import { apiRequest } from 'utils/apiRequest';
 
@@ -30,7 +27,7 @@ export function CategoriesPage(props: Props) {
 
   useEffect(() => {
     const f = async () => {
-      const [_, res] = await apiRequest(`/requests/`, 'GET');
+      const [, res] = await apiRequest(`/requests/`, 'GET');
 
       setIsTreasurer(res.treasurer);
 

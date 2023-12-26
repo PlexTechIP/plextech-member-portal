@@ -342,7 +342,7 @@ def attendance():
         if "id" in form:
             aid = ObjectId(form.get("id"))
             attendance_info = db.Attendance.find_one({"_id": aid})
-            if form['set']:
+            if form["set"]:
                 attendance_info["code"] = ObjectId()
                 db.Attendance.replace_one({"_id": aid}, attendance_info)
         else:
@@ -354,7 +354,7 @@ def attendance():
                 "startTime": form.get("startTime"),
                 "attendees": {},
             }
-            if form['set']:
+            if form["set"]:
                 attendance_info["code"] = ObjectId()
                 db.Attendance.insert_one(attendance_info)
 
@@ -371,21 +371,25 @@ def attendance():
         }, 200
 
     if request.method == "GET":
-        # TODO: implement checking attendance records
-        try:
-            users = db.Users.find(
-                {}, {"images": 0, "password": 0, "google": 0, "requests": 0}
-            )
+        query_param = request.args.get("query")
+        if query_param == "sessions":
+            sessions = list(db.Attendance.find({}, {"name": 1}))
+            for s in sessions:
+                s["_id"] = str(s["_id"])
+            return {"sessions": sessions}, 200
 
-        except:
-            return {"error": "Internal Server Error"}, 500
-
-        res = []
-        for user in users:
-            user["_id"] = str(user["_id"])
-            res.append(user)
-
-        return {"users": res}, 200
+        else:
+            aid = ObjectId(query_param)
+            attendance_info = db.Attendance.find_one({"_id": aid})
+            return {
+                "attendees": attendance_info["attendees"],
+                "absent": [
+                    user["firstName"] + " " + user["lastName"]
+                    for user in db.Users.find({"registered": True})
+                    if str(user["_id"]) not in attendance_info["attendees"]
+                ]
+                + [user["email"] for user in db.Users.find({"registered": False})],
+            }, 200
 
     if request.method == "DELETE":
         # TODO: implement stopping session if needed
@@ -541,7 +545,7 @@ def requests():
                         "email": "$email",
                         "comments": "$user_requests.comments",
                         "bank_set": "$bank",
-                        "teamBudget": "$user_requests.teamBudget"
+                        "teamBudget": "$user_requests.teamBudget",
                     }
                 },
             ]

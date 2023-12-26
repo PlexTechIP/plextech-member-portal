@@ -52,6 +52,7 @@ export function AttendancePage(props: Props) {
   const [error, setError] = useState<Error>();
   const [startTime, setStartTime] = useState<Dayjs | null>(dayjs());
   const [meetingName, setMeetingName] = useState<string>('');
+  const [sessions, setSessions] = useState<{ name: string; _id: string }[]>();
 
   const [isSessionActive, setIsSessionActive] = useState<boolean>(false);
   const [remainingTime, setRemainingTime] = useState<number>(TIME_TO_REFRESH);
@@ -227,6 +228,43 @@ export function AttendancePage(props: Props) {
     };
   }, [isSessionActive, meetingId, props]);
 
+  const handlePreviousSessionClick = async () => {
+    setIsLoading(true);
+
+    const [success, res] = await apiRequest(
+      '/attendance/?query=sessions',
+      'GET',
+    );
+
+    if (!success) {
+      setError(res.error);
+      setIsLoading(false);
+      return;
+    }
+
+    setSessions(res.sessions);
+    setIsLoading(false);
+  };
+
+  const handleBackButtonClick = () => {
+    setSessions(undefined);
+    setAttendees([]);
+    setAbsent([]);
+  };
+
+  const handleGetAttendees = async (id: string) => {
+    setIsLoading(true);
+    const [success, res] = await apiRequest(`/attendance/?query=${id}`, 'GET');
+
+    if (!success) {
+      setError(res.error);
+      return;
+    }
+    setAttendees(res.attendees);
+    setAbsent(res.absent);
+    setIsLoading(false);
+  };
+
   return (
     <>
       <Helmet>
@@ -269,11 +307,26 @@ export function AttendancePage(props: Props) {
                   />
                 </LocalizationProvider>
               </StyledStack>
-              {!isSessionActive ? (
-                <Button variant="contained" onClick={handleSessionButtonClick}>
-                  Start Session
-                </Button>
-              ) : (
+              {!isSessionActive && !sessions ? (
+                <StyledStack
+                  direction="row"
+                  justifyContent="space-evenly"
+                  alignItems="center"
+                >
+                  <Button
+                    variant="contained"
+                    onClick={handleSessionButtonClick}
+                  >
+                    Start Session
+                  </Button>
+                  <Button
+                    variant="contained"
+                    onClick={handlePreviousSessionClick}
+                  >
+                    View Previous Sessions
+                  </Button>
+                </StyledStack>
+              ) : !sessions ? (
                 <>
                   <P>
                     Code will change in {remainingTime} second
@@ -321,6 +374,21 @@ export function AttendancePage(props: Props) {
                       Export to CSV
                     </Button>
                   </Stack>
+                </>
+              ) : (
+                <>
+                  {sessions.length === 0 ? (
+                    <p>No sessions found</p>
+                  ) : (
+                    sessions.map(({ _id, name }) => (
+                      <Button onClick={() => handleGetAttendees(_id)}>
+                        {name}
+                      </Button>
+                    ))
+                  )}
+                  <Button variant="contained" onClick={handleBackButtonClick}>
+                    Back
+                  </Button>
                 </>
               )}
             </Stack>
