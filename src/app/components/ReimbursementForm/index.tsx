@@ -399,12 +399,15 @@ export function ReimbursementForm(props: Props) {
                   control={<Radio disabled={!props.canEdit} />}
                   label={c}
                   disabled={!props.canEdit}
+                  required
                 />
               ))}
               <FormControlLabel
                 value="Miscellaneous"
                 control={<Radio disabled={!props.canEdit} />}
                 label="Miscellaneous"
+                disabled={!props.canEdit}
+                required
               />
             </RadioGroup>
           </FormControl>
