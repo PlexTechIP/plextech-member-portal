@@ -39,7 +39,7 @@ import { QRLandingPage } from './QRLandingPage';
 import { getToken } from 'utils/useToken';
 import { AbsentDisplay } from './AbsentDisplay';
 
-const TIME_TO_REFRESH = 60;
+const TIME_TO_REFRESH = 300;
 
 interface Props {}
 
