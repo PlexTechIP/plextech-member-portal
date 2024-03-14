@@ -384,23 +384,25 @@ export function AttendancePage(props: Props) {
                       Export to CSV
                     </Button>
                   </Stack>
-                  <TextField
-                    label="Add Attendee Manually"
-                    variant="outlined"
-                    margin="normal"
-                    fullWidth
-                    onChange={e => setManualAttendee(e.target.value)}
-                  />
-                  <FormControlLabel
-                    control={
-                      <Checkbox
-                        checked={isLate}
-                        onChange={e => setIsLate(e.target.checked)}
-                        name="late"
-                      />
-                    }
-                    label="Late"
-                  />
+                  <Stack direction="row" gap={4} alignItems="center">
+                    <TextField
+                      label="Add Attendee Manually"
+                      variant="outlined"
+                      margin="normal"
+                      fullWidth
+                      onChange={e => setManualAttendee(e.target.value)}
+                    />
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={isLate}
+                          onChange={e => setIsLate(e.target.checked)}
+                          name="late"
+                        />
+                      }
+                      label="Late"
+                    />
+                  </Stack>
                   <Button
                     variant="contained"
                     onClick={handleAddAttendeeManually}
