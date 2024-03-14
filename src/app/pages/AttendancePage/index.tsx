@@ -41,6 +41,7 @@ import { QRLandingPage } from './QRLandingPage';
 import { getToken } from 'utils/useToken';
 import { AbsentDisplay } from './AbsentDisplay';
 import Cookies from 'js-cookie';
+import { v4 as uuidv4 } from 'uuid';
 
 const TIME_TO_REFRESH = 300;
 
@@ -214,7 +215,15 @@ export function AttendancePage(props: Props) {
         clearInterval(qrCodeUpdateInterval!);
         return;
       }
-      setAttendees(res.attendees);
+      setAttendees((prevAttendees: any) => {
+        const newAttendees = { ...prevAttendees, ...res.attendees };
+        return Object.keys(newAttendees).reduce((acc, key) => {
+          if (!acc[key]) {
+            acc[key] = newAttendees[key];
+          }
+          return acc;
+        }, {} as typeof prevAttendees);
+      });
       setAbsent(res.absent);
 
       if (set) {
@@ -288,7 +297,11 @@ export function AttendancePage(props: Props) {
     setIsLoading(false);
   };
 
-  const handleAddAttendeeManually = async () => {};
+  const handleAddAttendeeManually = () => {
+    attendees[uuidv4()] = ['Manual', manualAttendee, isLate];
+    setManualAttendee('');
+    setIsLate(false);
+  };
 
   return (
     <>
@@ -404,6 +417,7 @@ export function AttendancePage(props: Props) {
                       margin="normal"
                       fullWidth
                       onChange={e => setManualAttendee(e.target.value)}
+                      value={manualAttendee}
                     />
                     <FormControlLabel
                       control={
@@ -442,10 +456,10 @@ export function AttendancePage(props: Props) {
             </Stack>
           </Form>
           <div />
-          {startTime && (
+          {isSessionActive && startTime && (
             <AttendeesDisplay attendees={attendees} startTime={startTime!} />
           )}
-          {startTime && <AbsentDisplay absent={absent} />}
+          {isSessionActive && startTime && <AbsentDisplay absent={absent} />}
         </Stack>
       )}
       {error && <ErrorModal open={!!error} error={error} />}

@@ -31,31 +31,49 @@ export function AttendeesDisplay(props: Props) {
 
         <Grid container spacing={1}>
           {Object.keys(attendees).map(id => {
-            const [hours, minutes, seconds] = attendees[id][0].split(':');
-            const isPM = attendees[id][0].includes('PM');
+            if (attendees[id][0] === 'Manual') {
+              return (
+                <Grow in={true} key={id}>
+                  <Grid item xs={6}>
+                    <StyledCard
+                      style={
+                        attendees[id][2]
+                          ? { backgroundColor: 'rgba(255, 138, 0, 0.3)' }
+                          : {}
+                      }
+                    >
+                      <H3>{attendees[id][1]}</H3>
+                    </StyledCard>
+                  </Grid>
+                </Grow>
+              );
+            } else {
+              const [hours, minutes, seconds] = attendees[id][0].split(':');
+              const isPM = attendees[id][0].includes('PM');
 
-            const dayjsObj = dayjs()
-              .hour((parseInt(hours) % 12) + (isPM ? 12 : 0))
-              .minute(parseInt(minutes))
-              .second(parseInt(seconds));
+              const dayjsObj = dayjs()
+                .hour((parseInt(hours) % 12) + (isPM ? 12 : 0))
+                .minute(parseInt(minutes))
+                .second(parseInt(seconds));
 
-            return (
-              <Grow in={true} key={id}>
-                <Grid item xs={6}>
-                  <StyledCard
-                    style={
-                      dayjsObj > startTime
-                        ? { backgroundColor: 'rgba(255, 138, 0, 0.3)' }
-                        : {}
-                    }
-                  >
-                    <H3>
-                      {attendees[id][1]} - {attendees[id][0]}
-                    </H3>
-                  </StyledCard>
-                </Grid>
-              </Grow>
-            );
+              return (
+                <Grow in={true} key={id}>
+                  <Grid item xs={6}>
+                    <StyledCard
+                      style={
+                        dayjsObj > startTime
+                          ? { backgroundColor: 'rgba(255, 138, 0, 0.3)' }
+                          : {}
+                      }
+                    >
+                      <H3>
+                        {attendees[id][1]} - {attendees[id][0]}
+                      </H3>
+                    </StyledCard>
+                  </Grid>
+                </Grow>
+              );
+            }
           })}
         </Grid>
       </Stack>
