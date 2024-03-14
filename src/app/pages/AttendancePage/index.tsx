@@ -60,7 +60,7 @@ export function AttendancePage(props: Props) {
 
   const [isSessionActive, setIsSessionActive] = useState<boolean>(false);
   const [remainingTime, setRemainingTime] = useState<number>(TIME_TO_REFRESH);
-  const [manualAttendee, setManualAttendee] = useState<string>();
+  const [manualAttendee, setManualAttendee] = useState<string>('');
   const [isLate, setIsLate] = useState<boolean>(false);
 
   const handleSessionButtonClick = async () => {
@@ -164,7 +164,6 @@ export function AttendancePage(props: Props) {
   useEffect(() => {
     const time = Cookies.get('attendanceTime');
     if (time) {
-      console.log(time);
       setReturnValue({ attendanceTime: time, startTime: 'idk' });
       return;
     }
@@ -215,15 +214,7 @@ export function AttendancePage(props: Props) {
         clearInterval(qrCodeUpdateInterval!);
         return;
       }
-      setAttendees((prevAttendees: any) => {
-        const newAttendees = { ...prevAttendees, ...res.attendees };
-        return Object.keys(newAttendees).reduce((acc, key) => {
-          if (!acc[key]) {
-            acc[key] = newAttendees[key];
-          }
-          return acc;
-        }, {} as typeof prevAttendees);
-      });
+      setAttendees(res.attendees);
       setAbsent(res.absent);
 
       if (set) {
@@ -297,10 +288,30 @@ export function AttendancePage(props: Props) {
     setIsLoading(false);
   };
 
-  const handleAddAttendeeManually = () => {
-    attendees[uuidv4()] = ['Manual', manualAttendee, isLate];
+  const handleAddAttendeeManually = async () => {
+    const id = uuidv4();
+    const data = ['Manual', manualAttendee, isLate];
+
+    setAttendees(prevState => ({
+      ...prevState,
+      [id]: data,
+    }));
+
     setManualAttendee('');
     setIsLate(false);
+
+    setIsLoading(true);
+    const [success, res] = await apiRequest('/attendance/', 'PUT', {
+      meetingId,
+      attendee: data,
+      attendeeId: id,
+    });
+
+    setIsLoading(false);
+    if (!success) {
+      setError(res.error);
+      return;
+    }
   };
 
   return (
@@ -418,6 +429,11 @@ export function AttendancePage(props: Props) {
                       fullWidth
                       onChange={e => setManualAttendee(e.target.value)}
                       value={manualAttendee}
+                      onKeyDown={e => {
+                        if (e.key === 'Enter') {
+                          handleAddAttendeeManually();
+                        }
+                      }}
                     />
                     <FormControlLabel
                       control={

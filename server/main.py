@@ -286,7 +286,7 @@ def login_signup_add_PIC():
             return {"error": "Incorrect code"}, 401
 
 
-@app.route("/attendance/", methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"])
+@app.route("/attendance/", methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"])
 @jwt_required(optional=True)
 def attendance():
     if request.method == "OPTIONS":
@@ -296,8 +296,25 @@ def attendance():
 
     # marking attendance by scanning qr code
     if request.method == "PUT":
-        code = ObjectId(request.json.get("attendancecode"))
         aid = ObjectId(request.json.get("meetingId"))
+        attendee_data = request.json.get("attendee")
+        attendee_id = request.json.get("attendeeId")
+        if attendee_data:
+            if jwt:
+                attendees_dict = dict(
+                    db.Attendance.find_one({"_id": aid}, {"_id": 0, "attendees": 1})
+                )
+                attendees_dict["attendees"].update({attendee_id: attendee_data})
+
+                db.Attendance.update_one(
+                    {"_id": aid},
+                    {"$set": {"attendees": attendees_dict["attendees"]}},
+                )
+                return {}, 200
+            else:
+                return {"error": "Not Authorized"}, 401
+
+        code = ObjectId(request.json.get("attendancecode"))
 
         attendance_info = db.Attendance.find_one({"_id": aid})
 
