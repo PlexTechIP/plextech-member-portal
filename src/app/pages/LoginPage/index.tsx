@@ -30,6 +30,7 @@ import { Error } from 'types/types';
 import jwt_decode from 'jwt-decode';
 import { apiRequest } from 'utils/apiRequest';
 import { setToken, getToken } from 'utils/useToken';
+import Cookies from 'js-cookie';
 
 interface Props {}
 
@@ -121,7 +122,16 @@ export function LoginPage(props: Props) {
     const [success, res] = await apiRequest(
       '/users/',
       'POST',
-      { ...formData, method: 'login' },
+      {
+        ...formData,
+        method: 'login',
+        ...(Cookies.get('attendanceTime') && {
+          attendanceTime: Cookies.get('attendanceTime'),
+        }),
+        ...(Cookies.get('attendanceId') && {
+          attendanceId: Cookies.get('attendanceId'),
+        }),
+      },
       getToken(),
       () => setIncorrect(true),
     );

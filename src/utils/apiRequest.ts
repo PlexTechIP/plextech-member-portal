@@ -20,7 +20,7 @@ export const apiRequest = async (
       method: method,
       mode: 'cors',
       cache: 'no-cache',
-      credentials: 'include',
+      credentials: 'omit',
       headers: headers,
       redirect: 'follow',
       referrerPolicy: 'no-referrer',

@@ -114,7 +114,8 @@ export function App() {
                   : `url(${shapesBackground})`,
             }}
           >
-            {sessionExpired ? (
+            {sessionExpired &&
+            !window.location.pathname.startsWith('/attendance/') ? (
               <LoginPage />
             ) : (
               <>

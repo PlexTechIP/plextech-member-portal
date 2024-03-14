@@ -41,6 +41,7 @@ import { QRLandingPage } from './QRLandingPage';
 import { getToken } from 'utils/useToken';
 import { AbsentDisplay } from './AbsentDisplay';
 import { v4 as uuidv4 } from 'uuid';
+import Cookies from 'js-cookie';
 
 const TIME_TO_REFRESH = 300;
 
@@ -165,6 +166,8 @@ export function AttendancePage(props: Props) {
   useEffect(() => {
     if (attendancetime) {
       setReturnValue({ attendanceTime: attendancetime, startTime: starttime });
+      Cookies.remove('attendanceTime');
+      Cookies.remove('attendanceId');
       return;
     }
     if (!attendancecode) return;
@@ -182,6 +185,8 @@ export function AttendancePage(props: Props) {
       }
       if (res.redirect) {
         window.location = res.redirect;
+        Cookies.set('attendanceTime', res.attendanceTime);
+        Cookies.set('attendanceId', res.attendanceId);
       } else {
         setIsLoading(false);
         setReturnValue(res);

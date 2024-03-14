@@ -44,7 +44,7 @@ f = Fernet(key)
 def after_request(response):
     # cors
     if getenv("ENVIRONMENT") == "local":
-        origin = "*"
+        origin = "http://localhost:3000"
     elif getenv("ENVIRONMENT") == "production":
         origin = "https://plextech-member-portal.vercel.app"
 
@@ -203,17 +203,21 @@ def login_signup_add_PIC():
             access_token = create_access_token(identity=str(user["_id"]))
             res = {"access_token": access_token}
 
-            aid = request.cookies.get("attendanceId")
+            aid = ObjectId(form.get("attendanceId"))
 
             if aid:
-                attendees_dict = dict(
-                    db.Attendance.find_one({"_id": aid}, {"_id": 0, "attendees": 1, "start_time": 1})
+                attendees_dict = db.Attendance.find_one(
+                    {"_id": aid}, {"_id": 0, "attendees": 1, "startTime": 1}
                 )
+                if not attendees_dict:
+                    return res
+
+                attendees_dict = dict(attendees_dict)
 
                 attendees_dict["attendees"].update(
                     {
-                        user["_id"]: (
-                            request.cookies.get("attendanceTime"),
+                        str(user["_id"]): (
+                            form.get("attendanceTime"),
                             f"{user['firstName']} {user['lastName']}",
                         )
                     }
@@ -225,13 +229,12 @@ def login_signup_add_PIC():
                 )
 
                 res["redirect"] = (
-                    f"https://plextech-member-portal.vercel.app/attendance/?attendancetime={request.cookies.get('attendanceTime')}&starttime={attendees_dict['start_time']}"
+                    f"http://localhost:3000/attendance/?attendancetime={form.get('attendanceTime')}&starttime={attendees_dict['startTime']}"
+                    if getenv("ENVIRONMENT") == "local"
+                    else f"https://plextech-member-portal.vercel.app/attendance/?attendancetime={form.get('attendanceTime')}&starttime={attendees_dict['startTime']}"
                 )
 
-            response = make_response(res)
-            response.delete_cookie("attendanceTime")
-            response.delete_cookie("attendanceId")
-            return response
+            return res
         else:
             return {"error": "Incorrect password"}, 401
 
@@ -347,12 +350,16 @@ def attendance():
                         "startTime": attendance_info["startTime"],
                     }
             else:
-                response = make_response(
-                    {"redirect": "https://plextech-member-portal.vercel.app/"}
-                )
-                response.set_cookie("attendanceTime", form["time"])
-                response.set_cookie("attendanceId", str(aid))
-                return response
+                res = {
+                    "redirect": (
+                        "http://localhost:3000/"
+                        if getenv("ENVIRONMENT") == "local"
+                        else "https://plextech-member-portal.vercel.app/"
+                    ),
+                    "attendanceTime": form["time"],
+                    "attendanceId": str(aid),
+                }
+                return res
         else:
             return {"error": "invalid code"}, 402
 
