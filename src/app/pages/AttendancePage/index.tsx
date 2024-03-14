@@ -157,13 +157,14 @@ export function AttendancePage(props: Props) {
   const searchParams = new URLSearchParams(window.location.search);
   const attendancecode = searchParams.get('attendancecode');
   const attendancetime = searchParams.get('attendancetime');
+  const starttime = searchParams.get('starttime');
   const meetingIdUrl = searchParams.get('meetingid');
 
   const [returnValue, setReturnValue] = useState<any>({});
 
   useEffect(() => {
     if (attendancetime) {
-      setReturnValue({ attendanceTime: attendancetime, startTime: 'idk' });
+      setReturnValue({ attendanceTime: attendancetime, startTime: starttime });
       return;
     }
     if (!attendancecode) return;
