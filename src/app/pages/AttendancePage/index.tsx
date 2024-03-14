@@ -216,17 +216,19 @@ export function AttendancePage(props: Props) {
         setCode(res.code);
         setRemainingTime(TIME_TO_REFRESH);
         setIsLoading(false);
+
+        console.log(
+          `${window.location}/?attendancecode=${code}&meetingid=${meetingId}`,
+        );
       }
     };
 
     if (isSessionActive) {
       updateQRCode(true);
-      qrCodeUpdateInterval = setInterval(() => {
-        updateQRCode(true);
-        console.log(
-          `${window.location}/?attendancecode=${code}&meetingid=${meetingId}`,
-        );
-      }, TIME_TO_REFRESH * 1000);
+      qrCodeUpdateInterval = setInterval(
+        () => updateQRCode(true),
+        TIME_TO_REFRESH * 1000,
+      );
       attendanceUpdateInterval = setInterval(() => updateQRCode(false), 1000);
       timerUpdateInterval = setInterval(
         () =>
