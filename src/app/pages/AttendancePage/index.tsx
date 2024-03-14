@@ -43,7 +43,7 @@ import { AbsentDisplay } from './AbsentDisplay';
 import { v4 as uuidv4 } from 'uuid';
 import Cookies from 'js-cookie';
 
-const TIME_TO_REFRESH = 300;
+const TIME_TO_REFRESH = 10;
 
 interface Props {}
 
