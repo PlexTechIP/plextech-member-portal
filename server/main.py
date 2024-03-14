@@ -219,7 +219,7 @@ def login_signup_add_PIC():
                     }
                 )
 
-            res['redirect'] = 'https://plextech.berkeley.edu/members/attendance'
+            res['redirect'] = 'https://plextech-member-portal.vercel.app/attendance'
             response = make_response(res)
             response.delete_cookie("attendanceTime")
             response.delete_cookie("attendanceId")
@@ -323,7 +323,7 @@ def attendance():
                     }
             else:
                 response = make_response({
-                    'redirect': "https://plextech.berkeley.edu/members"
+                    'redirect': "https://plextech-member-portal.vercel.app/"
                 })
                 response.set_cookie("attendanceTime", form["time"])
                 response.set_cookie("attendanceId", str(aid))
