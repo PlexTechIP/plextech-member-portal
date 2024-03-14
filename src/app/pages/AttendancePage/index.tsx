@@ -221,7 +221,7 @@ export function AttendancePage(props: Props) {
         setIsLoading(false);
 
         console.log(
-          `${window.location}/?attendancecode=${code}&meetingid=${meetingId}`,
+          `${window.location}/?attendancecode=${res.code}&meetingid=${meetingId}`,
         );
       }
     };
