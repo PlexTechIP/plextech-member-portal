@@ -164,6 +164,7 @@ export function AttendancePage(props: Props) {
 
   useEffect(() => {
     if (time) {
+      console.log(time);
       setReturnValue({ attendanceTime: time, startTime: 'idk' });
       return;
     }
