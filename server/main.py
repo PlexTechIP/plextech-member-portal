@@ -228,8 +228,6 @@ def login_signup_add_PIC():
                     f"https://plextech-member-portal.vercel.app/attendance/?attendancetime={request.cookies.get('attendanceTime')}&starttime={attendees_dict['start_time']}"
                 )
 
-                print(res)
-
             response = make_response(res)
             response.delete_cookie("attendanceTime")
             response.delete_cookie("attendanceId")
