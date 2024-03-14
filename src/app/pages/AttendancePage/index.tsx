@@ -40,7 +40,6 @@ import { AttendeesDisplay } from './AttendeesDisplay';
 import { QRLandingPage } from './QRLandingPage';
 import { getToken } from 'utils/useToken';
 import { AbsentDisplay } from './AbsentDisplay';
-import Cookies from 'js-cookie';
 import { v4 as uuidv4 } from 'uuid';
 
 const TIME_TO_REFRESH = 300;
@@ -157,14 +156,14 @@ export function AttendancePage(props: Props) {
 
   const searchParams = new URLSearchParams(window.location.search);
   const attendancecode = searchParams.get('attendancecode');
+  const attendancetime = searchParams.get('attendancetime');
   const meetingIdUrl = searchParams.get('meetingid');
 
   const [returnValue, setReturnValue] = useState<any>({});
 
   useEffect(() => {
-    const time = Cookies.get('attendanceTime');
-    if (time) {
-      setReturnValue({ attendanceTime: time, startTime: 'idk' });
+    if (attendancetime) {
+      setReturnValue({ attendanceTime: attendancetime, startTime: 'idk' });
       return;
     }
     if (!attendancecode) return;
@@ -188,13 +187,9 @@ export function AttendancePage(props: Props) {
       }
     };
     f(); // heli says he is sad
-  }, [attendancecode, meetingIdUrl, props]);
+  }, [attendancecode, meetingIdUrl, props, attendancetime]);
 
   useEffect(() => {
-    const time = Cookies.get('attendanceTime');
-    if (time) {
-      return;
-    }
     let qrCodeUpdateInterval: NodeJS.Timeout | null = null;
     let attendanceUpdateInterval: NodeJS.Timeout | null = null;
     let timerUpdateInterval: NodeJS.Timeout | null = null;
