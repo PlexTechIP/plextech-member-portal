@@ -323,8 +323,8 @@ def attendance():
                 response = make_response(
                     redirect("https://plextech-member-portal.vercel.app/")
                 )
-                response.set_cookie("attendanceTime", form["time"], secure=True)
-                response.set_cookie("attendanceId", str(aid), secure=True)
+                response.set_cookie("attendanceTime", form["time"])
+                response.set_cookie("attendanceId", str(aid))
                 return response
         else:
             return {"error": "invalid code"}, 402
