@@ -14,7 +14,9 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import {
   Button,
+  Checkbox,
   CircularProgress,
+  FormControlLabel,
   Paper,
   Stack,
   TextField,
@@ -29,7 +31,7 @@ import {
   // IconButton,
 } from '@mui/material';
 import { styled as muiStyled } from '@mui/system';
-import { Error } from 'types/types';
+import { Error, User } from 'types/types';
 // import AddIcon from '@mui/icons-material/Add';
 import { QRCodeCanvas } from 'qrcode.react';
 import { apiRequest } from 'utils/apiRequest';
@@ -56,6 +58,8 @@ export function AttendancePage(props: Props) {
 
   const [isSessionActive, setIsSessionActive] = useState<boolean>(false);
   const [remainingTime, setRemainingTime] = useState<number>(TIME_TO_REFRESH);
+  const [manualAttendee, setManualAttendee] = useState<string>();
+  const [isLate, setIsLate] = useState<boolean>(false);
 
   const handleSessionButtonClick = async () => {
     setIsLoading(true);
@@ -172,7 +176,7 @@ export function AttendancePage(props: Props) {
       setIsLoading(false);
       setReturnValue(res);
     };
-    f();
+    f(); // heli says he is sad
   }, [attendancecode, meetingIdUrl, props]);
 
   useEffect(() => {
@@ -264,6 +268,8 @@ export function AttendancePage(props: Props) {
     setAbsent(res.absent);
     setIsLoading(false);
   };
+
+  const handleAddAttendeeManually = async () => {};
 
   return (
     <>
@@ -374,6 +380,29 @@ export function AttendancePage(props: Props) {
                       Export to CSV
                     </Button>
                   </Stack>
+                  <TextField
+                    label="Add Attendee Manually"
+                    variant="outlined"
+                    margin="normal"
+                    fullWidth
+                    onChange={e => setManualAttendee(e.target.value)}
+                  />
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={isLate}
+                        onChange={e => setIsLate(e.target.checked)}
+                        name="late"
+                      />
+                    }
+                    label="Late"
+                  />
+                  <Button
+                    variant="contained"
+                    onClick={handleAddAttendeeManually}
+                  >
+                    Add Attendee
+                  </Button>
                 </>
               ) : (
                 <>
