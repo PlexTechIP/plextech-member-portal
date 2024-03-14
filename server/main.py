@@ -219,7 +219,7 @@ def login_signup_add_PIC():
                     }
                 )
 
-            res['redirect'] = 'https://plextech.berkeley.edu/'
+            res['redirect'] = 'https://plextech.berkeley.edu/members/attendance'
             response = make_response(res)
             response.delete_cookie("attendanceTime")
             response.delete_cookie("attendanceId")
