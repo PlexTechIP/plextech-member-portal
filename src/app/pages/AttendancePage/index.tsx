@@ -287,11 +287,8 @@ export function AttendancePage(props: Props) {
         <title>Attendance</title>
         <meta name="description" content="Take attendance here" />
       </Helmet>
-      {(attendancecode &&
-        returnValue.attendanceTime &&
-        returnValue.startTime) ||
-      (returnValue && returnValue.error) ||
-      Cookies.get('attendanceTime') ? (
+      {(returnValue.attendanceTime && returnValue.startTime) ||
+      (returnValue && returnValue.error) ? (
         <QRLandingPage {...returnValue} />
       ) : (
         <Stack spacing={2} alignItems="center">
