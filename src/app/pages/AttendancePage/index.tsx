@@ -188,7 +188,7 @@ export function AttendancePage(props: Props) {
       }
     };
     f(); // heli says he is sad
-  }, [attendancecode, meetingIdUrl, props]);
+  }, [attendancecode, meetingIdUrl, props, time]);
 
   useEffect(() => {
     if (time) {
@@ -248,7 +248,7 @@ export function AttendancePage(props: Props) {
       clearInterval(attendanceUpdateInterval!);
       clearInterval(timerUpdateInterval!);
     };
-  }, [isSessionActive, meetingId, props]);
+  }, [isSessionActive, meetingId, props, time]);
 
   const handlePreviousSessionClick = async () => {
     setIsLoading(true);
