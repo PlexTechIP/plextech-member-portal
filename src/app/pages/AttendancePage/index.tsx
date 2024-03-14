@@ -290,7 +290,8 @@ export function AttendancePage(props: Props) {
       {(attendancecode &&
         returnValue.attendanceTime &&
         returnValue.startTime) ||
-      (returnValue && returnValue.error) ? (
+      (returnValue && returnValue.error) ||
+      Cookies.get('attendanceTime') ? (
         <QRLandingPage {...returnValue} />
       ) : (
         <Stack spacing={2} alignItems="center">
