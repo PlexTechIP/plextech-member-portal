@@ -40,6 +40,7 @@ import { AttendeesDisplay } from './AttendeesDisplay';
 import { QRLandingPage } from './QRLandingPage';
 import { getToken } from 'utils/useToken';
 import { AbsentDisplay } from './AbsentDisplay';
+import Cookies from 'js-cookie';
 
 const TIME_TO_REFRESH = 300;
 
@@ -160,6 +161,11 @@ export function AttendancePage(props: Props) {
   const [returnValue, setReturnValue] = useState<any>({});
 
   useEffect(() => {
+    const time = Cookies.get('attendanceTime');
+    if (time) {
+      setReturnValue({ attendanceTime: time, startTime: 'idk' });
+      return;
+    }
     if (!attendancecode) return;
     const f = async () => {
       setIsLoading(true);
