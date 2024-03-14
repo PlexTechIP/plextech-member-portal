@@ -160,9 +160,8 @@ export function AttendancePage(props: Props) {
 
   const [returnValue, setReturnValue] = useState<any>({});
 
-  const time = Cookies.get('attendanceTime');
-
   useEffect(() => {
+    const time = Cookies.get('attendanceTime');
     if (time) {
       console.log(time);
       setReturnValue({ attendanceTime: time, startTime: 'idk' });
@@ -189,9 +188,10 @@ export function AttendancePage(props: Props) {
       }
     };
     f(); // heli says he is sad
-  }, [attendancecode, meetingIdUrl, props, time]);
+  }, [attendancecode, meetingIdUrl, props]);
 
   useEffect(() => {
+    const time = Cookies.get('attendanceTime');
     if (time) {
       return;
     }
@@ -249,7 +249,7 @@ export function AttendancePage(props: Props) {
       clearInterval(attendanceUpdateInterval!);
       clearInterval(timerUpdateInterval!);
     };
-  }, [isSessionActive, meetingId, props, time]);
+  }, [isSessionActive, meetingId, props]);
 
   const handlePreviousSessionClick = async () => {
     setIsLoading(true);
