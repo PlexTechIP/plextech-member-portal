@@ -221,10 +221,12 @@ export function AttendancePage(props: Props) {
 
     if (isSessionActive) {
       updateQRCode(true);
-      qrCodeUpdateInterval = setInterval(
-        () => updateQRCode(true),
-        TIME_TO_REFRESH * 1000,
-      );
+      qrCodeUpdateInterval = setInterval(() => {
+        updateQRCode(true);
+        console.log(
+          `${window.location}/?attendancecode=${code}&meetingid=${meetingId}`,
+        );
+      }, TIME_TO_REFRESH * 1000);
       attendanceUpdateInterval = setInterval(() => updateQRCode(false), 1000);
       timerUpdateInterval = setInterval(
         () =>
