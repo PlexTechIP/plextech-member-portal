@@ -173,8 +173,12 @@ export function AttendancePage(props: Props) {
         setError(res.error);
         return;
       }
-      setIsLoading(false);
-      setReturnValue(res);
+      if (res.redirect) {
+        window.location = res.redirect;
+      } else {
+        setIsLoading(false);
+        setReturnValue(res);
+      }
     };
     f(); // heli says he is sad
   }, [attendancecode, meetingIdUrl, props]);

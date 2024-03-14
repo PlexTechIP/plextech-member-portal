@@ -220,7 +220,8 @@ def login_signup_add_PIC():
                 )
 
             response = make_response(res)
-            response.delete_cookie("attendance")
+            response.delete_cookie("attendanceTime")
+            response.delete_cookie("attendanceId")
             return response
         else:
             return {"error": "Incorrect password"}, 401
@@ -320,9 +321,9 @@ def attendance():
                         "startTime": attendance_info["startTime"],
                     }
             else:
-                response = make_response(
-                    redirect("https://plextech-member-portal.vercel.app/")
-                )
+                response = make_response({
+                    'redirect': "https://plextech-member-portal.vercel.app/"
+                })
                 response.set_cookie("attendanceTime", form["time"])
                 response.set_cookie("attendanceId", str(aid))
                 return response
