@@ -138,9 +138,11 @@ export function LoginPage(props: Props) {
     }
     setIncorrect(false);
 
-    if (res.redirect) {
-      window.location = res.redirect;
-    }
+    console.log(res);
+
+    // if (res.redirect) {
+    //   window.location = res.redirect;
+    // }
 
     setToken(res.access_token);
     setSubmitted(false);
