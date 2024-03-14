@@ -203,25 +203,31 @@ def login_signup_add_PIC():
             access_token = create_access_token(identity=str(user["_id"]))
             res = {"access_token": access_token}
 
-            if request.cookies.get("attendanceId"):
-                attendance_info = db.Attendance.find_one(
-                    {"_id": request.cookies.get("attendanceId")}
+            aid = request.cookies.get("attendanceId")
+
+            if aid:
+                attendees_dict = dict(
+                    db.Attendance.find_one({"_id": aid}, {"_id": 0, "attendees": 1, "start_time": 1})
                 )
 
-                attendance_info["attendees"][user["_id"]] = (
-                    request.cookies.get("attendanceTime"),
-                    f"{user['firstName']} {user['lastName']}",
-                )
-                res.update(
+                attendees_dict["attendees"].update(
                     {
-                        "startTime": attendance_info["startTime"],
-                        "attendanceTime": request.cookies.get("attendanceTime"),
+                        user["_id"]: (
+                            request.cookies.get("attendanceTime"),
+                            f"{user['firstName']} {user['lastName']}",
+                        )
                     }
                 )
 
-            res["redirect"] = (
-                f"https://plextech-member-portal.vercel.app/attendance/?attendancetime={request.cookies.get('attendanceTime')}"
-            )
+                db.Attendance.update_one(
+                    {"_id": aid},
+                    {"$set": {"attendees": attendees_dict["attendees"]}},
+                )
+
+                res["redirect"] = (
+                    f"https://plextech-member-portal.vercel.app/attendance/?attendancetime={request.cookies.get('attendanceTime')}&starttime={attendees_dict['start_time']}"
+                )
+
             response = make_response(res)
             response.delete_cookie("attendanceTime")
             response.delete_cookie("attendanceId")
