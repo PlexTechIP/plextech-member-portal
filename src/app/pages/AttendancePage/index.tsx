@@ -190,6 +190,9 @@ export function AttendancePage(props: Props) {
   }, [attendancecode, meetingIdUrl, props]);
 
   useEffect(() => {
+    if (Cookies.get('attendanceTime')) {
+      return;
+    }
     let qrCodeUpdateInterval: NodeJS.Timeout | null = null;
     let attendanceUpdateInterval: NodeJS.Timeout | null = null;
     let timerUpdateInterval: NodeJS.Timeout | null = null;
