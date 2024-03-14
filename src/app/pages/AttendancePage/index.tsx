@@ -160,8 +160,9 @@ export function AttendancePage(props: Props) {
 
   const [returnValue, setReturnValue] = useState<any>({});
 
+  const time = Cookies.get('attendanceTime');
+
   useEffect(() => {
-    const time = Cookies.get('attendanceTime');
     if (time) {
       setReturnValue({ attendanceTime: time, startTime: 'idk' });
       return;
@@ -190,7 +191,7 @@ export function AttendancePage(props: Props) {
   }, [attendancecode, meetingIdUrl, props]);
 
   useEffect(() => {
-    if (Cookies.get('attendanceTime')) {
+    if (time) {
       return;
     }
     let qrCodeUpdateInterval: NodeJS.Timeout | null = null;
