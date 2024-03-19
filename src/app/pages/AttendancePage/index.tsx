@@ -122,6 +122,14 @@ export function AttendancePage(props: Props) {
     setIsLoading(false);
   };
 
+  const handleCopy = async () => {
+    const clipboardData = {
+      attendees: Object.values(attendees).map((item: any) => item[1]),
+      absent: absent,
+    };
+    await navigator.clipboard.writeText(JSON.stringify(clipboardData));
+  };
+
   const handleExportToCSV = () => {
     const csvContent =
       'Name,Arrival Time\n' +
@@ -140,12 +148,12 @@ export function AttendancePage(props: Props) {
       type: 'text/csv;charset=utf-8',
     });
 
-    const linkAbsent = document.createElement('a');
-    linkAbsent.href = URL.createObjectURL(absentBlob);
-    linkAbsent.download = 'absent.csv';
-    document.body.appendChild(linkAbsent);
-    linkAbsent.click();
-    document.body.removeChild(linkAbsent);
+    // const linkAbsent = document.createElement('a');
+    // linkAbsent.href = URL.createObjectURL(absentBlob);
+    // linkAbsent.download = 'absent.csv';
+    // document.body.appendChild(linkAbsent);
+    // linkAbsent.click();
+    // document.body.removeChild(linkAbsent);
 
     const link = document.createElement('a');
     link.href = URL.createObjectURL(csvBlob);
@@ -465,18 +473,28 @@ export function AttendancePage(props: Props) {
                       </Button>
                     ))
                   )}
-                  <Button variant="contained" onClick={handleBackButtonClick}>
-                    Back
-                  </Button>
+                  <Stack direction="row" gap={2}>
+                    <Button variant="contained" onClick={handleExportToCSV}>
+                      Export to CSV
+                    </Button>
+                    <Button variant="contained" onClick={handleCopy}>
+                      Copy
+                    </Button>
+                    <Button variant="contained" onClick={handleBackButtonClick}>
+                      Back
+                    </Button>
+                  </Stack>
                 </>
               )}
             </Stack>
           </Form>
           <div />
-          {isSessionActive && startTime && (
+          {((isSessionActive && startTime) || sessions) && (
             <AttendeesDisplay attendees={attendees} startTime={startTime!} />
           )}
-          {isSessionActive && startTime && <AbsentDisplay absent={absent} />}
+          {((isSessionActive && startTime) || sessions) && (
+            <AbsentDisplay absent={absent} />
+          )}
         </Stack>
       )}
       {error && <ErrorModal open={!!error} error={error} />}
