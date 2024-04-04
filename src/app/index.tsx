@@ -29,6 +29,7 @@ import { ForumPage } from './pages/ForumPage/Loadable';
 import { createTheme, ThemeProvider } from '@mui/material';
 import createPalette from '@mui/material/styles/createPalette';
 import { Analytics } from '@vercel/analytics/react';
+import { SpeedInsights } from '@vercel/speed-insights/react';
 import { apiRequest } from 'utils/apiRequest';
 import Cookies from 'js-cookie';
 
@@ -140,6 +141,7 @@ export function App() {
         </BrowserRouter>
       </ThemeProvider>
       <Analytics />
+      <SpeedInsights />
     </>
   );
 }
