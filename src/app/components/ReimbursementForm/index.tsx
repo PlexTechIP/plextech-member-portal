@@ -48,6 +48,7 @@ interface Props {
   onError: (error: Error) => void;
   canEdit: boolean;
   userName: { firstName: string; lastName: string };
+  receiptRequired: boolean;
 }
 
 export const initialState: FormData = {
@@ -211,7 +212,7 @@ export function ReimbursementForm(props: Props) {
       isLoading ||
       formData.amount === '' ||
       formData.itemDescription === '' ||
-      formData.images.length === 0 ||
+      (props.receiptRequired && formData.images.length === 0) ||
       imageLoading ||
       formData.teamBudget === ''
     ) {
@@ -422,7 +423,9 @@ export function ReimbursementForm(props: Props) {
                   component="label"
                   style={{
                     color:
-                      submitted && formData.images.length === 0
+                      submitted &&
+                      formData.images.length === 0 &&
+                      props.receiptRequired
                         ? 'red'
                         : 'rgb(255, 138, 0)',
                   }}

@@ -36,6 +36,7 @@ export function HomePage(props: Props) {
   }>({ firstName: '', lastName: '' });
   const [filter, setFilter] = useState<boolean>(false);
   const [backToTopButtonVisible, setBackToTopButtonVisible] = useState(false);
+  const [receiptRequired, setReceiptRequired] = useState<boolean>(false);
 
   useEffect(() => {
     const toggleVisibility = () => {
@@ -138,6 +139,7 @@ export function HomePage(props: Props) {
     setRequest(newRequest);
     setCanEdit(!isTreasurer || mine || !newRequest);
     setShowModal(true);
+    setReceiptRequired(!newRequest);
   };
 
   // userFilter is a user id
@@ -191,6 +193,7 @@ export function HomePage(props: Props) {
                 onError={onError}
                 canEdit={canEdit}
                 userName={userName}
+                receiptRequired={receiptRequired}
               />
             </>
           </StyledModal>
