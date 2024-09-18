@@ -8,6 +8,8 @@ import { DeleteDialog } from 'app/components/DeleteDialog';
 import { Delete } from '@mui/icons-material';
 import Checkbox from '@mui/material/Checkbox';
 import { apiRequest } from 'utils/apiRequest';
+import { Check } from '@mui/icons-material';
+import { Close } from '@mui/icons-material';
 
 interface Props {
   user: User;
@@ -37,10 +39,10 @@ export default function Row(props: Props) {
           '&:last-child td, &:last-child th': { border: 0 },
         }}
       >
-        <TableCell component="th" scope="row">
+        <TableCell>
           {user.registered ? `${user.firstName} ${user.lastName}` : user.email}
         </TableCell>
-        <TableCell component="th" scope="row">
+        <TableCell align="center">
           <Checkbox
             checked={checked === undefined ? user.treasurer : checked}
             onChange={async event => {
@@ -52,6 +54,9 @@ export default function Row(props: Props) {
               setChecked(isChecked);
             }}
           />
+        </TableCell>
+        <TableCell align="center">
+          {user.registered ? <Check /> : <Close />}
         </TableCell>
         <TableCell align="center">
           <IconButton size="small" onClick={() => setShowDelete(true)}>
