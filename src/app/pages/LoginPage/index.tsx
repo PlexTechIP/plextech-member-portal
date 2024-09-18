@@ -179,6 +179,11 @@ export function LoginPage(props: Props) {
               <Stack alignItems="center" spacing={4}>
                 <Img src={PlexTechLogo} alt="PlexTech logo" />
                 <H1>Login</H1>
+                <div id="google-signin" />
+                <StyledDivider variant="middle" light>
+                  or
+                </StyledDivider>
+
                 <StyledStack>
                   <p>Email Address</p>
                   <TextField
@@ -242,11 +247,6 @@ export function LoginPage(props: Props) {
                     Forgot Password?
                   </Button>
                 </Stack>
-
-                <StyledDivider variant="middle" light>
-                  or
-                </StyledDivider>
-                <div id="google-signin" />
                 <Button variant="contained" onClick={onSignUpClick}>
                   Don't have an account yet?
                 </Button>
