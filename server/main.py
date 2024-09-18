@@ -112,6 +112,51 @@ def ping():
     return {}, 200
 
 
+@app.route("/members/", methods=["GET", "PUT", "DELETE"])
+@jwt_required()
+def members():
+    id = ObjectId(get_jwt_identity())
+    if request.method == "OPTIONS":
+        return {}, 200
+
+    if request.method == "PUT":
+        form = dict(request.json)
+        user = db.Users.find_one({"_id": id})
+        if not user["treasurer"]:
+            return {}, 401
+        db.Users.update_one(
+            {"_id": ObjectId(form.get("user_id"))},
+            {"$set": {"treasurer": form.get("treasurer", False)}},
+        )
+        return {}, 200
+
+    if request.method == "DELETE":
+        form = dict(request.json)
+        user = db.Users.find_one({"_id": id})
+        if not user["treasurer"]:
+            return {}, 401
+        db.Users.delete_one({"_id": ObjectId(form.get("user_id"))})
+        return {}, 200
+
+    if request.method == "GET":
+        users = list(
+            db.Users.find(
+                {},
+                {
+                    "_id": 1,
+                    "email": 1,
+                    "registered": 1,
+                    "firstName": 1,
+                    "lastName": 1,
+                    "treasurer": 1,
+                },
+            )
+        )
+        for user in users:
+            user["_id"] = str(user["_id"])
+        return {"users": users}, 200
+
+
 @app.route("/profile/", methods=["PUT", "POST", "GET", "DELETE", "OPTIONS"])
 @jwt_required()
 def protected_user_routes():

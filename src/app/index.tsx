@@ -32,6 +32,7 @@ import { Analytics } from '@vercel/analytics/react';
 import { SpeedInsights } from '@vercel/speed-insights/react';
 import { apiRequest } from 'utils/apiRequest';
 import Cookies from 'js-cookie';
+import { MemberManagement } from './pages/MemberManagement/Loadable';
 
 export function App() {
   const { i18n } = useTranslation();
@@ -131,6 +132,7 @@ export function App() {
                   <Route path="/reimbursements" element={<HomePage />} />
                   <Route path="/categories" element={<CategoriesPage />} />
                   <Route path="/attendance" element={<AttendancePage />} />
+                  <Route path="/members" element={<MemberManagement />} />
                   <Route path="/forum" element={<ForumPage />} />
                   <Route path="*" element={<NotFoundPage />} />
                 </Routes>

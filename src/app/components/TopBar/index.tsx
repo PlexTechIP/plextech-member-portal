@@ -47,9 +47,10 @@ const iconMap = {
   Reimbursements: <AttachMoneyIcon />,
   Categories: <AttachMoneyIcon />,
   Forum: <ForumIcon />,
+  Members: <RecentActorsIcon />,
 };
 
-const protectedTabs = ['Attendance', 'Forum', 'Categories'];
+const protectedTabs = ['Attendance', 'Forum', 'Categories', 'Members'];
 
 let page = window.location.href.split('/').slice(-1)[0];
 page =
