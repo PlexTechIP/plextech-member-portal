@@ -293,7 +293,7 @@ def login_signup_add_PIC():
         del form["method"]
         form["requests"] = []
         form["registered"] = True
-        form["treasurer"] = False
+        form["treasurer"] = user.get("treasurer", False)
         form["tardies"] = []
         form["absences"] = []
         form["strikes"] = []
