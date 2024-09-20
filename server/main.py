@@ -15,7 +15,7 @@ from datetime import datetime, timedelta, timezone
 from time import time
 from pymongo.errors import BulkWriteError
 from random import randint
-from cryptography.fernet import Fernet
+from cryptography.fernet import Fernet, InvalidToken
 
 from send_email import gmail_send_message, send_comment_email, send_email
 from sheets import add_row_to_sheet
@@ -37,8 +37,9 @@ app.config["JWT_SECRET_KEY"] = getenv("JWT_SECRET_KEY")
 app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(hours=1)
 jwt = JWTManager(app)
 
-key = getenv("FERNET_KEY")
-f = Fernet(key)
+ACCOUNT_NUMBER_KEY = getenv("FERNET_ACCOUNT_NUMBER_KEY")
+ROUTING_NUMBER_KEY = getenv("FERNET_ROUTING_NUMBER_KEY")
+BLUEVINE_PASSWORD_KEY = getenv("FERNET_BLUEVINE_PASSWORD_NUMBER_KEY")
 
 
 @app.after_request
@@ -88,12 +89,51 @@ def check_password(plain_text_password, hashed_password):
     return bcrypt.checkpw(plain_text_password, hashed_password)
 
 
-def encrypt(p):
+def encrypt(p, key):
+    f = Fernet(key)
     return f.encrypt(p.encode()).decode()
 
 
-def decrypt(c):
+def decrypt(c, key):
+    f = Fernet(key)
     return f.decrypt(c.encode()).decode()
+
+
+def reencrypt_user_credentials():
+    old_key = "8evSmxioOt4uAN798OjQGbhNT2OWIFRZBYGq0l4OP9g="
+    users = db.Users.find({"bank": {"$exists": True}})
+    for user in users:
+        update_fields = {}
+        if "bank" in user:
+            bank = user["bank"]
+            if "accountNumber" in bank:
+                try:
+                    bank["accountNumber"] = encrypt(
+                        decrypt(bank["accountNumber"], old_key), ACCOUNT_NUMBER_KEY
+                    )
+                except InvalidToken:
+                    pass
+            if "routingNumber" in bank:
+                try:
+                    bank["routingNumber"] = encrypt(
+                        decrypt(bank["routingNumber"], old_key), ROUTING_NUMBER_KEY
+                    )
+                except InvalidToken:
+                    pass
+
+            update_fields["bank"] = bank
+        if "bluevinePassword" in user:
+            try:
+                user["bluevinePassword"] = encrypt(
+                    decrypt(user["bluevinePassword"], old_key),
+                    BLUEVINE_PASSWORD_KEY,
+                )
+                update_fields["bluevinePassword"] = user["bluevinePassword"]
+            except InvalidToken:
+                pass
+
+        if update_fields:
+            db.Users.update_one({"_id": user["_id"]}, {"$set": update_fields})
 
 
 @app.route("/logout/", methods=["POST", "OPTIONS"])
@@ -237,7 +277,9 @@ def update_bluevine():
     bluevine_email = form.get("bluevineEmail")
     update_data = {"bluevineEmail": bluevine_email}
     if "bluevinePassword" in form:
-        update_data["bluevinePassword"] = encrypt(form["bluevinePassword"])
+        update_data["bluevinePassword"] = encrypt(
+            form["bluevinePassword"], BLUEVINE_PASSWORD_KEY
+        )
 
     db.Users.update_one(
         {"_id": id},
@@ -548,8 +590,12 @@ def approve_request(request_id):
             #     form['amount']), 'subject': r["itemDescription"], 'successes': 0})
             bluevine_send_money(
                 fullName=requester["firstName"] + " " + requester["lastName"],
-                accountNumber=decrypt(requester["bank"]["accountNumber"]),
-                routingNumber=decrypt(requester["bank"]["routingNumber"]),
+                accountNumber=decrypt(
+                    requester["bank"]["accountNumber"], ACCOUNT_NUMBER_KEY
+                ),
+                routingNumber=decrypt(
+                    requester["bank"]["routingNumber"], ROUTING_NUMBER_KEY
+                ),
                 bankName=requester["bank"]["bankName"],
                 amount=form["amount"],
                 user_id=requester["_id"],
@@ -558,7 +604,9 @@ def approve_request(request_id):
                 request_id=request_id,
                 description=r["itemDescription"],
                 bluevineEmail=user["bluevineEmail"],
-                bluevinePassword=decrypt(user["bluevinePassword"]),
+                bluevinePassword=decrypt(
+                    user["bluevinePassword"], BLUEVINE_PASSWORD_KEY
+                ),
             )
 
         db.Requests.update_one(
@@ -866,9 +914,13 @@ def bank_details():
             bank = {}
 
         if "accountNumber" in form and form["accountNumber"]:
-            bank["accountNumber"] = encrypt(str(form["accountNumber"]).strip())
+            bank["accountNumber"] = encrypt(
+                str(form["accountNumber"]).strip(), ACCOUNT_NUMBER_KEY
+            )
         if "routingNumber" in form and form["routingNumber"]:
-            bank["routingNumber"] = encrypt(str(form["routingNumber"]).strip())
+            bank["routingNumber"] = encrypt(
+                str(form["routingNumber"]).strip(), ROUTING_NUMBER_KEY
+            )
         if "bankName" in form and form["bankName"]:
             bank["bankName"] = form["bankName"].strip()
 
