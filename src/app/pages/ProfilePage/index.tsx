@@ -35,8 +35,6 @@ export function ProfilePage(props: Props) {
   const [error, setError] = useState<Error>();
   const [user, setUser] = useState<User>();
   const [username, setUsername] = useState<string>('');
-  const [profiles, setProfiles] = useState<VenmoProfile[]>([]);
-  const [curProfile, setCurProfile] = useState<VenmoProfile>();
   const [loading, setLoading] = useState<boolean>(false);
 
   const [accountNumber, setAccountNumber] = useState<string>('');
@@ -44,6 +42,9 @@ export function ProfilePage(props: Props) {
   const [bankName, setBankName] = useState<string>('');
 
   const [success, setSuccess] = useState<boolean>(false);
+
+  const [bluevineEmail, setBluevineEmail] = useState<string>('');
+  const [bluevinePassword, setBluevinePassword] = useState<string>('');
 
   useEffect(() => {
     const f = async () => {
@@ -55,52 +56,16 @@ export function ProfilePage(props: Props) {
       }
 
       setUser(res);
+      setBluevineEmail(res.bluevineEmail);
+      setBluevinePassword(res.bluevinePassword);
       if (res.bank) {
         setAccountNumber(res.bank.accountNumber);
         setRoutingNumber(res.bank.routingNumber);
         setBankName(res.bank.bankName);
       }
-
-      setCurProfile(res.venmo);
     };
     f();
   }, [props]);
-
-  const onSelect = async (profile: VenmoProfile) => {
-    setLoading(true);
-    const [success, res] = await apiRequest('/venmo/_/', 'PUT', profile);
-
-    if (!success) {
-      setError(res.error);
-      return;
-    }
-
-    setCurProfile(profile);
-    setLoading(false);
-  };
-
-  const onChange = async (e: any) => {
-    setUsername(e.target.value);
-  };
-
-  const onSearch = async (event: any) => {
-    event.preventDefault();
-    setLoading(true);
-    if (!username) {
-      return;
-    }
-
-    const [success, res] = await apiRequest(
-      `/venmo/${encodeURIComponent(username)}/`,
-      'GET',
-    );
-    if (!success) {
-      setError(res.error);
-    }
-
-    setProfiles(res.users);
-    setLoading(false);
-  };
 
   const bankSubmit = async () => {
     const bodyData = { bankName };
@@ -124,6 +89,27 @@ export function ProfilePage(props: Props) {
         ...prevUser!.bank,
         ...bodyData,
       },
+    }));
+
+    setSuccess(true);
+  };
+
+  const bluevineSubmit = async () => {
+    const bodyData = { bluevineEmail };
+    if (accountNumber && accountNumber[0] !== 'b') {
+      bodyData['bluevinePassword'] = bluevinePassword;
+    }
+
+    const [success, res] = await apiRequest('/bluevine/', 'PUT', bodyData);
+
+    if (!success) {
+      setError(res.error);
+      return;
+    }
+
+    setUser((prevUser: User | undefined) => ({
+      ...prevUser!,
+      bodyData,
     }));
 
     setSuccess(true);
@@ -233,77 +219,59 @@ export function ProfilePage(props: Props) {
           <Div>
             <Form>
               <Stack spacing={4}>
-                {curProfile ? (
-                  <Box>
-                    <Stack
-                      direction="row"
-                      alignItems="center"
-                      justifyContent="space-between"
-                    >
-                      <H1>Venmo Profile</H1>
-                      <Stack direction="row" alignItems="center" spacing={3}>
-                        <H2>Current:</H2>
-                        <VenmoCard venmoProfile={curProfile} />
-                      </Stack>
-                    </Stack>
-                  </Box>
-                ) : (
-                  <H1>Venmo Profile</H1>
-                )}
-                <form>
+                <Stack
+                  direction="row"
+                  justifyContent="space-between"
+                  alignItems="center"
+                >
+                  <H1>Bluevine Details (admin only)</H1>
+                  <Button
+                    onClick={bluevineSubmit}
+                    variant="contained"
+                    disabled={
+                      !(
+                        /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(bluevineEmail) &&
+                        user.bluevinePassword &&
+                        bluevinePassword === user.bluevinePassword
+                      )
+                    }
+                  >
+                    {user.bank ? 'Update' : 'Submit'}
+                  </Button>
+                </Stack>
+                <>
                   <TextField
                     fullWidth
-                    label="Venmo Username"
-                    value={username}
-                    onChange={onChange}
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">@</InputAdornment>
-                      ),
-                      endAdornment: (
-                        <InputAdornment position="end">
-                          <IconButton
-                            onClick={onSearch}
-                            type="submit"
-                            disabled={!username || loading}
-                          >
-                            {loading ? (
-                              <StyledCircularProgress size={20} />
-                            ) : (
-                              <SearchIcon />
-                            )}
-                          </IconButton>
-                        </InputAdornment>
-                      ),
-                    }}
+                    label="Bluevine Email"
+                    onChange={e => setBluevineEmail(e.target.value)}
+                    required
+                    error={!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(bluevineEmail)}
+                    value={bluevineEmail}
                   />
-                </form>
-                <Grid container spacing={2}>
-                  {profiles.map((profile: VenmoProfile) => (
-                    <Grid
-                      item
-                      key={profile.id}
-                      onClick={() => onSelect(profile)}
-                      xs={12}
-                      sm={6}
-                    >
-                      <Button
-                        fullWidth
-                        sx={{
-                          justifyContent: 'flex-start',
-                          color: 'inherit',
-                          textDecoration: 'inherit',
-                          textAlign: 'left',
-                          alignItems: 'flex-start',
-                          textTransform: 'none',
-                          fontSize: 'inherit',
-                        }}
-                      >
-                        <VenmoCard venmoProfile={profile} />
-                      </Button>
-                    </Grid>
-                  ))}
-                </Grid>
+                  <TextField
+                    fullWidth
+                    label="Bluevine Password"
+                    value={bluevinePassword}
+                    onChange={e => setBluevinePassword(e.target.value)}
+                    required
+                    error={
+                      !(
+                        user.bluevinePassword &&
+                        bluevinePassword === user.bluevinePassword
+                      )
+                    }
+                    type="password"
+                  />
+                </>
+                <Stack
+                  direction="row"
+                  alignItems="center"
+                  spacing={1}
+                  justifyContent="flex-end"
+                >
+                  <StyledInfoOutlinedIcon />
+                  <P>Your information is securely encrypted with Fernet.</P>
+                </Stack>
               </Stack>
             </Form>
           </Div>

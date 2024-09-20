@@ -219,7 +219,31 @@ def protected_user_routes():
         ):
             user["bank"]["accountNumber"] = str(user["bank"]["accountNumber"])[:20]
             user["bank"]["routingNumber"] = str(user["bank"]["routingNumber"])[:20]
+        user["bluevinePassword"] = str(user["bluevinePassword"])[:20]
         return dict(user), 200
+
+
+@app.route("/bluevine/", methods=["PUT", "OPTIONS"])
+@jwt_required()
+def update_bluevine():
+    if request.method == "OPTIONS":
+        return {}, 200
+    id = ObjectId(get_jwt_identity())
+    form = dict(request.json)
+    user = db.Users.find_one({"_id": id})
+    if not user:
+        return {"error": "User not found"}, 404
+
+    bluevine_email = form.get("bluevineEmail")
+    update_data = {"bluevineEmail": bluevine_email}
+    if "bluevinePassword" in form:
+        update_data["bluevinePassword"] = encrypt(form["bluevinePassword"])
+
+    db.Users.update_one(
+        {"_id": id},
+        {"$set": update_data},
+    )
+    return {}, 200
 
 
 @app.route("/users/", methods=["POST", "OPTIONS"])

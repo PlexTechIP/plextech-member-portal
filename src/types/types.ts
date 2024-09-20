@@ -82,6 +82,8 @@ export interface User {
   tardies: Dayjs[];
   absences: Dayjs[];
   treasurer: boolean;
+  bluevineEmail?: string;
+  bluevinePassword?: string;
 }
 
 export interface Post {
