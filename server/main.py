@@ -259,7 +259,9 @@ def protected_user_routes():
         ):
             user["bank"]["accountNumber"] = str(user["bank"]["accountNumber"])[:20]
             user["bank"]["routingNumber"] = str(user["bank"]["routingNumber"])[:20]
-        user["bluevinePassword"] = str(user["bluevinePassword"])[:20]
+        
+        if "bluevinePassword" in user:
+            user["bluevinePassword"] = str(user["bluevinePassword"])[:20]
         return dict(user), 200
 
 
