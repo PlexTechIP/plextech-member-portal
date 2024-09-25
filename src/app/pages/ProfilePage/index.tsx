@@ -69,10 +69,10 @@ export function ProfilePage(props: Props) {
 
   const bankSubmit = async () => {
     const bodyData = { bankName };
-    if (accountNumber && accountNumber[0] !== 'b') {
+    if (accountNumber !== user?.bank.accountNumber) {
       bodyData['accountNumber'] = accountNumber;
     }
-    if (routingNumber && routingNumber[0] !== 'b') {
+    if (routingNumber !== user?.bank.routingNumber) {
       bodyData['routingNumber'] = routingNumber;
     }
 
@@ -96,7 +96,7 @@ export function ProfilePage(props: Props) {
 
   const bluevineSubmit = async () => {
     const bodyData = { bluevineEmail };
-    if (accountNumber && accountNumber[0] !== 'b') {
+    if (bluevinePassword && bluevinePassword !== user?.bluevinePassword) {
       bodyData['bluevinePassword'] = bluevinePassword;
     }
 
@@ -141,10 +141,10 @@ export function ProfilePage(props: Props) {
                     onClick={bankSubmit}
                     variant="contained"
                     disabled={
-                      (accountNumber &&
-                        accountNumber[0] === 'b' &&
-                        routingNumber &&
-                        routingNumber[0] === 'b' &&
+                      !accountNumber ||
+                      !routingNumber ||
+                      (accountNumber === user.bank.accountNumber &&
+                        routingNumber === user.bank.routingNumber &&
                         bankName === user.bank.bankName) ||
                       !bankName
                     }
@@ -161,8 +161,7 @@ export function ProfilePage(props: Props) {
                     error={
                       !(
                         /^\d+$/.test(accountNumber) ||
-                        (user.bank?.accountNumber &&
-                          accountNumber === user.bank?.accountNumber)
+                        accountNumber === user.bank?.accountNumber
                       )
                     }
                     value={accountNumber}
@@ -177,8 +176,7 @@ export function ProfilePage(props: Props) {
                     error={
                       !(
                         /^\d+$/.test(routingNumber) ||
-                        (user.bank?.routingNumber &&
-                          routingNumber === user.bank?.routingNumber)
+                        routingNumber === user.bank?.routingNumber
                       )
                     }
                     type="password"
@@ -191,13 +189,7 @@ export function ProfilePage(props: Props) {
                     value={bankName}
                     onChange={e => setBankName(e.target.value)}
                     required
-                    error={
-                      !(
-                        bankName ||
-                        (user.bank?.bankName &&
-                          bankName === user.bank?.bankName)
-                      )
-                    }
+                    error={!(bankName || bankName === user.bank?.bankName)}
                   />
                   <SuccessDialog
                     open={success}
@@ -229,11 +221,11 @@ export function ProfilePage(props: Props) {
                     onClick={bluevineSubmit}
                     variant="contained"
                     disabled={
-                      !(
-                        /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(bluevineEmail) &&
-                        user.bluevinePassword &&
-                        bluevinePassword === user.bluevinePassword
-                      )
+                      !bluevineEmail ||
+                      !bluevinePassword ||
+                      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(bluevineEmail) ||
+                      (bluevinePassword === user.bluevinePassword &&
+                        bluevineEmail === user.bluevineEmail)
                     }
                   >
                     {user.bank ? 'Update' : 'Submit'}
@@ -253,13 +245,8 @@ export function ProfilePage(props: Props) {
                     label="Bluevine Password"
                     value={bluevinePassword}
                     onChange={e => setBluevinePassword(e.target.value)}
+                    error={!bluevinePassword}
                     required
-                    error={
-                      !(
-                        user.bluevinePassword &&
-                        bluevinePassword === user.bluevinePassword
-                      )
-                    }
                     type="password"
                   />
                 </>

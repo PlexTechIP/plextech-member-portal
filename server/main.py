@@ -135,6 +135,19 @@ def reencrypt_user_credentials():
         if update_fields:
             db.Users.update_one({"_id": user["_id"]}, {"$set": update_fields})
 
+def decrypt_all_users():
+    users = db.Users.find({"$or": [{"bank.accountNumber": {"$exists": True}}, {"bank.routingNumber": {"$exists": True}}, {"bluevinePassword": {"$exists": True}}]})
+    for user in users:
+        try:
+            if "bank" in user:
+                if "accountNumber" in user["bank"]:
+                    decrypt(user["bank"]["accountNumber"], ACCOUNT_NUMBER_KEY)
+                if "routingNumber" in user["bank"]:
+                    decrypt(user["bank"]["routingNumber"], ROUTING_NUMBER_KEY)
+            if "bluevinePassword" in user:
+                decrypt(user["bluevinePassword"], BLUEVINE_PASSWORD_KEY)
+        except InvalidToken:
+            print(f"Invalid token for user: {user.get('email', 'Unknown email')}")
 
 @app.route("/logout/", methods=["POST", "OPTIONS"])
 @jwt_required()

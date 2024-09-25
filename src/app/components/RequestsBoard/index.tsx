@@ -222,8 +222,17 @@ export function RequestsBoard(props: Props) {
               regex.charAt(0).toUpperCase() + regex.slice(1);
 
             return (
-              <Section key={statusKey}>
-                {!props.requests || props.requests![statusKey].length === 0 ? (
+              <Section
+                key={statusKey}
+                style={
+                  statusKey === 'approved'
+                    ? { border: '2px solid rgb(255, 138, 0)' }
+                    : {}
+                }
+              >
+                {!props.requests ||
+                props.requests![statusKey].length === 0 ||
+                statusKey === 'approved' ? (
                   <H2>{statusTitleCase}</H2>
                 ) : (
                   <H2>
