@@ -7,24 +7,18 @@
 import * as React from 'react';
 import { useEffect, useState } from 'react';
 import styled from 'styled-components';
-import { Error, User, VenmoProfile } from 'types/types';
+import { Error, User } from 'types/types';
 import { Helmet } from 'react-helmet-async';
 import { ErrorModal } from 'app/components/ErrorModal';
 import { styled as muiStyled } from '@mui/system';
 // import { AttendanceCard } from 'app/components/AttendanceCard';
 import {
-  Box,
   Button,
   Card,
   CircularProgress,
-  Grid,
-  IconButton,
-  InputAdornment,
   Stack,
   TextField,
 } from '@mui/material';
-import { VenmoCard } from 'app/components/VenmoCard';
-import SearchIcon from '@mui/icons-material/Search';
 import { apiRequest } from 'utils/apiRequest';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import { SuccessDialog } from 'app/components/SuccessDialog';
@@ -34,8 +28,6 @@ interface Props {}
 export function ProfilePage(props: Props) {
   const [error, setError] = useState<Error>();
   const [user, setUser] = useState<User>();
-  const [username, setUsername] = useState<string>('');
-  const [loading, setLoading] = useState<boolean>(false);
 
   const [accountNumber, setAccountNumber] = useState<string>('');
   const [routingNumber, setRoutingNumber] = useState<string>('');
@@ -125,9 +117,6 @@ export function ProfilePage(props: Props) {
       <Div />
       {user && (
         <>
-          {/* <Div>
-             <AttendanceCard user={user} /> 
-          </Div> */}
           <Div>
             <Form>
               <Stack spacing={4}>
@@ -143,9 +132,9 @@ export function ProfilePage(props: Props) {
                     disabled={
                       !accountNumber ||
                       !routingNumber ||
-                      (accountNumber === user.bank.accountNumber &&
-                        routingNumber === user.bank.routingNumber &&
-                        bankName === user.bank.bankName) ||
+                      (accountNumber === user.bank?.accountNumber &&
+                        routingNumber === user.bank?.routingNumber &&
+                        bankName === user.bank?.bankName) ||
                       !bankName
                     }
                   >
@@ -160,7 +149,7 @@ export function ProfilePage(props: Props) {
                     required
                     error={
                       !(
-                        /^\d+$/.test(accountNumber) ||
+                        (accountNumber && /^\d+$/.test(accountNumber)) ||
                         accountNumber === user.bank?.accountNumber
                       )
                     }
@@ -175,7 +164,7 @@ export function ProfilePage(props: Props) {
                     required
                     error={
                       !(
-                        /^\d+$/.test(routingNumber) ||
+                        (routingNumber && /^\d+$/.test(routingNumber)) ||
                         routingNumber === user.bank?.routingNumber
                       )
                     }

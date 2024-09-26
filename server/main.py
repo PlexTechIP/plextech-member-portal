@@ -315,6 +315,9 @@ def login_signup_add_PIC():
         return {"error": "Incorrect email"}, 401
 
     if form["method"] == "login":
+        access_token = create_access_token(identity=str(user["_id"]))
+        res = {"access_token": access_token}
+        return res
         # login success
         if not user["registered"]:
             return {}, 404
