@@ -3,7 +3,7 @@
  * RequestsBoard
  *
  */
-import { Stack, Paper, Button } from '@mui/material';
+import { Stack, Paper, Button, Tooltip } from '@mui/material';
 import * as React from 'react';
 import styled from 'styled-components';
 import { styled as muiStyled } from '@mui/system';
@@ -18,6 +18,7 @@ import { ApproveModal } from './ApproveModal';
 import { apiRequest } from 'utils/apiRequest';
 import { getToken } from 'utils/useToken';
 import { ApproveMFA } from './ApproveMFA';
+import { HelpOutline } from '@mui/icons-material';
 
 interface Props {
   requests: AllRequests | null;
@@ -230,15 +231,30 @@ export function RequestsBoard(props: Props) {
                     : {}
                 }
               >
-                {!props.requests ||
-                props.requests![statusKey].length === 0 ||
-                statusKey === 'approved' ? (
-                  <H2>{statusTitleCase}</H2>
-                ) : (
+                <Stack
+                  direction="row"
+                  justifyContent="center"
+                  alignItems="center"
+                  style={{ paddingBottom: '16px' }}
+                  gap={1}
+                >
                   <H2>
-                    {statusTitleCase}: ${sums[statusKey].toFixed(2)}
+                    {statusTitleCase}
+                    {props.requests &&
+                    props.requests![statusKey].length !== 0 &&
+                    statusKey !== 'approved'
+                      ? `: $${sums[statusKey].toFixed(2)}`
+                      : ''}
                   </H2>
-                )}
+                  {statusKey === 'approved' && (
+                    <Tooltip title="Moving a request here will pay it through Bluevine, then move it to Paid.">
+                      <HelpOutline
+                        style={{ cursor: 'pointer', color: 'grey' }}
+                        fontSize="small"
+                      />
+                    </Tooltip>
+                  )}
+                </Stack>
                 <Stack spacing={1}>
                   {statusKey === 'pendingReview' && props.requests !== null && (
                     <Button
@@ -300,5 +316,4 @@ const Section = muiStyled(Paper)`
 
 const H2 = styled.h2`
   margin: 0px;
-  padding-bottom: 16px;
 `;
