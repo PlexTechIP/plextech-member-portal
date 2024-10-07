@@ -12,6 +12,9 @@ app = Flask(__name__)
 
 import requests
 import pymongo
+import logging
+
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 load_dotenv()
 
@@ -40,7 +43,7 @@ def login(
         {"email": bluevineEmail, "password": bluevinePassword},
         headers={"referer": "https://app.bluevine.com/dashboard"},
     )
-    print(res.text)
+    logging.info(res.text)
     if res.status_code != 200:
         raise Exception("Failed to login to bluevine: " + str(res.json()))
     s.headers.update({"x-csrftoken": s.cookies["csrftoken"]})
@@ -51,14 +54,14 @@ def login(
         f"https://app.bluevine.com/api/v3/company/{login_data['company_slug']}/user/{login_data['slug']}/mfa/",
         headers={"referer": "https://app.bluevine.com/dashboard"},
     )
-    print(res.text)
+    logging.info(res.text)
 
     # get mfa
     res = s.post(
         f"https://app.bluevine.com/api/v3/company/{login_data['company_slug']}/user/{login_data['slug']}/mfa/send_token/",
         headers={"referer": "https://app.bluevine.com/dashboard"},
     )
-    print(res.text)
+    logging.info(res.text)
 
     # start a new thread that waits for mfa then runs after_login
 
@@ -95,11 +98,11 @@ def after_login(
     request_id,
     description=None,
 ):
-    print('after_login started')
+    logging.info('after_login started')
 
     i = 0
     while not len(list(db.MFA.find({}))):
-        print('waiting for mfa')
+        logging.info('waiting for mfa')
         sleep(1)
         if i > 60:
             return {"error": "mfa timeout"}, 400
@@ -112,7 +115,7 @@ def after_login(
         {"token": code, "trust_device": True},
         headers={"referer": "https://app.bluevine.com/dashboard"},
     )
-    print('verify mfa', res.text)
+    logging.info('verify mfa: %s', res.text)
 
     # if not res.ok:
     #     return {"error": "bad mfa"}, 400
@@ -172,7 +175,7 @@ def after_login(
             "x-csrftoken": s.cookies["csrftoken"],
         },
     )
-    print('send money', res.text)
+    logging.info('send money: %s', res.text)
 
     if res.status_code == 428:
         res = s.post(

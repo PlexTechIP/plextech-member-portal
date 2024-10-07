@@ -28,6 +28,7 @@ import bcrypt
 import pymongo
 import json
 import subprocess
+import logging
 
 load_dotenv()
 
@@ -41,6 +42,7 @@ ACCOUNT_NUMBER_KEY = getenv("FERNET_ACCOUNT_NUMBER_KEY")
 ROUTING_NUMBER_KEY = getenv("FERNET_ROUTING_NUMBER_KEY")
 BLUEVINE_PASSWORD_KEY = getenv("FERNET_BLUEVINE_PASSWORD_NUMBER_KEY")
 
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 @app.after_request
 def after_request(response):
@@ -73,7 +75,7 @@ def after_request(response):
                 response.data = json.dumps(data)
         return response
     except (RuntimeError, KeyError):
-        # Case where there is not a valid JWT. Just return the original respone
+        # Case where there is not a valid JWT. Just return the original response
         return response
 
 
@@ -100,7 +102,7 @@ def decrypt(c, key):
 
 
 def reencrypt_user_credentials():
-    old_key = "8evSmxioOt4uAN798OjQGbhNT2OWIFRZBYGq0l4OP9g="
+    old_key = "REDACTED"
     users = db.Users.find({"bank": {"$exists": True}})
     for user in users:
         update_fields = {}
@@ -147,7 +149,7 @@ def decrypt_all_users():
             if "bluevinePassword" in user:
                 decrypt(user["bluevinePassword"], BLUEVINE_PASSWORD_KEY)
         except InvalidToken:
-            print(f"Invalid token for user: {user.get('email', 'Unknown email')}")
+            logging.warning(f"Invalid token for user: {user.get('email', 'Unknown email')}")
 
 @app.route("/logout/", methods=["POST", "OPTIONS"])
 @jwt_required()
@@ -315,9 +317,6 @@ def login_signup_add_PIC():
         return {"error": "Incorrect email"}, 401
 
     if form["method"] == "login":
-        access_token = create_access_token(identity=str(user["_id"]))
-        res = {"access_token": access_token}
-        return res
         # login success
         if not user["registered"]:
             return {}, 404
