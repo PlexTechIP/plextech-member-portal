@@ -14,7 +14,9 @@ import requests
 import pymongo
 import logging
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
+)
 
 load_dotenv()
 
@@ -37,6 +39,7 @@ def login(
     bluevineEmail=None,
     bluevinePassword=None,
 ):
+    logging.warning(s.headers)
     # login
     res = s.post(
         "https://app.bluevine.com/api/v3/auth/login/",
@@ -98,11 +101,11 @@ def after_login(
     request_id,
     description=None,
 ):
-    logging.info('after_login started')
+    logging.info("after_login started")
 
     i = 0
     while not len(list(db.MFA.find({}))):
-        logging.info('waiting for mfa')
+        logging.info("waiting for mfa")
         sleep(1)
         if i > 60:
             return {"error": "mfa timeout"}, 400
@@ -115,7 +118,7 @@ def after_login(
         {"token": code, "trust_device": True},
         headers={"referer": "https://app.bluevine.com/dashboard"},
     )
-    logging.info('verify mfa: %s', res.text)
+    logging.info("verify mfa: %s", res.text)
 
     # if not res.ok:
     #     return {"error": "bad mfa"}, 400
@@ -175,7 +178,7 @@ def after_login(
             "x-csrftoken": s.cookies["csrftoken"],
         },
     )
-    logging.info('send money: %s', res.text)
+    logging.info("send money: %s", res.text)
 
     if res.status_code == 428:
         res = s.post(
