@@ -2,7 +2,7 @@
 from time import sleep
 from os import getenv
 from dotenv import load_dotenv
-from datetime import datetime
+from datetime import datetime, timedelta
 from bson.objectid import ObjectId
 from threading import Thread
 from send_email import send_email
@@ -14,9 +14,7 @@ import requests
 import pymongo
 import logging
 
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
-)
+logging.basicConfig(level=logging.INFO, format="%(levelname)s - %(message)s")
 
 load_dotenv()
 
@@ -160,12 +158,33 @@ def after_login(
     else:
         payee_slug = user["bluevine_slug"]
 
+    print(
+        {
+            "account": "dcce374f0a9f45d0984c59ae9e33d27d",
+            "payee_slug": payee_slug,
+            "next_payment_date": datetime.now().strftime("%Y-%m-%d"),
+            "payment_type": "ACH",
+            "amount": amount,
+            "frequency": "once",
+            "is_continuously_recurring": False,
+            "funds_source": "dda",
+            "send_email_to_payee": True,
+        },
+        {
+            "referer": "https://app.bluevine.com/dashboard/payees",
+            "x-csrftoken": s.cookies["csrftoken"],
+        },
+    )
+
     # send money
     res = s.post(
         f"https://app.bluevine.com/api/v3/dda-company/{login_data['company_slug']}/dda-user/{login_data['slug']}/scheduled_payment/",
         {
+            "account": "dcce374f0a9f45d0984c59ae9e33d27d",
             "payee_slug": payee_slug,
-            "next_payment_date": datetime.now().strftime("%Y-%m-%d"),
+            "next_payment_date": (datetime.now() + timedelta(days=1)).strftime(
+                "%Y-%m-%d"
+            ),
             "payment_type": "ACH",
             "amount": amount,
             "frequency": "once",
@@ -178,7 +197,7 @@ def after_login(
             "x-csrftoken": s.cookies["csrftoken"],
         },
     )
-    logging.info("send money: %s", res.text)
+    logging.info("send money: %s, %s", res.text, res.status_code)
 
     if res.status_code == 428:
         res = s.post(
@@ -206,7 +225,9 @@ def after_login(
             f"https://app.bluevine.com/api/v3/dda-company/{login_data['company_slug']}/dda-user/{login_data['slug']}/scheduled_payment/",
             {
                 "payee_slug": payee_slug,
-                "next_payment_date": datetime.now().strftime("%Y-%m-%d"),
+                "next_payment_date": (datetime.now() + timedelta(days=1)).strftime(
+                    "%Y-%m-%d"
+                ),
                 "payment_type": "ACH",
                 "amount": amount,
                 "frequency": "once",
@@ -255,6 +276,10 @@ def bluevine_send_money(
     bluevinePassword=None,
 ):
     s = requests.session()
+    # s.headers = {
+    #     "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36"
+    # }
+
     login(
         s,
         accountNumber,

@@ -42,7 +42,7 @@ ACCOUNT_NUMBER_KEY = getenv("FERNET_ACCOUNT_NUMBER_KEY")
 ROUTING_NUMBER_KEY = getenv("FERNET_ROUTING_NUMBER_KEY")
 BLUEVINE_PASSWORD_KEY = getenv("FERNET_BLUEVINE_PASSWORD_NUMBER_KEY")
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.INFO, format='%(levelname)s - %(message)s')
 
 @app.after_request
 def after_request(response):

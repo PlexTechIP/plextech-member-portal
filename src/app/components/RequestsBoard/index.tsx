@@ -272,26 +272,27 @@ export function RequestsBoard(props: Props) {
                         {...provided.droppableProps}
                       >
                         {props.requests &&
-                          props.requests[statusKey]
-                            .sort(
-                              (a: Request, b: Request) => b.amount - a.amount,
-                            )
-                            .map((request: Request, index: number) => (
-                              <RequestCard
-                                request={request}
-                                key={request._id}
-                                index={index}
-                                onEdit={(mine: boolean) =>
-                                  props.onEdit(request, mine)
-                                }
-                                mine={
-                                  !props.isTreasurer ||
-                                  request.user_id ===
-                                    (jwt_decode(getToken()!) as any).sub
-                                }
-                                onClickName={() => onClickName(request)}
-                              />
-                            ))}
+                          (statusKey !== 'paid'
+                            ? props.requests[statusKey].sort(
+                                (a: Request, b: Request) => b.amount - a.amount,
+                              )
+                            : props.requests[statusKey]
+                          ).map((request: Request, index: number) => (
+                            <RequestCard
+                              request={request}
+                              key={request._id}
+                              index={index}
+                              onEdit={(mine: boolean) =>
+                                props.onEdit(request, mine)
+                              }
+                              mine={
+                                !props.isTreasurer ||
+                                request.user_id ===
+                                  (jwt_decode(getToken()!) as any).sub
+                              }
+                              onClickName={() => onClickName(request)}
+                            />
+                          ))}
                         {provided.placeholder}
                       </Stack>
                     )}
