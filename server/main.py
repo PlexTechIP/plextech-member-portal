@@ -42,13 +42,14 @@ ACCOUNT_NUMBER_KEY = getenv("FERNET_ACCOUNT_NUMBER_KEY")
 ROUTING_NUMBER_KEY = getenv("FERNET_ROUTING_NUMBER_KEY")
 BLUEVINE_PASSWORD_KEY = getenv("FERNET_BLUEVINE_PASSWORD_NUMBER_KEY")
 
-logging.basicConfig(level=logging.INFO, format='%(levelname)s - %(message)s')
+logging.basicConfig(level=logging.INFO, format="%(levelname)s - %(message)s")
+
 
 @app.after_request
 def after_request(response):
     # cors
     if getenv("ENVIRONMENT") == "local":
-        origin = "http://localhost:3000"
+        origin = "*"
     elif getenv("ENVIRONMENT") == "production":
         origin = "https://plextech-member-portal.vercel.app"
 
@@ -137,8 +138,17 @@ def reencrypt_user_credentials():
         if update_fields:
             db.Users.update_one({"_id": user["_id"]}, {"$set": update_fields})
 
+
 def decrypt_all_users():
-    users = db.Users.find({"$or": [{"bank.accountNumber": {"$exists": True}}, {"bank.routingNumber": {"$exists": True}}, {"bluevinePassword": {"$exists": True}}]})
+    users = db.Users.find(
+        {
+            "$or": [
+                {"bank.accountNumber": {"$exists": True}},
+                {"bank.routingNumber": {"$exists": True}},
+                {"bluevinePassword": {"$exists": True}},
+            ]
+        }
+    )
     for user in users:
         try:
             if "bank" in user:
@@ -149,7 +159,10 @@ def decrypt_all_users():
             if "bluevinePassword" in user:
                 decrypt(user["bluevinePassword"], BLUEVINE_PASSWORD_KEY)
         except InvalidToken:
-            logging.warning(f"Invalid token for user: {user.get('email', 'Unknown email')}")
+            logging.warning(
+                f"Invalid token for user: {user.get('email', 'Unknown email')}"
+            )
+
 
 @app.route("/logout/", methods=["POST", "OPTIONS"])
 @jwt_required()
@@ -274,7 +287,7 @@ def protected_user_routes():
         ):
             user["bank"]["accountNumber"] = str(user["bank"]["accountNumber"])[:20]
             user["bank"]["routingNumber"] = str(user["bank"]["routingNumber"])[:20]
-        
+
         if "bluevinePassword" in user:
             user["bluevinePassword"] = str(user["bluevinePassword"])[:20]
         return dict(user), 200
@@ -749,10 +762,7 @@ def requests():
             )
             if not req:
                 return {"error": "request not found"}, 404
-            request_user = db.Users.find_one(
-                {"_id": req["user_id"]},
-                {"_id": 1, "firstName": 1, "lastName": 1, "email": 1},
-            )
+
             user = db.Users.find_one(
                 {"_id": id}, {"_id": 1, "firstName": 1, "lastName": 1, "email": 1}
             )
