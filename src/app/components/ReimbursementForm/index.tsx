@@ -514,9 +514,8 @@ export function ReimbursementForm(props: Props) {
 
           <StyledStack direction="row" justifyContent="space-between">
             <Stack spacing={1} direction="row">
-              {/* Submit Button */}
               <Button
-                variant="outlined"
+                variant="contained"
                 onClick={() => {
                   handleReset();
                   props.onClose();
@@ -524,15 +523,6 @@ export function ReimbursementForm(props: Props) {
               >
                 Cancel
               </Button>
-              <Button
-                variant="contained"
-                onClick={onSubmit}
-                type="submit"
-                disabled={!props.canEdit}
-              >
-                {isLoading ? <StyledCircularProgress size={20} /> : 'Submit'}
-              </Button>
-
               {/* Reset Button */}
               <Button
                 variant="contained"
@@ -542,6 +532,19 @@ export function ReimbursementForm(props: Props) {
                 Reset
               </Button>
             </Stack>
+            {/* Submit Button */}
+            <Button
+              variant="contained"
+              style={{
+                backgroundColor: 'rgb(255, 138, 0)',
+                color: 'white',
+              }}
+              onClick={onSubmit}
+              type="submit"
+              disabled={!props.canEdit}
+            >
+              {isLoading ? <StyledCircularProgress size={20} /> : 'Submit'}
+            </Button>
           </StyledStack>
         </Stack>
       </form>

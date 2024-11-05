@@ -240,10 +240,18 @@ export function LoginPage(props: Props) {
                   />
                 </StyledStack>
                 <Stack direction="row" spacing={3}>
-                  <Button variant="contained" onClick={onSubmit} type="submit">
+                  <Button
+                    variant="contained"
+                    onClick={onSubmit}
+                    type="submit"
+                    style={{
+                      backgroundColor: 'rgb(255, 138, 0)',
+                      color: 'white',
+                    }}
+                  >
                     {loading ? <StyledCircularProgress size={20} /> : 'Log In'}
                   </Button>
-                  <Button variant="text" onClick={onForgotPassword}>
+                  <Button variant="contained" onClick={onForgotPassword}>
                     Forgot Password?
                   </Button>
                 </Stack>
