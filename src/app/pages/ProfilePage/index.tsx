@@ -61,10 +61,10 @@ export function ProfilePage(props: Props) {
 
   const bankSubmit = async () => {
     const bodyData = { bankName };
-    if (accountNumber !== user?.bank.accountNumber) {
+    if (accountNumber !== user?.bank?.accountNumber) {
       bodyData['accountNumber'] = accountNumber;
     }
-    if (routingNumber !== user?.bank.routingNumber) {
+    if (routingNumber !== user?.bank?.routingNumber) {
       bodyData['routingNumber'] = routingNumber;
     }
 
