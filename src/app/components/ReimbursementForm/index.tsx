@@ -39,6 +39,7 @@ import { apiRequest } from 'utils/apiRequest';
 import { Error } from '../../../types/types';
 import { getToken } from 'utils/useToken';
 import { categories } from '../../pages/CategoriesPage/index';
+import { toast, Toaster } from 'react-hot-toast';
 
 interface Props {
   setRequests: any;
@@ -207,6 +208,7 @@ export function ReimbursementForm(props: Props) {
   };
 
   const onSubmit = async (event: any) => {
+    toast.success('Submitted!');
     event.preventDefault();
     if (
       isLoading ||
@@ -318,6 +320,7 @@ export function ReimbursementForm(props: Props) {
 
   return (
     <Form elevation={3}>
+      <Toaster />
       <DeleteDialog
         open={deleteModal}
         onClose={() => setDeleteModal(false)}
@@ -513,6 +516,15 @@ export function ReimbursementForm(props: Props) {
             <Stack spacing={1} direction="row">
               {/* Submit Button */}
               <Button
+                variant="outlined"
+                onClick={() => {
+                  handleReset();
+                  props.onClose();
+                }}
+              >
+                Cancel
+              </Button>
+              <Button
                 variant="contained"
                 onClick={onSubmit}
                 type="submit"
@@ -530,15 +542,6 @@ export function ReimbursementForm(props: Props) {
                 Reset
               </Button>
             </Stack>
-            <Button
-              variant="contained"
-              onClick={() => {
-                handleReset();
-                props.onClose();
-              }}
-            >
-              Cancel
-            </Button>
           </StyledStack>
         </Stack>
       </form>
