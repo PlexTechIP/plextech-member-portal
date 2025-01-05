@@ -3,7 +3,5 @@
 
 yarn checkTs
 yarn lint-staged
-mv .env.local .env.local.temp 2>/dev/null || true
-NODE_ENV=production yarn build
-mv .env.local.temp .env.local 2>/dev/null || true
+yarn build
 
