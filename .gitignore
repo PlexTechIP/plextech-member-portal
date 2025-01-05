@@ -36,6 +36,7 @@ template
 server/__pycache__
 server/.buildt
 server/env/
+server/venv/
 server/.env
 server/index.html
 server/bluevine/
