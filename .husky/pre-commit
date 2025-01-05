@@ -3,4 +3,5 @@
 
 yarn checkTs
 yarn lint-staged
+yarn build
 
