@@ -29,7 +29,7 @@ export function CommentCard(props: Props) {
     >
       <Stack direction="row" justifyContent="space-between" alignItems="center">
         <H4>
-          {comment.firstName} {comment.lastName}
+          {comment.first_name} {comment.last_name}
         </H4>
         <H4>{comment.date.format('MM/DD/YYYY')}</H4>
       </Stack>

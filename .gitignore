@@ -41,6 +41,7 @@ server/index.html
 server/bluevine/
 server/backup
 server/backup.tar.gz
+server/migrate.py
 
 .husky/
 .vscode/

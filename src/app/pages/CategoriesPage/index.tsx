@@ -57,7 +57,7 @@ export function CategoriesPage(props: Props) {
         Object.values(
           requests.pendingReview.reduce(
             (acc: Record<string, number>, r: Request) => {
-              const key = r.teamBudget;
+              const key = r.team_budget;
               acc[key] = (acc[key] || 0) + Number(r.amount);
               return acc;
             },
@@ -65,7 +65,7 @@ export function CategoriesPage(props: Props) {
           ),
         ).map((totalAmount: number, index: number) => (
           <p key={index}>{`Total amount for category ${
-            requests.pendingReview[index].teamBudget
+            requests.pendingReview[index].team_budget
           }: $${totalAmount.toFixed(2)}`}</p>
         ))
       ) : (

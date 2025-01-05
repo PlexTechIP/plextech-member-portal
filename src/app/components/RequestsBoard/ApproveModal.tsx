@@ -112,8 +112,8 @@ export function ApproveModal(props: Props) {
                 )}%)`,
                 date: dayjs(),
                 user_id: (jwt_decode(getToken()!) as { sub: string }).sub,
-                firstName: props.userName.firstName,
-                lastName: props.userName.lastName,
+                first_name: props.userName.firstName,
+                last_name: props.userName.lastName,
               },
             ]
               .map((comment: Comment, index: number) => (
@@ -137,8 +137,8 @@ export function ApproveModal(props: Props) {
                   message: curComment,
                   date: dayjs(),
                   user_id: (jwt_decode(getToken()!) as { sub: string }).sub,
-                  firstName: props.userName.firstName,
-                  lastName: props.userName.lastName,
+                  first_name: props.userName.firstName,
+                  last_name: props.userName.lastName,
                 },
               ]);
             }}

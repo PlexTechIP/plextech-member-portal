@@ -19,7 +19,6 @@ interface Props {
 export default function Row(props: Props) {
   const { user, onDelete } = props;
 
-  const [open, setOpen] = useState<boolean>(false);
   const [showDelete, setShowDelete] = useState<boolean>(false);
   const [checked, setChecked] = useState<boolean>();
 
@@ -30,17 +29,19 @@ export default function Row(props: Props) {
           open={showDelete}
           item="user"
           onClose={() => setShowDelete(false)}
-          onDelete={() => onDelete(user._id)}
+          onDelete={() => onDelete(user.id)}
         />
       )}
       <TableRow
-        key={user._id}
+        key={user.id}
         sx={{
           '&:last-child td, &:last-child th': { border: 0 },
         }}
       >
         <TableCell>
-          {user.registered ? `${user.firstName} ${user.lastName}` : user.email}
+          {user.registered
+            ? `${user.first_name} ${user.last_name}`
+            : user.email}
         </TableCell>
         <TableCell align="center">
           <Checkbox
@@ -48,7 +49,7 @@ export default function Row(props: Props) {
             onChange={async event => {
               const isChecked = event.target.checked;
               await apiRequest('/members/', 'PUT', {
-                user_id: user._id,
+                user_id: user.id,
                 treasurer: isChecked,
               });
               setChecked(isChecked);

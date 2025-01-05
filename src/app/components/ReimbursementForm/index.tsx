@@ -48,15 +48,15 @@ interface Props {
   onSubmit: (newRequest: Request, remove?: boolean) => void;
   onError: (error: Error) => void;
   canEdit: boolean;
-  userName: { firstName: string; lastName: string };
+  userName: { first_name: string; last_name: string };
   receiptRequired: boolean;
 }
 
 export const initialState: FormData = {
-  itemDescription: '',
+  item_description: '',
   amount: '',
-  teamBudget: '',
-  isFood: false,
+  team_budget: '',
+  is_food: false,
   images: [],
   status: 'pendingReview',
   comments: [],
@@ -82,7 +82,7 @@ export function ReimbursementForm(props: Props) {
       setImagesLoading(true);
       const [success, res] = await apiRequest('/requests/', 'PUT', {
         comment: true,
-        request_id: props.request ? props.request._id : null,
+        request_id: props.request ? props.request.id : null,
       });
 
       if (!success) {
@@ -109,7 +109,7 @@ export function ReimbursementForm(props: Props) {
   const onItemDescriptionChange = ({ target }) =>
     setFormData(prevState => ({
       ...prevState,
-      itemDescription: target.value,
+      item_description: target.value,
     }));
 
   const onAmountChange = ({ target }) =>
@@ -181,7 +181,7 @@ export function ReimbursementForm(props: Props) {
   const onDelete = async () => {
     setDeleteModal(false);
     apiRequest('/requests/', 'DELETE', {
-      _id: props.request!._id,
+      id: props.request!.id,
     });
     props.onClose();
     props.onSubmit(props.request!, true);
@@ -190,7 +190,7 @@ export function ReimbursementForm(props: Props) {
   const onTeamBudgetChange = ({ target }) => {
     setFormData(prevState => ({
       ...prevState,
-      teamBudget: target.value,
+      team_budget: target.value,
     }));
   };
 
@@ -208,15 +208,14 @@ export function ReimbursementForm(props: Props) {
   };
 
   const onSubmit = async (event: any) => {
-    toast.success('Submitted!');
     event.preventDefault();
     if (
       isLoading ||
       formData.amount === '' ||
-      formData.itemDescription === '' ||
+      formData.item_description === '' ||
       (props.receiptRequired && formData.images.length === 0) ||
       imageLoading ||
-      formData.teamBudget === ''
+      formData.team_budget === ''
     ) {
       setSubmitted(true);
       return;
@@ -246,7 +245,7 @@ export function ReimbursementForm(props: Props) {
         ...bodyData,
         date: dayjs(),
         ...props.userName,
-        request_id: props.request ? props.request._id : null,
+        request_id: props.request ? props.request.id : null,
       },
     );
 
@@ -260,13 +259,14 @@ export function ReimbursementForm(props: Props) {
     props.onClose();
     props.onSubmit({
       ...bodyData,
-      _id: props.request ? props.request._id : (res._id as string),
+      id: props.request ? props.request.id : (res.id as string),
       comments: [],
       date: dayjs(),
       user_id: props.request
         ? props.request.user_id
         : (jwt_decode(getToken()!) as { sub: string }).sub,
     });
+    toast.success('Submitted!');
     setIsLoading(false);
   };
 
@@ -286,14 +286,14 @@ export function ReimbursementForm(props: Props) {
       message: comment,
       date: dayjs(),
       user_id: (jwt_decode(getToken()!) as { sub: string }).sub,
-      firstName: props.userName.firstName,
-      lastName: props.userName.lastName,
+      first_name: props.userName.first_name,
+      last_name: props.userName.last_name,
     };
     formData.comments.push(commentObj);
     if (props.request) {
       apiRequest('/requests/', 'POST', {
         comment: commentObj,
-        request_id: props.request!._id,
+        request_id: props.request!.id,
       });
     }
     setComment('');
@@ -309,7 +309,7 @@ export function ReimbursementForm(props: Props) {
   const loadImages = async () => {
     const [success, res] = await apiRequest('/requests/', 'PUT', {
       images: true,
-      request_id: props.request?._id,
+      request_id: props.request?.id,
     });
     if (!success) {
       props.onError(res.error);
@@ -332,7 +332,7 @@ export function ReimbursementForm(props: Props) {
         open={showImageModal}
         onClose={() => setShowImageModal(false)}
         images={images}
-        itemDescription={props.request?.itemDescription}
+        itemDescription={props.request?.item_description}
       />
       <StyledStack
         direction="row"
@@ -355,12 +355,12 @@ export function ReimbursementForm(props: Props) {
           <StyledTextField
             variant="outlined"
             onChange={onItemDescriptionChange}
-            value={formData.itemDescription}
+            value={formData.item_description}
             label={'Item Description'}
             required
-            error={submitted && formData.itemDescription === ''}
+            error={submitted && formData.item_description === ''}
             helperText={
-              submitted && formData.itemDescription === '' && 'Required'
+              submitted && formData.item_description === '' && 'Required'
             }
             disabled={!props.canEdit}
           />
@@ -459,8 +459,8 @@ export function ReimbursementForm(props: Props) {
               <p>
                 {props.request
                   ? `Submitted ${props.request.date.format('MM/DD/YYYY')} by ${
-                      props.request?.firstName
-                    } ${props.request?.lastName}`
+                      props.request?.first_name
+                    } ${props.request?.last_name}`
                   : dayjs().format('MM/DD/YYYY')}
               </p>
             </Stack>

@@ -47,8 +47,8 @@ export function ForumPostForm(props: Props) {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [post, setPost] = useState<Post>({
     user_id: props.userId,
-    firstName: userName.firstName,
-    lastName: userName.lastName,
+    first_name: userName.first_name,
+    last_name: userName.last_name,
     title: '',
     body: '',
     date: dayjs(),
@@ -84,7 +84,7 @@ export function ForumPostForm(props: Props) {
           <H4>
             {post.anonymous
               ? 'Anonymous'
-              : `${post.firstName} ${post.lastName}`}
+              : `${post.first_name} ${post.last_name}`}
           </H4>
           <H4>{post.date.format('MM/DD/YYYY')}</H4>
           <VotingButtons post={post} onVote={() => {}} userId={props.userId} />

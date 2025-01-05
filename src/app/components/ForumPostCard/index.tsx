@@ -85,7 +85,7 @@ export function ForumPostCard(props: Props) {
             <H4>
               {props.post.anonymous
                 ? 'Anonymous'
-                : `${props.post.firstName} ${props.post.lastName}`}
+                : `${props.post.first_name} ${props.post.last_name}`}
             </H4>
             <IconButton onClick={() => setShowModal(true)}>
               <ChatBubbleOutlineIcon fontSize="small" />

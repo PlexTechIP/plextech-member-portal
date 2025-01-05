@@ -93,7 +93,7 @@ export function RequestsBoard(props: Props) {
     if (destination.droppableId === 'approved') {
       setShowApproveModal(true);
       setRequestedAmount(request.amount);
-      setApproveId(request._id);
+      setApproveId(request.id);
       setSourceStatus(source.droppableId);
       setSourceIndex(source.index);
       setDestinationIndex(destination.index);
@@ -116,11 +116,10 @@ export function RequestsBoard(props: Props) {
         prevState[destination.droppableId] + parseFloat(request.amount),
     }));
 
-    const [success, res] = await apiRequest(
-      `/approval/${request._id}/`,
-      'PUT',
-      { status: destination.droppableId, comments: [] },
-    );
+    const [success, res] = await apiRequest(`/approval/${request.id}/`, 'PUT', {
+      status: destination.droppableId,
+      comments: [],
+    });
 
     if (!success) {
       setError(res.error);
@@ -169,7 +168,7 @@ export function RequestsBoard(props: Props) {
     if (!success) return;
 
     props.requests!.approved = props.requests!.approved.filter(
-      (request: Request) => request._id !== approvedRequest!._id,
+      (request: Request) => request.id !== approvedRequest!.id,
     );
 
     props.requests!['paid'].splice(0, 0, approvedRequest!);
@@ -280,7 +279,7 @@ export function RequestsBoard(props: Props) {
                           ).map((request: Request, index: number) => (
                             <RequestCard
                               request={request}
-                              key={request._id}
+                              key={request.id}
                               index={index}
                               onEdit={(mine: boolean) =>
                                 props.onEdit(request, mine)

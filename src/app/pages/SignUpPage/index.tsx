@@ -36,8 +36,8 @@ export function SignUpPage(props: Props) {
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [submitted, setSubmitted] = useState<boolean>(false);
   const [formData, setFormData] = useState<SignUpData>({
-    firstName: '',
-    lastName: '',
+    first_name: '',
+    last_name: '',
     email: '',
     password: '',
   });
@@ -73,8 +73,8 @@ export function SignUpPage(props: Props) {
     setFormData({
       ...formData,
       email: res.email,
-      firstName: res.given_name,
-      lastName: res.family_name,
+      first_name: res.given_name,
+      last_name: res.family_name,
       google: true,
     });
     setGoogleResponse(res);
@@ -122,8 +122,8 @@ export function SignUpPage(props: Props) {
     }
     if (
       !formData.google &&
-      (formData.firstName === '' ||
-        formData.lastName === '' ||
+      (formData.first_name === '' ||
+        formData.last_name === '' ||
         formData.email === '' ||
         formData.password.length < 8)
     ) {
@@ -195,17 +195,17 @@ export function SignUpPage(props: Props) {
                         variant="outlined"
                         required
                         size="small"
-                        value={formData.firstName}
+                        value={formData.first_name}
                         onChange={onFirstNameChange}
                         error={
                           !formData.google! &&
                           submitted &&
-                          formData.firstName === ''
+                          formData.first_name === ''
                         }
                         helperText={
                           !formData.google! &&
                           submitted &&
-                          formData.firstName === '' &&
+                          formData.first_name === '' &&
                           'Required'
                         }
                       />
@@ -216,17 +216,17 @@ export function SignUpPage(props: Props) {
                         variant="outlined"
                         required
                         size="small"
-                        value={formData.lastName}
+                        value={formData.last_name}
                         onChange={onLastNameChange}
                         error={
                           !formData.google! &&
                           submitted &&
-                          formData.lastName === ''
+                          formData.last_name === ''
                         }
                         helperText={
                           !formData.google! &&
                           submitted &&
-                          formData.lastName === '' &&
+                          formData.last_name === '' &&
                           'Required'
                         }
                       />

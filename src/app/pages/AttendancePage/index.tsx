@@ -31,7 +31,7 @@ import {
   // IconButton,
 } from '@mui/material';
 import { styled as muiStyled } from '@mui/system';
-import { Error, User } from 'types/types';
+import { Error } from 'types/types';
 // import AddIcon from '@mui/icons-material/Add';
 import { QRCodeCanvas } from 'qrcode.react';
 import { apiRequest } from 'utils/apiRequest';
@@ -141,12 +141,12 @@ export function AttendancePage(props: Props) {
         })
         .join('\n');
 
-    const absentList = 'Name/Email\n' + absent.join('\n');
+    // const absentList = 'Name/Email\n' + absent.join('\n');
 
     const csvBlob = new Blob([csvContent], { type: 'text/csv;charset=utf-8' });
-    const absentBlob = new Blob([absentList], {
-      type: 'text/csv;charset=utf-8',
-    });
+    // const absentBlob = new Blob([absentList], {
+    //   type: 'text/csv;charset=utf-8',
+    // });
 
     // const linkAbsent = document.createElement('a');
     // linkAbsent.href = URL.createObjectURL(absentBlob);
@@ -201,7 +201,7 @@ export function AttendancePage(props: Props) {
       }
     };
     f(); // heli says he is sad
-  }, [attendancecode, meetingIdUrl, props, attendancetime]);
+  }, [attendancecode, meetingIdUrl, props, attendancetime, starttime]);
 
   useEffect(() => {
     let qrCodeUpdateInterval: NodeJS.Timeout | null = null;
@@ -230,10 +230,6 @@ export function AttendancePage(props: Props) {
         setCode(res.code);
         setRemainingTime(TIME_TO_REFRESH);
         setIsLoading(false);
-
-        console.log(
-          `${window.location}/?attendancecode=${res.code}&meetingid=${meetingId}`,
-        );
       }
     };
 

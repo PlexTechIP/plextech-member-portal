@@ -54,7 +54,7 @@ export function HomePage(props: Props) {
 
   const transformRequestItem = (request: Request) => ({
     ...request,
-    amount: request.amount.toFixed(2),
+    amount: parseFloat(request.amount as unknown as string).toFixed(2),
     date: dayjs(request.date),
   });
 
@@ -108,12 +108,12 @@ export function HomePage(props: Props) {
         ...prevState,
         pendingReview: [
           ...prevState.pendingReview.filter(
-            (request: Request) => request._id !== newRequest._id,
+            (request: Request) => request.id !== newRequest.id,
           ),
         ],
         errors: [
           ...prevState.errors.filter(
-            (request: Request) => request._id !== newRequest._id,
+            (request: Request) => request.id !== newRequest.id,
           ),
         ],
       }));
@@ -123,12 +123,12 @@ export function HomePage(props: Props) {
         pendingReview: [
           newRequest,
           ...prevState.pendingReview.filter(
-            (request: Request) => request._id !== newRequest._id,
+            (request: Request) => request.id !== newRequest.id,
           ),
         ],
         errors: [
           ...prevState.errors.filter(
-            (request: Request) => request._id !== newRequest._id,
+            (request: Request) => request.id !== newRequest.id,
           ),
         ],
       }));
@@ -192,7 +192,10 @@ export function HomePage(props: Props) {
                 onSubmit={onSubmit}
                 onError={onError}
                 canEdit={canEdit}
-                userName={userName}
+                userName={{
+                  first_name: userName.firstName,
+                  last_name: userName.lastName,
+                }}
                 receiptRequired={receiptRequired}
               />
             </>

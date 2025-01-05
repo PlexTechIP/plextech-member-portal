@@ -7,9 +7,7 @@ import { ErrorModal } from 'app/components/ErrorModal';
 import * as React from 'react';
 import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
-import styled from 'styled-components/macro';
 import {
-  CircularProgress,
   Paper,
   Stack,
   TextField,
@@ -29,7 +27,7 @@ import AddIcon from '@mui/icons-material/Add';
 import { apiRequest } from 'utils/apiRequest';
 
 export function MemberManagement() {
-  const [loading, setLoading] = useState<boolean>(false);
+  const [, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<Error>();
   const [users, setUsers] = useState<User[]>([]);
   const [addUsers, setAddUsers] = useState<string>('');
@@ -46,7 +44,6 @@ export function MemberManagement() {
           errorCode: res.error.errorCode,
           errorMessage: res.error.errorMessage,
         });
-        console.error(res);
         return;
       }
 
@@ -57,7 +54,7 @@ export function MemberManagement() {
   }, []);
 
   const onDelete = async (id: string) => {
-    setUsers(users.filter(user => user._id !== id));
+    setUsers(users.filter(user => user.id !== id));
     const [success, res] = await apiRequest(`/members/`, 'DELETE', {
       user_id: id,
     });
@@ -66,7 +63,6 @@ export function MemberManagement() {
         errorCode: res.error.errorCode,
         errorMessage: res.error.errorMessage,
       });
-      console.error(res);
     }
   };
 
@@ -91,7 +87,6 @@ export function MemberManagement() {
         errorCode: res.error.errorCode,
         errorMessage: res.error.errorMessage,
       });
-      console.error(res);
     } else {
       setUsers([...users, ...res.users]);
       setAddUsers('');
@@ -137,7 +132,7 @@ export function MemberManagement() {
               </TableHead>
               <TableBody>
                 {users.map((user: User) => (
-                  <Row key={user._id} user={user} onDelete={onDelete} />
+                  <Row key={user.id} user={user} onDelete={onDelete} />
                 ))}
               </TableBody>
             </Table>
@@ -155,12 +150,4 @@ const Form = muiStyled(Paper)`
   margin: auto;
   padding: 64px;
   border-radius: 48px;
-`;
-
-const StyledStack = styled(Stack)`
-  width: 100%;
-`;
-
-const StyledCircularProgress = muiStyled(CircularProgress)`
-  color: rgb(255, 138, 0);
 `;

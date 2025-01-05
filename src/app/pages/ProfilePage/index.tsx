@@ -12,13 +12,7 @@ import { Helmet } from 'react-helmet-async';
 import { ErrorModal } from 'app/components/ErrorModal';
 import { styled as muiStyled } from '@mui/system';
 // import { AttendanceCard } from 'app/components/AttendanceCard';
-import {
-  Button,
-  Card,
-  CircularProgress,
-  Stack,
-  TextField,
-} from '@mui/material';
+import { Button, Card, Stack, TextField } from '@mui/material';
 import { apiRequest } from 'utils/apiRequest';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import { SuccessDialog } from 'app/components/SuccessDialog';
@@ -48,12 +42,12 @@ export function ProfilePage(props: Props) {
       }
 
       setUser(res);
-      setBluevineEmail(res.bluevineEmail);
-      setBluevinePassword(res.bluevinePassword);
+      setBluevineEmail(res.bluevine_email);
+      setBluevinePassword(res.bluevine_password);
       if (res.bank) {
-        setAccountNumber(res.bank.accountNumber);
-        setRoutingNumber(res.bank.routingNumber);
-        setBankName(res.bank.bankName);
+        setAccountNumber(res.bank.account_number);
+        setRoutingNumber(res.bank.routing_number);
+        setBankName(res.bank.bank_name);
       }
     };
     f();
@@ -61,11 +55,11 @@ export function ProfilePage(props: Props) {
 
   const bankSubmit = async () => {
     const bodyData = { bankName };
-    if (accountNumber !== user?.bank?.accountNumber) {
-      bodyData['accountNumber'] = accountNumber;
+    if (accountNumber !== user?.bank?.account_number) {
+      bodyData['account_number'] = accountNumber;
     }
-    if (routingNumber !== user?.bank?.routingNumber) {
-      bodyData['routingNumber'] = routingNumber;
+    if (routingNumber !== user?.bank?.routing_number) {
+      bodyData['routing_number'] = routingNumber;
     }
 
     const [success, res] = await apiRequest('/bank/', 'PUT', bodyData);
@@ -132,9 +126,9 @@ export function ProfilePage(props: Props) {
                     disabled={
                       !accountNumber ||
                       !routingNumber ||
-                      (accountNumber === user.bank?.accountNumber &&
-                        routingNumber === user.bank?.routingNumber &&
-                        bankName === user.bank?.bankName) ||
+                      (accountNumber === user.bank?.account_number &&
+                        routingNumber === user.bank?.routing_number &&
+                        bankName === user.bank?.bank_name) ||
                       !bankName
                     }
                   >
@@ -150,7 +144,7 @@ export function ProfilePage(props: Props) {
                     error={
                       !(
                         (accountNumber && /^\d+$/.test(accountNumber)) ||
-                        accountNumber === user.bank?.accountNumber
+                        accountNumber === user.bank?.account_number
                       )
                     }
                     value={accountNumber}
@@ -165,7 +159,7 @@ export function ProfilePage(props: Props) {
                     error={
                       !(
                         (routingNumber && /^\d+$/.test(routingNumber)) ||
-                        routingNumber === user.bank?.routingNumber
+                        routingNumber === user.bank?.routing_number
                       )
                     }
                     type="password"
@@ -178,7 +172,7 @@ export function ProfilePage(props: Props) {
                     value={bankName}
                     onChange={e => setBankName(e.target.value)}
                     required
-                    error={!(bankName || bankName === user.bank?.bankName)}
+                    error={!(bankName || bankName === user.bank?.bank_name)}
                   />
                   <SuccessDialog
                     open={success}
@@ -276,14 +270,6 @@ const Div = styled.div`
 
 const H1 = styled.h1`
   margin: 0;
-`;
-
-const H2 = styled.h2`
-  margin: 0;
-`;
-
-const StyledCircularProgress = muiStyled(CircularProgress)`
-  color: rgb(255, 138, 0);
 `;
 
 const P = styled.p`

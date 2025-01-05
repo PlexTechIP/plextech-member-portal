@@ -1,6 +1,5 @@
-from flask import Flask, request, jsonify, make_response, redirect
+from flask import Flask, request, jsonify
 from dotenv import load_dotenv
-from bson.objectid import ObjectId
 from os import getenv
 from random import randint
 from flask_jwt_extended import (
@@ -13,22 +12,15 @@ from flask_jwt_extended import (
 )
 from datetime import datetime, timedelta, timezone
 from time import time
-from pymongo.errors import BulkWriteError
-from random import randint
-from cryptography.fernet import Fernet, InvalidToken
-
-from send_email import gmail_send_message, send_comment_email, send_email
-from sheets import add_row_to_sheet
-
-# from venmo import request_money, send_money, search
+from cryptography.fernet import Fernet
+from send_email import gmail_send_message
 from bluevine import bluevine_send_money
-
 import time
 import bcrypt
-import pymongo
+import mysql.connector
 import json
-import subprocess
 import logging
+import uuid
 
 load_dotenv()
 
@@ -43,6 +35,39 @@ ROUTING_NUMBER_KEY = getenv("FERNET_ROUTING_NUMBER_KEY")
 BLUEVINE_PASSWORD_KEY = getenv("FERNET_BLUEVINE_PASSWORD_NUMBER_KEY")
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s - %(message)s")
+
+
+def get_db():
+    return mysql.connector.connect(
+        host=getenv("MYSQL_HOST"),
+        user=getenv("MYSQL_USER"),
+        password=getenv("MYSQL_PASSWORD"),
+        database="plexfinance",
+    )
+
+
+def execute_query(query, params=None, fetch=True):
+    db = get_db()
+    cursor = db.cursor(dictionary=True)
+    try:
+        cursor.execute(query, params or ())
+        if fetch:
+            result = cursor.fetchall()
+        else:
+            db.commit()
+            result = cursor.lastrowid
+        return result
+    except Exception as e:
+        logging.error(f"Database error: {str(e)}")
+        db.rollback()
+        raise
+    finally:
+        cursor.close()
+        db.close()
+
+
+def generate_uuid():
+    return str(uuid.uuid4())
 
 
 @app.after_request
@@ -80,10 +105,6 @@ def after_request(response):
         return response
 
 
-client = pymongo.MongoClient(getenv("MONGO_URL"))
-db = client.test
-
-
 def get_hashed_password(plain_text_password):
     return bcrypt.hashpw(plain_text_password, bcrypt.gensalt())
 
@@ -100,68 +121,6 @@ def encrypt(p, key):
 def decrypt(c, key):
     f = Fernet(key)
     return f.decrypt(c.encode()).decode()
-
-
-def reencrypt_user_credentials():
-    old_key = "REDACTED"
-    users = db.Users.find({"bank": {"$exists": True}})
-    for user in users:
-        update_fields = {}
-        if "bank" in user:
-            bank = user["bank"]
-            if "accountNumber" in bank:
-                try:
-                    bank["accountNumber"] = encrypt(
-                        decrypt(bank["accountNumber"], old_key), ACCOUNT_NUMBER_KEY
-                    )
-                except InvalidToken:
-                    pass
-            if "routingNumber" in bank:
-                try:
-                    bank["routingNumber"] = encrypt(
-                        decrypt(bank["routingNumber"], old_key), ROUTING_NUMBER_KEY
-                    )
-                except InvalidToken:
-                    pass
-
-            update_fields["bank"] = bank
-        if "bluevinePassword" in user:
-            try:
-                user["bluevinePassword"] = encrypt(
-                    decrypt(user["bluevinePassword"], old_key),
-                    BLUEVINE_PASSWORD_KEY,
-                )
-                update_fields["bluevinePassword"] = user["bluevinePassword"]
-            except InvalidToken:
-                pass
-
-        if update_fields:
-            db.Users.update_one({"_id": user["_id"]}, {"$set": update_fields})
-
-
-def decrypt_all_users():
-    users = db.Users.find(
-        {
-            "$or": [
-                {"bank.accountNumber": {"$exists": True}},
-                {"bank.routingNumber": {"$exists": True}},
-                {"bluevinePassword": {"$exists": True}},
-            ]
-        }
-    )
-    for user in users:
-        try:
-            if "bank" in user:
-                if "accountNumber" in user["bank"]:
-                    decrypt(user["bank"]["accountNumber"], ACCOUNT_NUMBER_KEY)
-                if "routingNumber" in user["bank"]:
-                    decrypt(user["bank"]["routingNumber"], ROUTING_NUMBER_KEY)
-            if "bluevinePassword" in user:
-                decrypt(user["bluevinePassword"], BLUEVINE_PASSWORD_KEY)
-        except InvalidToken:
-            logging.warning(
-                f"Invalid token for user: {user.get('email', 'Unknown email')}"
-            )
 
 
 @app.route("/logout/", methods=["POST", "OPTIONS"])
@@ -183,45 +142,41 @@ def ping():
 @app.route("/members/", methods=["GET", "PUT", "DELETE"])
 @jwt_required()
 def members():
-    id = ObjectId(get_jwt_identity())
+    id = get_jwt_identity()
     if request.method == "OPTIONS":
         return {}, 200
 
     if request.method == "PUT":
         form = dict(request.json)
-        user = db.Users.find_one({"_id": id})
+        user = execute_query("SELECT treasurer FROM users WHERE id = %s", (id,))[0]
         if not user["treasurer"]:
             return {}, 401
-        db.Users.update_one(
-            {"_id": ObjectId(form.get("user_id"))},
-            {"$set": {"treasurer": form.get("treasurer", False)}},
+        execute_query(
+            "UPDATE users SET treasurer = %s WHERE id = %s",
+            (form.get("treasurer", False), form.get("user_id")),
+            fetch=False,
         )
         return {}, 200
 
     if request.method == "DELETE":
         form = dict(request.json)
-        user = db.Users.find_one({"_id": id})
+        user = execute_query("SELECT treasurer FROM users WHERE id = %s", (id,))[0]
         if not user["treasurer"]:
             return {}, 401
-        db.Users.delete_one({"_id": ObjectId(form.get("user_id"))})
+        execute_query(
+            "DELETE FROM users WHERE id = %s",
+            (form.get("user_id"),),
+            fetch=False,
+        )
         return {}, 200
 
     if request.method == "GET":
-        users = list(
-            db.Users.find(
-                {},
-                {
-                    "_id": 1,
-                    "email": 1,
-                    "registered": 1,
-                    "firstName": 1,
-                    "lastName": 1,
-                    "treasurer": 1,
-                },
-            )
+        users = execute_query(
+            """
+            SELECT id, email, registered, first_name, last_name, treasurer
+            FROM users
+            """
         )
-        for user in users:
-            user["_id"] = str(user["_id"])
         return {"users": users}, 200
 
 
@@ -230,28 +185,41 @@ def members():
 def protected_user_routes():
     if request.method == "OPTIONS":
         return {}, 200
-    id = ObjectId(get_jwt_identity())
+    id = get_jwt_identity()
+
     if request.method == "PUT":
-        db.Users.update_one(
-            {"_id": id},
-            {
-                "$set": {
-                    "password": get_hashed_password(dict(request.json)["password"])
-                },
-                "$unset": {"reset_password": "", "timestamp": ""},
-            },
+        execute_query(
+            """
+            UPDATE users 
+            SET password = %s, reset_password = NULL, reset_timestamp = NULL
+            WHERE id = %s
+            """,
+            (get_hashed_password(dict(request.json)["password"]), id),
+            fetch=False,
         )
         return {}, 200
 
     if request.method == "POST":
         form = dict(request.json)
-        user = db.Users.find_one({"_id": id})
+        user = execute_query("SELECT treasurer FROM users WHERE id = %s", (id,))[0]
         if not user["treasurer"]:
             return {}, 401
-        try:
-            emails = form["emails"]
-            query = [
+
+        emails = form["emails"]
+        query = []
+        for email in emails:
+            new_id = generate_uuid()
+            execute_query(
+                """
+                INSERT INTO users (id, email, registered, treasurer, tardies, absences, strikes)
+                VALUES (%s, %s, %s, %s, %s, %s, %s)
+                """,
+                (new_id, email, False, False, "[]", "[]", "[]"),
+                fetch=False,
+            )
+            query.append(
                 {
+                    "id": new_id,
                     "email": email,
                     "registered": False,
                     "treasurer": False,
@@ -259,38 +227,39 @@ def protected_user_routes():
                     "absences": [],
                     "strikes": [],
                 }
-                for email in emails
-            ]
-            res = db.Users.insert_many(query)
-            for i in range(len(res.inserted_ids)):
-                query[i]["_id"] = str(res.inserted_ids[i])
-                query[i]["requests"] = []
-
-        except BulkWriteError as e:
-            pass
+            )
 
         return {"users": query}, 200
 
     if request.method == "GET":
-        user = db.Users.find_one({"_id": id})
+        user = execute_query(
+            """
+            SELECT id, email, registered, first_name, last_name, treasurer,
+                   bank_account_number, bank_routing_number, bank_name,
+                   bluevine_email, bluevine_password
+            FROM users
+            WHERE id = %s
+            """,
+            (id,),
+        )[0]
+
         if not user["registered"]:
             return {}, 401
-        user = dict(user)
-        user["_id"] = str(user["_id"])
-        del user["requests"]
-        del user["password"]
-        if (
-            "bank" in user
-            and user["bank"]
-            and "accountNumber" in user["bank"]
-            and "routingNumber" in user["bank"]
-        ):
-            user["bank"]["accountNumber"] = str(user["bank"]["accountNumber"])[:20]
-            user["bank"]["routingNumber"] = str(user["bank"]["routingNumber"])[:20]
 
-        if "bluevinePassword" in user:
-            user["bluevinePassword"] = str(user["bluevinePassword"])[:20]
-        return dict(user), 200
+        if user["bank_account_number"]:
+            user["bank"] = {
+                "account_number": user["bank_account_number"][:20],
+                "routing_number": user["bank_routing_number"][:20],
+                "bank_name": user["bank_name"],
+            }
+        del user["bank_account_number"]
+        del user["bank_routing_number"]
+        del user["bank_name"]
+
+        if user["bluevine_password"]:
+            user["bluevine_password"] = str(user["bluevine_password"])[:20]
+
+        return user, 200
 
 
 @app.route("/bluevine/", methods=["PUT", "OPTIONS"])
@@ -298,22 +267,30 @@ def protected_user_routes():
 def update_bluevine():
     if request.method == "OPTIONS":
         return {}, 200
-    id = ObjectId(get_jwt_identity())
+    id = get_jwt_identity()
     form = dict(request.json)
-    user = db.Users.find_one({"_id": id})
+
+    user = execute_query("SELECT 1 FROM users WHERE id = %s", (id,))
     if not user:
         return {"error": "User not found"}, 404
 
     bluevine_email = form.get("bluevineEmail")
-    update_data = {"bluevineEmail": bluevine_email}
-    if "bluevinePassword" in form:
-        update_data["bluevinePassword"] = encrypt(
-            form["bluevinePassword"], BLUEVINE_PASSWORD_KEY
-        )
+    update_fields = ["bluevine_email = %s"]
+    params = [bluevine_email]
 
-    db.Users.update_one(
-        {"_id": id},
-        {"$set": update_data},
+    if "bluevinePassword" in form:
+        update_fields.append("bluevine_password = %s")
+        params.append(encrypt(form["bluevinePassword"], BLUEVINE_PASSWORD_KEY))
+
+    params.append(id)
+    execute_query(
+        f"""
+        UPDATE users 
+        SET {', '.join(update_fields)}
+        WHERE id = %s
+        """,
+        tuple(params),
+        fetch=False,
     )
     return {}, 200
 
@@ -324,115 +301,125 @@ def login_signup_add_PIC():
         return {}, 200
     form = dict(request.json)
 
-    user = db.Users.find_one({"email": form["email"]})
-
+    user = execute_query("SELECT * FROM users WHERE email = %s", (form["email"],))
     if not user:
         return {"error": "Incorrect email"}, 401
 
+    user = user[0]
+
     if form["method"] == "login":
-        # login success
         if not user["registered"]:
             return {}, 404
 
-        if not ("google" in user and user["google"]) and form["google"]:
+        if not user["google"] and form["google"]:
+            execute_query(
+                "UPDATE users SET google = TRUE WHERE email = %s",
+                (form["email"],),
+                fetch=False,
+            )
             user["google"] = True
-            db.Users.update_one({"email": form["email"]}, {"$set": {"google": True}})
 
-        # try:
-        if ("google" in user and user["google"] and form["google"]) or check_password(
-            form["password"].encode("utf-8"), user["password"].encode("utf-8")
+        if (user["google"] and form["google"]) or check_password(
+            form["password"].encode("utf-8"), user["password"]
         ):
-            access_token = create_access_token(identity=str(user["_id"]))
+            access_token = create_access_token(identity=str(user["id"]))
             res = {"access_token": access_token}
 
-            aid = ObjectId(form.get("attendanceId"))
-
+            aid = form.get("attendanceId")
             if aid:
-                attendees_dict = db.Attendance.find_one(
-                    {"_id": aid}, {"_id": 0, "attendees": 1, "startTime": 1}
+                attendees_dict = execute_query(
+                    "SELECT attendees, start_time FROM attendance WHERE id = %s", (aid,)
                 )
                 if not attendees_dict:
                     return res
 
-                attendees_dict = dict(attendees_dict)
-
-                attendees_dict["attendees"].update(
-                    {
-                        str(user["_id"]): (
-                            form.get("attendanceTime"),
-                            f"{user['firstName']} {user['lastName']}",
-                        )
-                    }
+                attendees_dict = attendees_dict[0]
+                attendees = json.loads(attendees_dict["attendees"])
+                attendees[str(user["id"])] = (
+                    form.get("attendanceTime"),
+                    f"{user['first_name']} {user['last_name']}",
                 )
 
-                db.Attendance.update_one(
-                    {"_id": aid},
-                    {"$set": {"attendees": attendees_dict["attendees"]}},
+                execute_query(
+                    "UPDATE attendance SET attendees = %s WHERE id = %s",
+                    (json.dumps(attendees), aid),
+                    fetch=False,
                 )
 
                 res["redirect"] = (
-                    f"http://localhost:3000/attendance/?attendancetime={form.get('attendanceTime')}&starttime={attendees_dict['startTime']}"
+                    f"http://localhost:3000/attendance/?attendancetime={form.get('attendanceTime')}&starttime={attendees_dict['start_time']}"
                     if getenv("ENVIRONMENT") == "local"
-                    else f"https://plextech-member-portal.vercel.app/attendance/?attendancetime={form.get('attendanceTime')}&starttime={attendees_dict['startTime']}"
+                    else f"https://plextech-member-portal.vercel.app/attendance/?attendancetime={form.get('attendanceTime')}&starttime={attendees_dict['start_time']}"
                 )
 
             return res
         else:
             return {"error": "Incorrect password"}, 401
 
-        # except:
-        #     return {
-        #         "error": "Tried to log in with password but signed up with Google."
-        #     }, 400
-
     if form["method"] == "signup":
         del form["method"]
-        form["requests"] = []
         form["registered"] = True
         form["treasurer"] = user.get("treasurer", False)
-        form["tardies"] = []
-        form["absences"] = []
-        form["strikes"] = []
+        form["tardies"] = "[]"
+        form["absences"] = "[]"
+        form["strikes"] = "[]"
 
         if "google" in form and form["google"]:
-            db.Users.replace_one({"_id": user["_id"]}, form)
+            execute_query(
+                """
+                UPDATE users 
+                SET registered = TRUE, first_name = %s, last_name = %s, google = TRUE
+                WHERE id = %s
+                """,
+                (form["firstName"], form["lastName"], user["id"]),
+                fetch=False,
+            )
         else:
             form["google"] = False
             if user["registered"]:
                 return {"error": "Account already exists"}, 400
 
             form["password"] = get_hashed_password(form["password"].encode("utf-8"))
-            db.Users.replace_one({"_id": user["_id"]}, form)
+            execute_query(
+                """
+                UPDATE users 
+                SET registered = TRUE, first_name = %s, last_name = %s, 
+                    password = %s, google = FALSE
+                WHERE id = %s
+                """,
+                (form["firstName"], form["lastName"], form["password"], user["id"]),
+                fetch=False,
+            )
 
-        access_token = create_access_token(identity=str(user["_id"]))
+        access_token = create_access_token(identity=str(user["id"]))
         response = {"access_token": access_token}
         return response, 200
 
     if form["method"] == "passwordCode":
         number = str(randint(10000, 99999))
-        db.Users.update_one(
-            {"_id": user["_id"]},
-            {
-                "$set": {
-                    "reset_password": get_hashed_password(number),
-                    "timestamp": time(),
-                }
-            },
+        execute_query(
+            """
+            UPDATE users 
+            SET reset_password = %s, reset_timestamp = %s
+            WHERE id = %s
+            """,
+            (get_hashed_password(number), int(time.time()), user["id"]),
+            fetch=False,
         )
 
         gmail_send_message(
             form["email"],
-            f"[PlexTech] Reset Password Code",
+            "[PlexTech] Reset Password Code",
             f"Your 5-digit password reset code is: {number}. This code will expire in 5 minutes.",
         )
 
         return {}, 200
 
     if form["method"] == "checkResetPasswordCode":
-        if time() - user["timestamp"] >= 300:
+        if time.time() - user["reset_timestamp"] >= 300:
             return {"error": "Expired code"}, 498
-        if check_password(form["code"], user["reset_password"]):
-            access_token = create_access_token(identity=str(user["_id"]))
+        if check_password(form["code"].encode("utf-8"), user["reset_password"]):
+            access_token = create_access_token(identity=str(user["id"]))
             response = {"access_token": access_token}
             return response, 200
         else:
@@ -449,47 +436,52 @@ def attendance():
 
     # marking attendance by scanning qr code
     if request.method == "PUT":
-        aid = ObjectId(request.json.get("meetingId"))
+        aid = request.json.get("meetingId")
         attendee_data = request.json.get("attendee")
         attendee_id = request.json.get("attendeeId")
         if attendee_data:
             if jwt:
-                attendees_dict = dict(
-                    db.Attendance.find_one({"_id": aid}, {"_id": 0, "attendees": 1})
-                )
-                attendees_dict["attendees"].update({attendee_id: attendee_data})
+                attendees_dict = execute_query(
+                    "SELECT attendees FROM attendance WHERE id = %s", (aid,)
+                )[0]
+                attendees = json.loads(attendees_dict["attendees"])
+                attendees[attendee_id] = attendee_data
 
-                db.Attendance.update_one(
-                    {"_id": aid},
-                    {"$set": {"attendees": attendees_dict["attendees"]}},
+                execute_query(
+                    "UPDATE attendance SET attendees = %s WHERE id = %s",
+                    (json.dumps(attendees), aid),
+                    fetch=False,
                 )
                 return {}, 200
             else:
                 return {"error": "Not Authorized"}, 401
 
-        code = ObjectId(request.json.get("attendancecode"))
-
-        attendance_info = db.Attendance.find_one({"_id": aid})
+        code = request.json.get("attendancecode")
+        attendance_info = execute_query(
+            "SELECT * FROM attendance WHERE id = %s", (aid,)
+        )[0]
 
         if code == attendance_info["code"]:
             form = dict(request.json)
             if jwt:
-                id = ObjectId(get_jwt_identity())
-
-                if (
-                    str(id)
-                    not in attendance_info["attendees"]
-                    # and id != attendance_info["meetingLeader"]
-                ):
-                    user = db.Users.find_one({"_id": id})
-                    attendance_info["attendees"][str(id)] = (
+                id = jwt
+                attendees = json.loads(attendance_info["attendees"])
+                if str(id) not in attendees:
+                    user = execute_query(
+                        "SELECT first_name, last_name FROM users WHERE id = %s", (id,)
+                    )[0]
+                    attendees[str(id)] = (
                         form["time"],
-                        f"{user['firstName']} {user['lastName']}",
+                        f"{user['first_name']} {user['last_name']}",
                     )
-                    db.Attendance.replace_one({"_id": aid}, attendance_info)
+                    execute_query(
+                        "UPDATE attendance SET attendees = %s WHERE id = %s",
+                        (json.dumps(attendees), aid),
+                        fetch=False,
+                    )
                     return {
                         "attendanceTime": form["time"],
-                        "startTime": attendance_info["startTime"],
+                        "startTime": attendance_info["start_time"],
                     }
             else:
                 res = {
@@ -499,7 +491,7 @@ def attendance():
                         else "https://plextech-member-portal.vercel.app/"
                     ),
                     "attendanceTime": form["time"],
-                    "attendanceId": str(aid),
+                    "attendanceId": aid,
                 }
                 return res
         else:
@@ -509,62 +501,98 @@ def attendance():
 
     if not jwt:
         return {}, 401
-    id = ObjectId(get_jwt_identity())
-    user = db.Users.find_one({"_id": id})
+    id = jwt
 
     # generate new qr code
     if request.method == "POST":
         form = dict(request.json)
         if "id" in form:
-            aid = ObjectId(form.get("id"))
-            attendance_info = db.Attendance.find_one({"_id": aid})
+            aid = form.get("id")
+            attendance_info = execute_query(
+                "SELECT * FROM attendance WHERE id = %s", (aid,)
+            )[0]
             if form["set"]:
-                attendance_info["code"] = ObjectId()
-                db.Attendance.replace_one({"_id": aid}, attendance_info)
+                new_code = generate_uuid()
+                execute_query(
+                    "UPDATE attendance SET code = %s WHERE id = %s",
+                    (new_code, aid),
+                    fetch=False,
+                )
+                attendance_info["code"] = new_code
         else:
-            aid = ObjectId()
+            aid = generate_uuid()
             attendance_info = {
-                "_id": aid,
+                "id": aid,
                 "name": form.get("name"),
-                "meetingLeader": ObjectId(form.get("meetingLeader")),
-                "startTime": form.get("startTime"),
-                "attendees": {},
+                "meeting_leader": form.get("meetingLeader"),
+                "start_time": form.get("startTime"),
+                "attendees": "{}",
             }
             if form["set"]:
-                attendance_info["code"] = ObjectId()
-                db.Attendance.insert_one(attendance_info)
+                attendance_info["code"] = generate_uuid()
+                execute_query(
+                    """
+                    INSERT INTO attendance 
+                    (id, name, meeting_leader, start_time, attendees, code)
+                    VALUES (%s, %s, %s, %s, %s, %s)
+                    """,
+                    (
+                        aid,
+                        attendance_info["name"],
+                        attendance_info["meeting_leader"],
+                        attendance_info["start_time"],
+                        attendance_info["attendees"],
+                        attendance_info["code"],
+                    ),
+                    fetch=False,
+                )
+
+        attendees = json.loads(attendance_info.get("attendees", "{}"))
+        registered_users = execute_query(
+            "SELECT first_name, last_name FROM users WHERE registered = TRUE"
+        )
+        unregistered_users = execute_query(
+            "SELECT email FROM users WHERE registered = FALSE"
+        )
 
         return {
-            "code": str(attendance_info["code"]),
-            "id": str(aid),
-            "attendees": attendance_info["attendees"],
+            "code": attendance_info.get("code"),
+            "id": aid,
+            "attendees": attendees,
             "absent": [
-                user["firstName"] + " " + user["lastName"]
-                for user in db.Users.find({"registered": True})
-                if str(user["_id"]) not in attendance_info["attendees"]
+                f"{user['first_name']} {user['last_name']}"
+                for user in registered_users
+                if str(user["id"]) not in attendees
             ]
-            + [user["email"] for user in db.Users.find({"registered": False})],
+            + [user["email"] for user in unregistered_users],
         }, 200
 
     if request.method == "GET":
         query_param = request.args.get("query")
         if query_param == "sessions":
-            sessions = list(db.Attendance.find({}, {"name": 1}))
-            for s in sessions:
-                s["_id"] = str(s["_id"])
+            sessions = execute_query("SELECT id, name FROM attendance")
             return {"sessions": sessions}, 200
-
         else:
-            aid = ObjectId(query_param)
-            attendance_info = db.Attendance.find_one({"_id": aid})
+            aid = query_param
+            attendance_info = execute_query(
+                "SELECT attendees FROM attendance WHERE id = %s", (aid,)
+            )[0]
+            attendees = json.loads(attendance_info["attendees"])
+            registered_users = execute_query(
+                "SELECT first_name, last_name FROM users WHERE registered = TRUE"
+            )
+            unregistered_users = execute_query(
+                "SELECT email FROM users WHERE registered = FALSE"
+            )
+
             return {
-                "attendees": attendance_info["attendees"],
+                "attendees": attendees,
                 "absent": [
-                    user["firstName"] + " " + user["lastName"]
-                    for user in db.Users.find({"registered": True})
-                    if str(user["_id"]) not in attendance_info["attendees"]
+                    f"{user['first_name']} {user['last_name']}"
+                    for user in registered_users
+                    if str(user["id"]) not in attendees
                 ]
-                + [user["email"] for user in db.Users.find({"registered": False})],
+                + [user["email"] for user in unregistered_users],
             }, 200
 
     if request.method == "DELETE":
@@ -578,73 +606,67 @@ def attendance():
 def approve_request(request_id):
     if request.method == "OPTIONS":
         return {}, 200
-    id = ObjectId(get_jwt_identity())
-    user = db.Users.find_one({"_id": id})
+    id = get_jwt_identity()
+    user = execute_query("SELECT treasurer FROM users WHERE id = %s", (id,))[0]
     if not user["treasurer"]:
         return {}, 401
 
     if request.method == "GET":
-        r = db.Requests.find_one({"_id": ObjectId(request_id)})
-
-        return {"images": r["images"]}, 200
+        r = execute_query("SELECT images FROM requests WHERE id = %s", (request_id,))[0]
+        return {"images": json.loads(r["images"])}, 200
 
     if request.method == "PUT":
         form = dict(request.json)
-
-        r = db.Requests.find_one(
-            {"_id": ObjectId(request_id)},
-        )
+        r = execute_query("SELECT * FROM requests WHERE id = %s", (request_id,))[0]
 
         if form["status"] == "approved":
-            requester = db.Users.find_one({"_id": r["user_id"]})
-            # if "venmo" not in user:
-            #     r = db.Requests.find_one_and_update(
-            #         {"_id": ObjectId(request_id)},
-            #         {
-            #             "$set": {"status": "errors"},
-            #             "$push": {"comments": {"$each": form["comments"]}},
-            #         },
-            #     )
-            #     return {"error": "Need to set venmo username"}, 407
-            if "bank" not in requester:
-                # send_email(
-                #     requester["email"],
-                #     "PlexTech Reimbursement Error",
-                #     f'Hi {requester["firstName"]},',
-                #     'You need to set your bank account information in order to be reimbursed. Please go to <a href="https://plextech-member-portal.vercel.app/">https://plextech-member-portal.vercel.app/</a> to set your bank account information.',
-                # )
+            requester = execute_query(
+                """
+                SELECT first_name, last_name, bank_account_number, bank_routing_number,
+                       bank_name, email, id
+                FROM users 
+                WHERE id = %s
+                """,
+                (r["user_id"],),
+            )[0]
+
+            if not requester["bank_account_number"]:
                 return {"error": "Need to set bank info"}, 407
-            # send_money(user['venmo']['id'], form['amount'],
-            #             f'PlexTech Reimbursement: {r["itemDescription"]}')
-            # db.PaymentQueue.insert_one({'_id': ObjectId(request_id), 'venmo_id': user['venmo']['id'], 'amount': float(
-            #     form['amount']), 'subject': r["itemDescription"], 'successes': 0})
+
+            bluevine_user = execute_query(
+                "SELECT bluevine_email, bluevine_password FROM users WHERE id = %s",
+                (id,),
+            )[0]
+
             bluevine_send_money(
-                fullName=requester["firstName"] + " " + requester["lastName"],
+                fullName=f"{requester['first_name']} {requester['last_name']}",
                 accountNumber=decrypt(
-                    requester["bank"]["accountNumber"], ACCOUNT_NUMBER_KEY
+                    requester["bank_account_number"], ACCOUNT_NUMBER_KEY
                 ),
                 routingNumber=decrypt(
-                    requester["bank"]["routingNumber"], ROUTING_NUMBER_KEY
+                    requester["bank_routing_number"], ROUTING_NUMBER_KEY
                 ),
-                bankName=requester["bank"]["bankName"],
+                bankName=requester["bank_name"],
                 amount=form["amount"],
-                user_id=requester["_id"],
+                user_id=requester["id"],
                 email=requester["email"],
                 comments=form["comments"],
                 request_id=request_id,
-                description=r["itemDescription"],
-                bluevineEmail=user["bluevineEmail"],
+                description=r["item_description"],
+                bluevineEmail=bluevine_user["bluevine_email"],
                 bluevinePassword=decrypt(
-                    user["bluevinePassword"], BLUEVINE_PASSWORD_KEY
+                    bluevine_user["bluevine_password"], BLUEVINE_PASSWORD_KEY
                 ),
             )
 
-        db.Requests.update_one(
-            {"_id": ObjectId(request_id)},
-            {
-                "$set": {"status": form["status"]},
-                "$push": {"comments": {"$each": form["comments"]}},
-            },
+        execute_query(
+            """
+            UPDATE requests 
+            SET status = %s, comments = %s
+            WHERE id = %s
+            """,
+            (form["status"], json.dumps(form["comments"]), request_id),
+            fetch=False,
         )
 
         return {}, 200
@@ -653,9 +675,35 @@ def approve_request(request_id):
         form = dict(request.json)
         code = str(form["code"])
 
-        db.MFA.insert_one({"code": code})
+        execute_query(
+            "INSERT INTO mfa (id, code) VALUES (%s, %s)",
+            (generate_uuid(), code),
+            fetch=False,
+        )
 
         return {}, 200
+
+
+def convert_date(date_str):
+    if not date_str:
+        return None
+    try:
+        # Try parsing ISO format
+        return datetime.fromisoformat(date_str.replace("Z", "+00:00")).strftime(
+            "%Y-%m-%d"
+        )
+    except:
+        try:
+            # Try parsing MongoDB ISODate
+            return datetime.strptime(date_str, "%Y-%m-%dT%H:%M:%S.%fZ").strftime(
+                "%Y-%m-%d"
+            )
+        except:
+            try:
+                # Try parsing simple date format
+                return datetime.strptime(date_str, "%Y-%m-%d").strftime("%Y-%m-%d")
+            except:
+                return None
 
 
 @app.route("/requests/", methods=["GET", "POST", "PUT", "DELETE"])
@@ -663,17 +711,20 @@ def approve_request(request_id):
 def requests():
     if request.method == "OPTIONS":
         return {}, 200
-    id = ObjectId(get_jwt_identity())
+    id = get_jwt_identity()
 
     if request.method == "GET":
         try:
-            user = dict(db.Users.find_one({"_id": id}))
+            user = execute_query(
+                "SELECT first_name, last_name, treasurer FROM users WHERE id = %s",
+                (id,),
+            )[0]
         except:
             return {}, 401
 
         res = {
-            "firstName": user.get("firstName", ""),
-            "lastName": user.get("lastName", ""),
+            "firstName": user.get("first_name", ""),
+            "lastName": user.get("last_name", ""),
             "treasurer": user.get("treasurer", False),
             "pendingReview": [],
             "underReview": [],
@@ -684,69 +735,47 @@ def requests():
 
         if res["treasurer"]:
             user_filter = request.args.get("user_filter")
-            filter = (
-                {"registered": True, "_id": ObjectId(user_filter)}
-                if user_filter
-                else {"registered": True}
-            )
+            if user_filter:
+                requests = execute_query(
+                    """
+                    SELECT r.*, u.first_name, u.last_name, u.email, 
+                           u.bank_account_number IS NOT NULL as bank_set
+                    FROM requests r
+                    JOIN users u ON r.user_id = u.id
+                    WHERE u.registered = TRUE AND u.id = %s
+                    """,
+                    (user_filter,),
+                )
+            else:
+                requests = execute_query(
+                    """
+                    SELECT r.*, u.first_name, u.last_name, u.email,
+                           u.bank_account_number IS NOT NULL as bank_set
+                    FROM requests r
+                    JOIN users u ON r.user_id = u.id
+                    WHERE u.registered = TRUE
+                    """
+                )
 
-            ### BEGIN CHATGPT MAGIC ###
+            for r in requests:
+                r["comments"] = json.loads(r["comments"])
+                r["created_at"] = r["created_at"].strftime("%Y-%m-%d")
+                res[r["status"]].append(r)
 
-            pipeline = [
-                {"$match": filter},
-                {
-                    "$addFields": {
-                        "convertedRequests": {
-                            "$map": {
-                                "input": "$requests",
-                                "in": {"$toObjectId": "$$this"},
-                            }
-                        }
-                    }
-                },
-                {
-                    "$lookup": {
-                        "from": "Requests",
-                        "localField": "convertedRequests",
-                        "foreignField": "_id",
-                        "as": "user_requests",
-                    }
-                },
-                {"$unwind": "$user_requests"},
-                {
-                    "$project": {
-                        "_id": {"$toString": "$user_requests._id"},
-                        "user_id": {"$toString": "$_id"},
-                        "request_id": {"$toString": "$user_requests._id"},
-                        "status": "$user_requests.status",
-                        "itemDescription": "$user_requests.itemDescription",
-                        "amount": "$user_requests.amount",
-                        "date": "$user_requests.date",
-                        "firstName": "$firstName",
-                        "lastName": "$lastName",
-                        "email": "$email",
-                        "comments": "$user_requests.comments",
-                        "bank_set": "$bank",
-                        "teamBudget": "$user_requests.teamBudget",
-                    }
-                },
-            ]
-
-            users_requests = list(db.Users.aggregate(pipeline))
-
-            # Grouping requests by status in application layer, since MongoDB doesn't provide an efficient way to do this
-            for ur in users_requests:
-                res[ur["status"]].append(ur)
-
-            ### END CHATGPT MAGIC ###
         else:
-            response = db.Requests.find(
-                {"_id": {"$in": [ObjectId(r) for r in user["requests"]]}}, {"images": 0}
+            requests = execute_query(
+                """
+                SELECT r.*, u.first_name, u.last_name
+                FROM requests r
+                JOIN users u ON r.user_id = u.id
+                WHERE r.user_id = %s
+                """,
+                (id,),
             )
 
-            for r in response:
-                r["_id"] = str(r["_id"])
-                r["user_id"] = str(user["_id"])
+            for r in requests:
+                r["comments"] = json.loads(r["comments"])
+                r["created_at"] = r["created_at"].strftime("%Y-%m-%d")
                 res[r["status"]].append(r)
             res["treasurer"] = False
 
@@ -756,88 +785,105 @@ def requests():
 
     if request.method == "POST":
         if "comment" in form:
-            req = db.Requests.find_one_and_update(
-                {"_id": ObjectId(form["request_id"])},
-                {"$push": {"comments": form["comment"]}},
+            req = execute_query(
+                """
+                UPDATE requests 
+                SET comments = JSON_ARRAY_APPEND(
+                    COALESCE(comments, '[]'),
+                    '$',
+                    %s
+                )
+                WHERE id = %s
+                RETURNING *
+                """,
+                (json.dumps(form["comment"]), form["request_id"]),
+                fetch=False,
             )
             if not req:
                 return {"error": "request not found"}, 404
 
-            user = db.Users.find_one(
-                {"_id": id}, {"_id": 1, "firstName": 1, "lastName": 1, "email": 1}
-            )
-            # if user["_id"] == request_user["_id"]:
-            #     for user in db.Users.find({"treasurer": True}, {"_id": 0, "email": 1}):
-            #         send_comment_email(
-            #             user["email"],
-            #             f'[PlexTech] {user["firstName"]} commented on your request',
-            #             request_user["firstName"],
-            #             user["firstName"],
-            #             user["lastName"],
-            #             req["itemDescription"],
-            #             form["comment"]["message"],
-            #         )
-            # else:
-            #     send_comment_email(
-            #         request_user["email"],
-            #         f'[PlexTech] {user["firstName"]} commented on your request',
-            #         request_user["firstName"],
-            #         user["firstName"],
-            #         user["lastName"],
-            #         req["itemDescription"],
-            #         form["comment"]["message"],
-            #     )
             return {}, 200
         else:
             form["user_id"] = id
-            res = db.Requests.insert_one(form)
-
-            request_id = str(res.inserted_id)
-            db.Users.update_one(
-                {"_id": id}, {"$push": {"requests": ObjectId(request_id)}}
+            request_id = generate_uuid()
+            execute_query(
+                """
+                INSERT INTO requests (
+                    id, user_id, status, item_description, amount, date,
+                    comments, images, team_budget
+                )
+                VALUES (%s, %s, 'pendingReview', %s, %s, %s, '[]', %s, %s)
+                """,
+                (
+                    request_id,
+                    id,
+                    form["item_description"],
+                    form["amount"],
+                    convert_date(form["date"]),
+                    json.dumps(form["images"]),
+                    form.get("team_budget"),
+                ),
+                fetch=False,
             )
 
-            form["_id"] = request_id
+            form["id"] = request_id
             del form["images"]
-            form["user_id"] = str(id)
-            return {"_id": form["_id"]}, 200
+            form["user_id"] = id
+            return {"id": form["id"]}, 200
 
     if request.method == "PUT":
         if "comment" in form:
             if form["request_id"] is None:
                 return {"comments": []}, 200
-            r = list(
-                db.Requests.find(
-                    {"_id": ObjectId(form["request_id"])}, {"_id": 0, "comments": 1}
-                )
+            r = execute_query(
+                "SELECT comments FROM requests WHERE id = %s", (form["request_id"],)
             )[0]
-            return {"comments": r["comments"]}, 200
+            return {"comments": json.loads(r["comments"])}, 200
 
         if "images" in form:
             if form["request_id"] is None:
                 return {"images": []}, 200
-            r = list(
-                db.Requests.find(
-                    {"_id": ObjectId(form["request_id"])}, {"_id": 0, "images": 1}
-                )
+            r = execute_query(
+                "SELECT images FROM requests WHERE id = %s", (form["request_id"],)
             )[0]
-
-            return {"images": r["images"]}, 200
+            return {"images": json.loads(r["images"])}, 200
 
         request_id = form.pop("request_id")
-        del form["_id"]
-        # try:
-        res = db.Requests.replace_one({"_id": ObjectId(request_id)}, form)
-        if res.matched_count == 0:
-            db.Requests.insert_one(form)
-        # except:
-        #     return {'error': 'Internal Server Error'}, 500
-        return {"_id": str(id)}, 200
+        del form["id"]
+        execute_query(
+            """
+            INSERT INTO requests (
+                id, user_id, status, item_description, amount, date,
+                comments, images, team_budget
+            )
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+            ON DUPLICATE KEY UPDATE
+                status = VALUES(status),
+                item_description = VALUES(item_description),
+                amount = VALUES(amount),
+                date = VALUES(date),
+                comments = VALUES(comments),
+                images = VALUES(images),
+                team_budget = VALUES(team_budget)
+            """,
+            (
+                request_id,
+                form["user_id"],
+                form["status"],
+                form["item_description"],
+                form["amount"],
+                convert_date(form["date"]),
+                json.dumps(form.get("comments", [])),
+                json.dumps(form.get("images", [])),
+                form.get("team_budget"),
+            ),
+            fetch=False,
+        )
+        return {"id": id}, 200
 
     if request.method == "DELETE":
-        request_id = ObjectId(form["_id"])
-        db.Requests.delete_one({"_id": request_id})
-        db.Users.update_one({"_id": id}, {"$pull": {"requests": request_id}})
+        request_id = form["id"]
+        execute_query("DELETE FROM requests WHERE id = %s", (request_id,), fetch=False)
         return {}, 200
 
 
@@ -846,80 +892,98 @@ def requests():
 def forum():
     if request.method == "OPTIONS":
         return {}, 200
-    id = ObjectId(get_jwt_identity())
+    id = get_jwt_identity()
 
     # get user name
     if request.method == "PATCH":
-        user = db.Users.find_one({"_id": id})
-        return {"firstName": user["firstName"], "lastName": user["lastName"]}, 200
+        user = execute_query(
+            "SELECT first_name, last_name FROM users WHERE id = %s", (id,)
+        )[0]
+        return {"firstName": user["first_name"], "lastName": user["last_name"]}, 200
 
     if request.method == "GET":
-        res = list(db.Posts.find({}))
-        for r in res:
-            r["_id"] = str(r["_id"])
-            r["upvotes"] = [str(u) for u in r["upvotes"]]
-            r["downvotes"] = [str(u) for u in r["downvotes"]]
-
-        return {"posts": res}, 200
+        posts = execute_query(
+            """
+            SELECT p.*, 
+                   JSON_ARRAYAGG(DISTINCT uv.id) as upvotes,
+                   JSON_ARRAYAGG(DISTINCT dv.id) as downvotes
+            FROM posts p
+            LEFT JOIN posts_upvotes uv ON p.id = uv.post_id
+            LEFT JOIN posts_downvotes dv ON p.id = dv.post_id
+            GROUP BY p.id
+            """
+        )
+        return {"posts": posts}, 200
 
     form = dict(request.json)
 
     if request.method == "POST":
+        post_id = generate_uuid()
         if not form["anonymous"]:
-            user = db.Users.find_one({"_id": id})
-            form["user_id"] = id
-            form["firstName"] = user["firstName"]
-            form["lastName"] = user["lastName"]
-
-        d = str(datetime.now())
-        d = d[: d.index(" ")]
-        form["date"] = d
-        form["upvotes"] = []
-        form["downvotes"] = []
-        db.Posts.insert_one(form)
+            user = execute_query(
+                "SELECT first_name, last_name FROM users WHERE id = %s", (id,)
+            )[0]
+            execute_query(
+                """
+                INSERT INTO posts (
+                    id, user_id, first_name, last_name, content,
+                    anonymous, date
+                )
+                VALUES (%s, %s, %s, %s, %s, %s, CURDATE())
+                """,
+                (
+                    post_id,
+                    id,
+                    user["first_name"],
+                    user["last_name"],
+                    form["content"],
+                    form["anonymous"],
+                ),
+                fetch=False,
+            )
+        else:
+            execute_query(
+                """
+                INSERT INTO posts (id, content, anonymous, date)
+                VALUES (%s, %s, %s, CURDATE())
+                """,
+                (post_id, form["content"], form["anonymous"]),
+                fetch=False,
+            )
         return {}, 200
 
     if request.method == "PUT":
         updated = 0
         if form["removeFromDownvote"]:
-            updated += db.Posts.update_one(
-                {"_id": ObjectId(form["postId"])}, {"$pull": {"downvotes": id}}
-            ).modified_count
+            updated += execute_query(
+                "DELETE FROM posts_downvotes WHERE post_id = %s AND user_id = %s",
+                (form["postId"], id),
+                fetch=False,
+            )
 
         if form["removeFromUpvote"]:
-            updated += db.Posts.update_one(
-                {"_id": ObjectId(form["postId"])}, {"$pull": {"upvotes": id}}
-            ).modified_count
+            updated += execute_query(
+                "DELETE FROM posts_upvotes WHERE post_id = %s AND user_id = %s",
+                (form["postId"], id),
+                fetch=False,
+            )
 
         if form["addToDownvote"]:
-            updated += db.Posts.update_one(
-                {"_id": ObjectId(form["postId"])}, {"$push": {"downvotes": id}}
-            ).modified_count
+            updated += execute_query(
+                "INSERT INTO posts_downvotes (post_id, user_id) VALUES (%s, %s)",
+                (form["postId"], id),
+                fetch=False,
+            )
 
         if form["addToUpvote"]:
-            updated += db.Posts.update_one(
-                {"_id": ObjectId(form["postId"])}, {"$push": {"upvotes": id}}
-            ).modified_count
+            updated += execute_query(
+                "INSERT INTO posts_upvotes (post_id, user_id) VALUES (%s, %s)",
+                (form["postId"], id),
+                fetch=False,
+            )
 
         if not updated:
             return {"error": "did not update anything"}, 400
-
-        return {}, 200
-
-
-@app.route("/venmo/<id>/", methods=["GET", "PUT"])
-@jwt_required()
-def venmo_search(id):
-    if request.method == "OPTIONS":
-        return {}, 200
-
-    if request.method == "GET":
-        return {"users": search(id)}, 200  # id functions as username here
-
-    if request.method == "PUT":
-        _id = ObjectId(get_jwt_identity())
-        form = dict(request.json)
-        db.Users.update_one({"_id": _id}, {"$set": {"venmo": form}})
 
         return {}, 200
 
@@ -931,34 +995,39 @@ def bank_details():
         return {}, 200
 
     if request.method == "PUT":
-        _id = ObjectId(get_jwt_identity())
+        id = get_jwt_identity()
         form = dict(request.json)
 
-        user = db.Users.find_one({"_id": _id}, {"_id": 0, "bank": 1})
-        if "bank" in user:
-            bank = user["bank"]
-        else:
-            bank = {}
+        update_fields = []
+        params = []
 
         if "accountNumber" in form and form["accountNumber"]:
-            bank["accountNumber"] = encrypt(
-                str(form["accountNumber"]).strip(), ACCOUNT_NUMBER_KEY
+            update_fields.append("bank_account_number = %s")
+            params.append(
+                encrypt(str(form["accountNumber"]).strip(), ACCOUNT_NUMBER_KEY)
             )
-        if "routingNumber" in form and form["routingNumber"]:
-            bank["routingNumber"] = encrypt(
-                str(form["routingNumber"]).strip(), ROUTING_NUMBER_KEY
-            )
-        if "bankName" in form and form["bankName"]:
-            bank["bankName"] = form["bankName"].strip()
 
-        db.Users.update_one(
-            {"_id": _id},
-            {
-                "$set": {
-                    "bank": bank,
-                }
-            },
-        )
+        if "routingNumber" in form and form["routingNumber"]:
+            update_fields.append("bank_routing_number = %s")
+            params.append(
+                encrypt(str(form["routingNumber"]).strip(), ROUTING_NUMBER_KEY)
+            )
+
+        if "bankName" in form and form["bankName"]:
+            update_fields.append("bank_name = %s")
+            params.append(form["bankName"].strip())
+
+        if update_fields:
+            params.append(id)
+            execute_query(
+                f"""
+                UPDATE users 
+                SET {', '.join(update_fields)}
+                WHERE id = %s
+                """,
+                tuple(params),
+                fetch=False,
+            )
 
         return {}, 200
 

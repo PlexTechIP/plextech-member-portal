@@ -41,7 +41,7 @@ export function VotingButtons(props: Props) {
       removeFromUpvote: false,
       addToDownvote: false,
       addToUpvote: false,
-      postId: post._id!,
+      postId: post.id!,
     };
 
     if (isUpvote) {

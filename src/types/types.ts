@@ -1,25 +1,25 @@
 import { Dayjs } from 'dayjs';
 
 export interface Request {
-  _id: string;
-  itemDescription: string;
+  id: string;
+  item_description: string;
   amount: number;
-  teamBudget: string;
-  isFood: boolean;
+  team_budget: string;
+  is_food: boolean;
   images: Image[];
   status: string;
   user_id: string;
   comments: Comment[];
   date: Dayjs;
-  firstName?: string;
-  lastName?: string;
+  first_name?: string;
+  last_name?: string;
   bank_set?: boolean;
 }
 
 export interface Comment {
   message: String;
-  firstName: String;
-  lastName: String;
+  first_name: String;
+  last_name: String;
   date: Dayjs;
   user_id: string;
 }
@@ -39,19 +39,19 @@ export interface AllRequests {
 }
 
 export interface FormData {
-  _id?: string;
-  itemDescription: string;
+  id?: string;
+  item_description: string;
   amount: string;
-  teamBudget: string;
-  isFood: boolean;
+  team_budget: string;
+  is_food: boolean;
   images: Image[];
   status: string;
   comments: Comment[];
 }
 
 export interface SignUpData {
-  firstName: string;
-  lastName: string;
+  first_name: string;
+  last_name: string;
   email: string;
   password: string;
   google?: boolean;
@@ -71,11 +71,15 @@ export interface VenmoProfile {
 }
 
 export interface User {
-  bank: { accountNumber?: string; routingNumber?: string; bankName?: string };
+  bank: {
+    account_number?: string;
+    routing_number?: string;
+    bank_name?: string;
+  };
   email: string;
-  _id: string;
-  firstName: string;
-  lastName: string;
+  id: string;
+  first_name: string;
+  last_name: string;
   registered: boolean;
   venmo?: VenmoProfile;
   strikes: Dayjs[];
@@ -88,9 +92,9 @@ export interface User {
 
 export interface Post {
   user_id?: string;
-  firstName?: string;
-  lastName?: string;
-  _id?: string;
+  first_name?: string;
+  last_name?: string;
+  id?: string;
   title: string;
   body: string;
   date: Dayjs;

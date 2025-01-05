@@ -36,7 +36,7 @@ export function RequestCard(props: Props) {
     setShowModal(true);
     const [success, res] = await apiRequest('/requests/', 'PUT', {
       images: true,
-      request_id: props.request._id,
+      request_id: props.request.id,
     });
     if (!success) {
       setError(res.error);
@@ -49,11 +49,11 @@ export function RequestCard(props: Props) {
   const theme = useTheme();
 
   return (
-    <Draggable draggableId={props.request._id} index={props.index}>
+    <Draggable draggableId={props.request.id} index={props.index}>
       {(provided: any) => (
         <StyledCard
           elevation={2}
-          key={props.request._id}
+          key={props.request.id}
           {...provided.draggableProps}
           {...provided.dragHandleProps}
           ref={provided.innerRef}
@@ -64,7 +64,7 @@ export function RequestCard(props: Props) {
               images={images}
               onClose={onClose}
               open={showModal}
-              itemDescription={props.request.itemDescription}
+              itemDescription={props.request.item_description}
               loading={loading}
             />
           )}
@@ -74,7 +74,7 @@ export function RequestCard(props: Props) {
               justifyContent="space-between"
               alignItems="center"
             >
-              <H3>{props.request.itemDescription}</H3>
+              <H3>{props.request.item_description}</H3>
               <H3 style={{ flexShrink: 0, paddingLeft: '8px' }}>
                 ${props.request.amount}
               </H3>
@@ -96,11 +96,11 @@ export function RequestCard(props: Props) {
               ) : (
                 <Stack direction="row" spacing={1}>
                   <Tooltip
-                    title={`Filter requests by ${props.request.firstName}`}
+                    title={`Filter requests by ${props.request.first_name}`}
                   >
                     <P onClick={props.onClickName}>
-                      {props.request.firstName}{' '}
-                      {props.request.lastName?.charAt(0)}
+                      {props.request.first_name}{' '}
+                      {props.request.last_name?.charAt(0)}
                     </P>
                   </Tooltip>
                   {!props.request.bank_set && (

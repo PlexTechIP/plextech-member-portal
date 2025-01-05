@@ -111,7 +111,7 @@ export function ForumPage(props: Props) {
             .map((post: Post) => (
               <ForumPostCard
                 isTreasurer={isTreasurer}
-                key={post._id}
+                key={post.id}
                 post={post}
                 userId={(jwt_decode(getToken()!) as any).sub}
                 onVote={onVote}

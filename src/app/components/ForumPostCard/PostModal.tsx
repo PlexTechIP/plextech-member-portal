@@ -66,7 +66,7 @@ export function PostModal(props: Props) {
             <H4>
               {props.post.anonymous
                 ? 'Anonymous'
-                : `${props.post.firstName} ${props.post.lastName}`}
+                : `${props.post.first_name} ${props.post.last_name}`}
             </H4>
             <H4>{post.date.format('MM/DD/YYYY')}</H4>
             <VotingButtons
