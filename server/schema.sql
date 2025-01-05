@@ -17,6 +17,7 @@ CREATE TABLE users (
     bank_name VARCHAR(255),
     bluevine_email VARCHAR(255),
     bluevine_password TEXT,
+    bluevine_slug VARCHAR(255),
     tardies JSON DEFAULT ('[]'),
     absences JSON DEFAULT ('[]'),
     strikes JSON DEFAULT ('[]'),

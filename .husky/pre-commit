@@ -3,5 +3,7 @@
 
 yarn checkTs
 yarn lint-staged
-NODE_ENV=production yarn build
-git add build/
+if git diff --cached --name-only | grep -q "^src/"; then
+  NODE_ENV=production yarn build
+  git add build/
+fi
