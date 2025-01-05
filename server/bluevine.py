@@ -3,23 +3,47 @@ from time import sleep
 from os import getenv
 from dotenv import load_dotenv
 from datetime import datetime, timedelta
-from bson.objectid import ObjectId
 from threading import Thread
-from send_email import send_email
 from flask import Flask
-
-app = Flask(__name__)
-
 import requests
-import pymongo
+import mysql.connector
 import logging
+import json
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s - %(message)s")
 
 load_dotenv()
 
-client = pymongo.MongoClient(getenv("MONGO_URL"))
-db = client.test
+app = Flask(__name__)
+
+
+def get_db():
+    return mysql.connector.connect(
+        host=getenv("MYSQL_HOST"),
+        user=getenv("MYSQL_USER"),
+        password=getenv("MYSQL_PASSWORD"),
+        database="plexfinance",
+    )
+
+
+def execute_query(query, params=None, fetch=True):
+    db = get_db()
+    cursor = db.cursor(dictionary=True)
+    try:
+        cursor.execute(query, params or ())
+        if fetch:
+            result = cursor.fetchall()
+        else:
+            db.commit()
+            result = cursor.lastrowid
+        return result
+    except Exception as e:
+        logging.error(f"Database error: {str(e)}")
+        db.rollback()
+        raise
+    finally:
+        cursor.close()
+        db.close()
 
 
 def login(
@@ -65,7 +89,6 @@ def login(
     logging.info(res.text)
 
     # start a new thread that waits for mfa then runs after_login
-
     Thread(
         target=after_login,
         args=(
@@ -102,13 +125,18 @@ def after_login(
     logging.info("after_login started")
 
     i = 0
-    while not len(list(db.MFA.find({}))):
+    while True:
+        mfa_codes = execute_query("SELECT code FROM mfa LIMIT 1")
+        if mfa_codes:
+            code = mfa_codes[0]["code"]
+            execute_query("DELETE FROM mfa WHERE code = %s", (code,), fetch=False)
+            break
+
         logging.info("waiting for mfa")
         sleep(1)
+        i += 1
         if i > 60:
             return {"error": "mfa timeout"}, 400
-
-    code = db.MFA.find_one_and_delete({})["code"]
 
     # verify mfa
     res = s.post(
@@ -117,9 +145,6 @@ def after_login(
         headers={"referer": "https://app.bluevine.com/dashboard"},
     )
     logging.info("verify mfa: %s", res.text)
-
-    # if not res.ok:
-    #     return {"error": "bad mfa"}, 400
 
     body = {
         "name": fullName,
@@ -137,9 +162,10 @@ def after_login(
         "address_state": "CA",
         "address_zip": "94583",
     }
-    # body.update(address)
-    user = db.Users.find_one({"_id": ObjectId(user_id)}, {"bluevine_slug": 1, "_id": 0})
-    if "bluevine_slug" not in user:
+
+    user = execute_query("SELECT bluevine_slug FROM users WHERE id = %s", (user_id,))[0]
+
+    if not user.get("bluevine_slug"):
         # create payee
         res = s.post(
             f"https://app.bluevine.com/api/v3/dda-company/{login_data['company_slug']}/dda-user/{login_data['slug']}/payee/",
@@ -154,27 +180,13 @@ def after_login(
             return {"error": "failed to create payee: " + res.text}, 400
 
         payee_slug = res.json()["slug"]
-        db.Users.update_one({"_id": user_id}, {"$set": {"bluevine_slug": payee_slug}})
+        execute_query(
+            "UPDATE users SET bluevine_slug = %s WHERE id = %s",
+            (payee_slug, user_id),
+            fetch=False,
+        )
     else:
         payee_slug = user["bluevine_slug"]
-
-    print(
-        {
-            "account": "dcce374f0a9f45d0984c59ae9e33d27d",
-            "payee_slug": payee_slug,
-            "next_payment_date": datetime.now().strftime("%Y-%m-%d"),
-            "payment_type": "ACH",
-            "amount": amount,
-            "frequency": "once",
-            "is_continuously_recurring": False,
-            "funds_source": "dda",
-            "send_email_to_payee": True,
-        },
-        {
-            "referer": "https://app.bluevine.com/dashboard/payees",
-            "x-csrftoken": s.cookies["csrftoken"],
-        },
-    )
 
     # send money
     res = s.post(
@@ -209,12 +221,17 @@ def after_login(
         )
 
         i = 0
-        while not len(list(db.MFA.find({}))):
+        while True:
+            mfa_codes = execute_query("SELECT code FROM mfa LIMIT 1")
+            if mfa_codes:
+                code = mfa_codes[0]["code"]
+                execute_query("DELETE FROM mfa WHERE code = %s", (code,), fetch=False)
+                break
+
             sleep(2)
+            i += 1
             if i > 30:
                 return {"error": "mfa timeout"}, 400
-
-        code = db.MFA.find_one_and_delete({})["code"]
 
         res = s.post(
             f"https://app.bluevine.com/api/v3/company/{login_data['company_slug']}/user/{login_data['slug']}/mfa/verify_token/",
@@ -242,21 +259,19 @@ def after_login(
             },
         )
 
-    db.Requests.find_one_and_update(
-        {"_id": ObjectId(request_id)},
-        {
-            "$set": {"status": "paid"},
-            "$push": {"comments": {"$each": comments}},
-        },
+    execute_query(
+        """
+        UPDATE requests 
+        SET status = 'paid', comments = JSON_ARRAY_APPEND(
+            COALESCE(comments, '[]'),
+            '$',
+            %s
+        )
+        WHERE id = %s
+        """,
+        (json.dumps(comments), request_id),
+        fetch=False,
     )
-
-    # with app.app_context():
-    #     send_email(
-    #         email,
-    #         "Reimbursement Request Approved",
-    #         f"Hi {fullName},",
-    #         f'Your reimbursement request of ${amount} for "{description}" has been approved. The ACH transfer may take up to 5 business days to complete. If you do not receive the money by then, please contact info@plextech.berkeley.edu or a PlexTech Executive Board member.',
-    #     )
 
     return {}, 200
 
@@ -276,10 +291,6 @@ def bluevine_send_money(
     bluevinePassword=None,
 ):
     s = requests.session()
-    # s.headers = {
-    #     "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36"
-    # }
-
     login(
         s,
         accountNumber,
