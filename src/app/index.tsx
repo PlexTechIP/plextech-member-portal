@@ -28,7 +28,6 @@ import { ProfilePage } from './pages/ProfilePage/Loadable';
 import { ForumPage } from './pages/ForumPage/Loadable';
 import { createTheme, ThemeProvider } from '@mui/material';
 import createPalette from '@mui/material/styles/createPalette';
-import { Analytics } from '@vercel/analytics/react';
 import { apiRequest } from 'utils/apiRequest';
 import Cookies from 'js-cookie';
 import { MemberManagement } from './pages/MemberManagement/Loadable';
@@ -144,7 +143,6 @@ export function App() {
           <GlobalStyle />
         </BrowserRouter>
       </ThemeProvider>
-      <Analytics />
     </>
   );
 }

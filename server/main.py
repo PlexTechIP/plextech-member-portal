@@ -761,11 +761,6 @@ def requests():
                     """
                 )
 
-            for r in requests:
-                r["comments"] = json.loads(r["comments"])
-                r["created_at"] = r["created_at"].strftime("%Y-%m-%d")
-                res[r["status"]].append(r)
-
         else:
             requests = execute_query(
                 """
@@ -777,11 +772,13 @@ def requests():
                 (id,),
             )
 
-            for r in requests:
-                r["comments"] = json.loads(r["comments"])
-                r["created_at"] = r["created_at"].strftime("%Y-%m-%d")
-                res[r["status"]].append(r)
             res["treasurer"] = False
+
+        for r in requests:
+            r["comments"] = json.loads(r["comments"])
+            r["created_at"] = r["created_at"].strftime("%Y-%m-%d")
+            if r["status"] != "paid" or (datetime.strptime(r["created_at"], "%Y-%m-%d") > datetime.now() - timedelta(days=180)):
+                res[r["status"]].append(r)
 
         return res, 200
 
