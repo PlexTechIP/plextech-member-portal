@@ -742,7 +742,9 @@ def requests():
             if user_filter:
                 requests = execute_query(
                     """
-                    SELECT r.*, u.first_name, u.last_name, u.email, 
+                    SELECT r.id, r.user_id, r.status, r.item_description,
+                           r.amount, r.date, r.comments, r.team_budget, r.created_at,
+                           u.first_name, u.last_name, u.email,
                            u.bank_account_number IS NOT NULL as bank_set
                     FROM requests r
                     JOIN users u ON r.user_id = u.id
@@ -753,7 +755,9 @@ def requests():
             else:
                 requests = execute_query(
                     """
-                    SELECT r.*, u.first_name, u.last_name, u.email,
+                    SELECT r.id, r.user_id, r.status, r.item_description,
+                           r.amount, r.date, r.comments, r.team_budget, r.created_at,
+                           u.first_name, u.last_name, u.email,
                            u.bank_account_number IS NOT NULL as bank_set
                     FROM requests r
                     JOIN users u ON r.user_id = u.id
@@ -764,7 +768,10 @@ def requests():
         else:
             requests = execute_query(
                 """
-                SELECT r.*, u.first_name, u.last_name
+                SELECT r.id, r.user_id, r.status, r.item_description,
+                       r.amount, r.date, r.comments, r.team_budget, r.created_at,
+                       u.first_name, u.last_name, u.email,
+                       u.bank_account_number IS NOT NULL as bank_set
                 FROM requests r
                 JOIN users u ON r.user_id = u.id
                 WHERE r.user_id = %s
