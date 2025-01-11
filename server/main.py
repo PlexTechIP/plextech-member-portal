@@ -42,7 +42,7 @@ def get_db():
         host=getenv("MYSQL_HOST"),
         user=getenv("MYSQL_USER"),
         password=getenv("MYSQL_PASSWORD"),
-        database="plextech",
+        database=getenv("MYSQL_DATABASE"),
     )
 
 
