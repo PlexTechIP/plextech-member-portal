@@ -13,8 +13,12 @@ from flask_jwt_extended import (
 from datetime import datetime, timedelta, timezone
 from time import time
 from cryptography.fernet import Fernet
-from .send_email import gmail_send_message
-from .bluevine import bluevine_send_money
+try:
+    from .send_email import gmail_send_message
+    from .bluevine import bluevine_send_money
+except ImportError:
+    from send_email import gmail_send_message
+    from bluevine import bluevine_send_money
 import time
 import bcrypt
 import mysql.connector

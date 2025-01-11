@@ -99,7 +99,7 @@ export function App() {
   return (
     <>
       <ThemeProvider theme={theme}>
-        <BrowserRouter>
+        <BrowserRouter basename="/members">
           <Helmet
             titleTemplate="%s - PlexTech Member Portal"
             defaultTitle="PlexTech Member Portal"
@@ -127,14 +127,12 @@ export function App() {
                   setIsDarkMode={setIsDarkMode}
                 />
                 <Routes>
-                  <Route path="/members">
-                    <Route index element={<MemberManagement />} />
-                    <Route path="profile" element={<ProfilePage />} />
-                    <Route path="reimbursements" element={<HomePage />} />
-                    <Route path="categories" element={<CategoriesPage />} />
-                    <Route path="attendance" element={<AttendancePage />} />
-                    <Route path="forum" element={<ForumPage />} />
-                  </Route>
+                  <Route path="/" element={<ProfilePage />} />
+                  <Route path="/reimbursements" element={<HomePage />} />
+                  <Route path="/categories" element={<CategoriesPage />} />
+                  <Route path="/attendance" element={<AttendancePage />} />
+                  <Route path="/members" element={<MemberManagement />} />
+                  <Route path="/forum" element={<ForumPage />} />
                   <Route path="*" element={<NotFoundPage />} />
                 </Routes>
               </>

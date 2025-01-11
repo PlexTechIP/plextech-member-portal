@@ -130,7 +130,7 @@ export function TopBar(props: Props) {
                   .map((text: string) => (
                     <ListItem key={text}>
                       <ListItemButton
-                        href={`/${
+                        href={`/members/${
                           text !== 'Profile' ? text.toLowerCase() : ''
                         }`}
                       >
