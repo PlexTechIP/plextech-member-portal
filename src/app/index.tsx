@@ -99,7 +99,7 @@ export function App() {
   return (
     <>
       <ThemeProvider theme={theme}>
-        <BrowserRouter>
+        <BrowserRouter basename="/members">
           <Helmet
             titleTemplate="%s - PlexTech Member Portal"
             defaultTitle="PlexTech Member Portal"
@@ -116,7 +116,7 @@ export function App() {
             }}
           >
             {sessionExpired &&
-            !window.location.pathname.startsWith('/attendance/') ? (
+            !window.location.pathname.startsWith('/members/attendance/') ? (
               <LoginPage />
             ) : (
               <>
