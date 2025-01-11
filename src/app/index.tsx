@@ -12,7 +12,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 
 import { GlobalStyle } from 'styles/global-styles';
 
-import { HomePage } from './pages/ReimbursementsPage/Loadable';
+import { ReimbursementsPage } from './pages/ReimbursementsPage/Loadable';
 import { CategoriesPage } from './pages/CategoriesPage/Loadable';
 import { NotFoundPage } from './pages/NotFoundPage/Loadable';
 import { useTranslation } from 'react-i18next';
@@ -128,7 +128,10 @@ export function App() {
                 />
                 <Routes>
                   <Route path="/" element={<ProfilePage />} />
-                  <Route path="/reimbursements" element={<HomePage />} />
+                  <Route
+                    path="/reimbursements"
+                    element={<ReimbursementsPage />}
+                  />
                   <Route path="/categories" element={<CategoriesPage />} />
                   <Route path="/attendance" element={<AttendancePage />} />
                   <Route path="/members" element={<MemberManagement />} />

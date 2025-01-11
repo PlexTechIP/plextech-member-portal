@@ -16,7 +16,7 @@ import KeyboardArrowLeftIcon from '@mui/icons-material/KeyboardArrowLeft';
 
 interface Props {}
 
-export function HomePage(props: Props) {
+export function ReimbursementsPage(props: Props) {
   const [requests, setRequests] = useState<AllRequests>({
     pendingReview: [],
     underReview: [],
