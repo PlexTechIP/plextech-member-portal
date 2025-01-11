@@ -144,7 +144,11 @@ export function TopBar(props: Props) {
                     <Divider />
                     {protectedTabs.map((text: string) => (
                       <ListItem key={text}>
-                        <ListItemButton href={text.toLowerCase()}>
+                        <ListItemButton
+                          href={`/members/${
+                            text !== 'Profile' ? text.toLowerCase() : ''
+                          }`}
+                        >
                           <ListItemIcon>{iconMap[text]}</ListItemIcon>
                           <ListItemText primary={text} />
                         </ListItemButton>
