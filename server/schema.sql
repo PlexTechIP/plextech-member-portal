@@ -1,5 +1,5 @@
-CREATE DATABASE plexfinance;
-USE plexfinance;
+-- CREATE DATABASE plextech;
+USE plextech;
 
 CREATE TABLE users (
     id CHAR(36) PRIMARY KEY,

@@ -13,8 +13,8 @@ from flask_jwt_extended import (
 from datetime import datetime, timedelta, timezone
 from time import time
 from cryptography.fernet import Fernet
-from send_email import gmail_send_message
-from bluevine import bluevine_send_money
+from .send_email import gmail_send_message
+from .bluevine import bluevine_send_money
 import time
 import bcrypt
 import mysql.connector
@@ -42,7 +42,7 @@ def get_db():
         host=getenv("MYSQL_HOST"),
         user=getenv("MYSQL_USER"),
         password=getenv("MYSQL_PASSWORD"),
-        database="plexfinance",
+        database="plextech",
     )
 
 
