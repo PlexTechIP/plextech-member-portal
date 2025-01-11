@@ -127,12 +127,14 @@ export function App() {
                   setIsDarkMode={setIsDarkMode}
                 />
                 <Routes>
-                  <Route path="/" element={<ProfilePage />} />
-                  <Route path="/reimbursements" element={<HomePage />} />
-                  <Route path="/categories" element={<CategoriesPage />} />
-                  <Route path="/attendance" element={<AttendancePage />} />
-                  <Route path="/members" element={<MemberManagement />} />
-                  <Route path="/forum" element={<ForumPage />} />
+                  <Route path="/members">
+                    <Route index element={<MemberManagement />} />
+                    <Route path="profile" element={<ProfilePage />} />
+                    <Route path="reimbursements" element={<HomePage />} />
+                    <Route path="categories" element={<CategoriesPage />} />
+                    <Route path="attendance" element={<AttendancePage />} />
+                    <Route path="forum" element={<ForumPage />} />
+                  </Route>
                   <Route path="*" element={<NotFoundPage />} />
                 </Routes>
               </>
