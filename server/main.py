@@ -79,8 +79,9 @@ def after_request(response):
     # cors
     if getenv("ENVIRONMENT") == "local":
         origin = "*"
-    elif getenv("ENVIRONMENT") == "production":
-        origin = "https://plextech-member-portal.vercel.app"
+    else:
+        # origin = "https://plextech-member-portal.vercel.app"
+        origin = "https://plextech.studentorg.berkeley.edu"
 
     response.headers.add(
         "Access-Control-Allow-Origin",
