@@ -124,7 +124,7 @@ export function MemberManagement() {
             <Table stickyHeader>
               <TableHead>
                 <TableRow>
-                  <TableCell align="center">Name</TableCell>
+                  <TableCell>Name</TableCell>
                   <TableCell align="center">Admin?</TableCell>
                   <TableCell align="center">Registered?</TableCell>
                   <TableCell align="center">Current Role</TableCell>
