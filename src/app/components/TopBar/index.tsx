@@ -26,7 +26,7 @@ import KeyboardArrowLeftIcon from '@mui/icons-material/KeyboardArrowLeft';
 import PersonIcon from '@mui/icons-material/Person';
 import RecentActorsIcon from '@mui/icons-material/RecentActors';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
-// import ForumIcon from '@mui/icons-material/Forum';
+import BallotIcon from '@mui/icons-material/Ballot';
 import LogoutIcon from '@mui/icons-material/Logout';
 import { useEffect, useState } from 'react';
 import Brightness4 from '@mui/icons-material/Brightness4';
@@ -43,11 +43,11 @@ interface Props {
 
 const iconMap = {
   Profile: <PersonIcon />,
-  Attendance: <RecentActorsIcon />,
   Reimbursements: <AttachMoneyIcon />,
-  Categories: <AttachMoneyIcon />,
-  // Forum: <ForumIcon />,
   Members: <RecentActorsIcon />,
+  Categories: <AttachMoneyIcon />,
+  Attendance: <BallotIcon />,
+  // Forum: <ForumIcon />,
 };
 
 const protectedTabs = ['Attendance', 'Categories', 'Members'];
