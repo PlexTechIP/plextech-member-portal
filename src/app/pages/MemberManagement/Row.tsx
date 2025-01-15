@@ -15,6 +15,7 @@ import { MenuItem } from '@mui/material';
 
 const positions = [
   'Developer',
+  'Senior Developer',
   'Senior Advisor',
   'Project Manager',
   'Curriculum Instructor',
