@@ -18,6 +18,7 @@ const positions = [
   'Senior Advisor',
   'Project Manager',
   'Curriculum Instructor',
+  'Alumni',
   'President',
   'VP of Public Relations',
   'VP of Curriculum',
