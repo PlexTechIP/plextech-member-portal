@@ -88,6 +88,12 @@ export interface User {
   treasurer: boolean;
   bluevineEmail?: string;
   bluevinePassword?: string;
+  current_position?: string;
+  profile_blurb?: string;
+  linkedin_username?: string;
+  instagram_username?: string;
+  calendly_username?: string;
+  current_company?: string;
 }
 
 export interface Post {

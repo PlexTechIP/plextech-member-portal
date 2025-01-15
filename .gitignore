@@ -43,6 +43,7 @@ server/bluevine/
 server/backup
 server/backup.tar.gz
 server/migrate.py
+server/dump.sql
 
 .husky/
 .vscode/

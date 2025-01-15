@@ -65,6 +65,19 @@ pip install -r requirements.txt
 python main.py
 ```
 
+## Getting Started
+
+This website is deployed on PlexTech's OCF servers. Since the server isn't able to run `yarn build`, you will need to:
+
+1. Build the code locally using `yarn build`
+2. Commit and push the build files
+3. `ssh` into the server using `ssh plextech@apphost.ocf.berkeley.edu`. Ask an admin for the password.
+4. Run `cd app/plexfinance`
+5. Run `git pull`
+6. Run `systemctl --user restart app`
+
+The local build step is taken care of by a pre-commit hook that only runs if you change any frontend code - see `.husky/pre-commit`.
+
 ## License
 
 Distributed under the MIT License. See `LICENSE` for more information.

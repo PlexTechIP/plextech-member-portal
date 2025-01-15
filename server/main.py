@@ -192,15 +192,36 @@ def protected_user_routes():
     id = get_jwt_identity()
 
     if request.method == "PUT":
-        execute_query(
-            """
-            UPDATE users 
-            SET password = %s, reset_password = NULL, reset_timestamp = NULL
-            WHERE id = %s
-            """,
-            (get_hashed_password(dict(request.json)["password"]), id),
-            fetch=False,
-        )
+        form = dict(request.json)
+        if "password" in form:
+            execute_query(
+                """
+                UPDATE users 
+                SET password = %s, reset_password = NULL, reset_timestamp = NULL
+                WHERE id = %s
+                """,
+                (get_hashed_password(form["password"]), id),
+                fetch=False,
+            )
+        else:
+            execute_query(
+                """
+                UPDATE users 
+                SET profile_blurb = %s,
+                    linkedin_username = %s, instagram_username = %s,
+                    calendly_username = %s, current_company = %s
+                WHERE id = %s
+                """,
+                (
+                    form.get("profile_blurb").strip(),
+                    form.get("linkedin_username").strip(),
+                    form.get("instagram_username").strip(),
+                    form.get("calendly_username").strip(),
+                    form.get("current_company").strip(),
+                    id,
+                ),
+                fetch=False,
+            )
         return {}, 200
 
     if request.method == "POST":
@@ -240,12 +261,18 @@ def protected_user_routes():
             """
             SELECT id, email, registered, first_name, last_name, treasurer,
                    bank_account_number, bank_routing_number, bank_name,
-                   bluevine_email, bluevine_password
+                   bluevine_email, bluevine_password, current_position,
+                   profile_blurb, linkedin_username, instagram_username,
+                   calendly_username, current_company
             FROM users
             WHERE id = %s
             """,
             (id,),
         )[0]
+
+        for field in ['profile_blurb', 'linkedin_username', 'instagram_username', 'calendly_username', 'current_company']:
+            if user[field] is None:
+                user[field] = ''
 
         if not user["registered"]:
             return {}, 401

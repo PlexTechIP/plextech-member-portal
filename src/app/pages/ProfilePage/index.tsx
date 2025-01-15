@@ -32,6 +32,13 @@ export function ProfilePage(props: Props) {
   const [bluevineEmail, setBluevineEmail] = useState<string>('');
   const [bluevinePassword, setBluevinePassword] = useState<string>('');
 
+  const [currentPosition, setCurrentPosition] = useState<string>('');
+  const [profileBlurb, setProfileBlurb] = useState<string>('');
+  const [linkedinUsername, setLinkedinUsername] = useState<string>('');
+  const [instagramUsername, setInstagramUsername] = useState<string>('');
+  const [calendlyUsername, setCalendlyUsername] = useState<string>('');
+  const [currentCompany, setCurrentCompany] = useState<string>('');
+
   useEffect(() => {
     const f = async () => {
       const [success, res] = await apiRequest('/profile/', 'GET');
@@ -44,6 +51,12 @@ export function ProfilePage(props: Props) {
       setUser(res);
       setBluevineEmail(res.bluevine_email);
       setBluevinePassword(res.bluevine_password);
+      setCurrentPosition(res.current_position || '');
+      setProfileBlurb(res.profile_blurb || '');
+      setLinkedinUsername(res.linkedin_username || '');
+      setInstagramUsername(res.instagram_username || '');
+      setCalendlyUsername(res.calendly_username || '');
+      setCurrentCompany(res.current_company || '');
       if (res.bank) {
         setAccountNumber(res.bank.account_number);
         setRoutingNumber(res.bank.routing_number);
@@ -101,6 +114,23 @@ export function ProfilePage(props: Props) {
     setSuccess(true);
   };
 
+  const profileSubmit = async () => {
+    const [success, res] = await apiRequest('/profile/', 'PUT', {
+      profile_blurb: profileBlurb,
+      linkedin_username: linkedinUsername,
+      instagram_username: instagramUsername,
+      calendly_username: calendlyUsername,
+      current_company: currentCompany,
+    });
+
+    if (!success) {
+      setError(res.error);
+      return;
+    }
+
+    setSuccess(true);
+  };
+
   return (
     <>
       <Helmet>
@@ -111,6 +141,105 @@ export function ProfilePage(props: Props) {
       <Div />
       {user && (
         <>
+          <Div>
+            <Form>
+              <Stack spacing={4}>
+                <Stack
+                  direction="row"
+                  justifyContent="space-between"
+                  alignItems="center"
+                >
+                  <H1>Member Details</H1>
+                  <Button
+                    onClick={profileSubmit}
+                    variant="contained"
+                    disabled={
+                      (profileBlurb === user.profile_blurb &&
+                        linkedinUsername === user.linkedin_username &&
+                        instagramUsername === user.instagram_username &&
+                        calendlyUsername === user.calendly_username &&
+                        currentCompany === user.current_company) ||
+                      (linkedinUsername !== '' &&
+                        !linkedinUsername.startsWith(
+                          'https://www.linkedin.com/',
+                        )) ||
+                      (instagramUsername !== '' &&
+                        !instagramUsername.startsWith(
+                          'https://www.instagram.com/',
+                        )) ||
+                      (calendlyUsername !== '' &&
+                        !calendlyUsername.startsWith('https://calendly.com/'))
+                    }
+                  >
+                    Update
+                  </Button>
+                </Stack>
+                <p>Current Position: {currentPosition}</p>
+                <TextField
+                  fullWidth
+                  label="Profile Blurb"
+                  value={profileBlurb}
+                  onChange={e => setProfileBlurb(e.target.value)}
+                  multiline
+                  rows={4}
+                />
+                <TextField
+                  fullWidth
+                  label="LinkedIn URL"
+                  value={linkedinUsername}
+                  onChange={e => setLinkedinUsername(e.target.value)}
+                  error={
+                    linkedinUsername !== '' &&
+                    !linkedinUsername.startsWith('https://www.linkedin.com/')
+                  }
+                  helperText={
+                    linkedinUsername !== '' &&
+                    !linkedinUsername.startsWith('https://www.linkedin.com/')
+                      ? 'Must be a valid LinkedIn URL'
+                      : ''
+                  }
+                />
+                <TextField
+                  fullWidth
+                  label="Instagram URL"
+                  value={instagramUsername}
+                  onChange={e => setInstagramUsername(e.target.value)}
+                  error={
+                    instagramUsername !== '' &&
+                    !instagramUsername.startsWith('https://www.instagram.com/')
+                  }
+                  helperText={
+                    instagramUsername !== '' &&
+                    !instagramUsername.startsWith('https://www.instagram.com/')
+                      ? 'Must be a valid Instagram URL'
+                      : ''
+                  }
+                />
+                <TextField
+                  fullWidth
+                  label="Calendly URL"
+                  value={calendlyUsername}
+                  onChange={e => setCalendlyUsername(e.target.value)}
+                  error={
+                    calendlyUsername !== '' &&
+                    !calendlyUsername.startsWith('https://calendly.com/')
+                  }
+                  helperText={
+                    calendlyUsername !== '' &&
+                    !calendlyUsername.startsWith('https://calendly.com/')
+                      ? 'Must be a valid Calendly URL'
+                      : ''
+                  }
+                />
+                <TextField
+                  fullWidth
+                  label="Current Company"
+                  value={currentCompany}
+                  onChange={e => setCurrentCompany(e.target.value)}
+                />
+              </Stack>
+            </Form>
+          </Div>
           <Div>
             <Form>
               <Stack spacing={4}>

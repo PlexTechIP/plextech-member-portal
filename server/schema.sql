@@ -18,10 +18,16 @@ CREATE TABLE users (
     bluevine_email VARCHAR(255),
     bluevine_password TEXT,
     bluevine_slug VARCHAR(255),
-    tardies JSON DEFAULT ('[]'),
-    absences JSON DEFAULT ('[]'),
-    strikes JSON DEFAULT ('[]'),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    tardies JSON DEFAULT NULL,
+    absences JSON DEFAULT NULL,
+    strikes JSON DEFAULT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    current_position VARCHAR(255),
+    profile_blurb TEXT,
+    linkedin_username VARCHAR(255),
+    instagram_username VARCHAR(255),
+    calendly_username VARCHAR(255),
+    current_company VARCHAR(255)
 );
 
 CREATE TABLE requests (
@@ -31,8 +37,8 @@ CREATE TABLE requests (
     item_description TEXT,
     amount DECIMAL(10,2),
     date DATE,
-    comments JSON DEFAULT ('[]'),
-    images JSON DEFAULT ('[]'),
+    comments JSON DEFAULT NULL,
+    images JSON DEFAULT NULL,
     team_budget VARCHAR(255),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
@@ -44,7 +50,7 @@ CREATE TABLE attendance (
     meeting_leader CHAR(36),
     start_time VARCHAR(255),
     code CHAR(36),
-    attendees JSON DEFAULT ('{}'),
+    attendees JSON DEFAULT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (meeting_leader) REFERENCES users(id) ON DELETE SET NULL
 );
@@ -57,8 +63,8 @@ CREATE TABLE posts (
     content TEXT,
     anonymous BOOLEAN DEFAULT FALSE,
     date DATE,
-    upvotes JSON DEFAULT ('[]'),
-    downvotes JSON DEFAULT ('[]'),
+    upvotes JSON DEFAULT NULL,
+    downvotes JSON DEFAULT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
 );
