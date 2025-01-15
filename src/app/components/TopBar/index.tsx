@@ -50,7 +50,7 @@ const iconMap = {
   // Forum: <ForumIcon />,
 };
 
-const protectedTabs = ['Attendance', 'Categories', 'Members'];
+const protectedTabs = ['Members', 'Attendance', 'Categories'];
 
 let page = window.location.href.split('/').slice(-1)[0];
 page =

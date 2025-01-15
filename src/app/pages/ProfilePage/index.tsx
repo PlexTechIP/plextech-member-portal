@@ -23,6 +23,8 @@ export function ProfilePage(props: Props) {
   const [error, setError] = useState<Error>();
   const [user, setUser] = useState<User>();
 
+  const [admin, setAdmin] = useState<boolean>(false);
+
   const [accountNumber, setAccountNumber] = useState<string>('');
   const [routingNumber, setRoutingNumber] = useState<string>('');
   const [bankName, setBankName] = useState<string>('');
@@ -49,6 +51,7 @@ export function ProfilePage(props: Props) {
       }
 
       setUser(res);
+      setAdmin(res.treasurer);
       setBluevineEmail(res.bluevine_email);
       setBluevinePassword(res.bluevine_password);
       setCurrentPosition(res.current_position || '');
@@ -116,6 +119,7 @@ export function ProfilePage(props: Props) {
 
   const profileSubmit = async () => {
     const [success, res] = await apiRequest('/profile/', 'PUT', {
+      current_position: currentPosition,
       profile_blurb: profileBlurb,
       linkedin_username: linkedinUsername,
       instagram_username: instagramUsername,
@@ -153,10 +157,6 @@ export function ProfilePage(props: Props) {
                   <Button
                     onClick={profileSubmit}
                     variant="contained"
-                    style={{
-                      backgroundColor: 'rgb(255, 138, 0)',
-                      color: 'white',
-                    }}
                     disabled={
                       (profileBlurb === user.profile_blurb &&
                         linkedinUsername === user.linkedin_username &&
@@ -178,7 +178,16 @@ export function ProfilePage(props: Props) {
                     Update
                   </Button>
                 </Stack>
-                <p>Current Position: {currentPosition}</p>
+                <TextField
+                  fullWidth
+                  label="Current Position (admin only)"
+                  value={currentPosition}
+                  onChange={e => setCurrentPosition(e.target.value)}
+                  InputProps={{
+                    readOnly: !admin,
+                  }}
+                  disabled={!admin}
+                />
                 <TextField
                   fullWidth
                   label="Profile Blurb"
@@ -256,10 +265,6 @@ export function ProfilePage(props: Props) {
                   <Button
                     onClick={bankSubmit}
                     variant="contained"
-                    style={{
-                      backgroundColor: 'rgb(255, 138, 0)',
-                      color: 'white',
-                    }}
                     disabled={
                       !accountNumber ||
                       !routingNumber ||
@@ -328,64 +333,62 @@ export function ProfilePage(props: Props) {
               </Stack>
             </Form>
           </Div>
-          <Div>
-            <Form>
-              <Stack spacing={4}>
-                <Stack
-                  direction="row"
-                  justifyContent="space-between"
-                  alignItems="center"
-                >
-                  <H1>Bluevine Details (admin only)</H1>
-                  <Button
-                    onClick={bluevineSubmit}
-                    variant="contained"
-                    style={{
-                      backgroundColor: 'rgb(255, 138, 0)',
-                      color: 'white',
-                    }}
-                    disabled={
-                      !bluevineEmail ||
-                      !bluevinePassword ||
-                      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(bluevineEmail) ||
-                      (bluevinePassword === user.bluevinePassword &&
-                        bluevineEmail === user.bluevineEmail)
-                    }
+          {admin && (
+            <Div>
+              <Form>
+                <Stack spacing={4}>
+                  <Stack
+                    direction="row"
+                    justifyContent="space-between"
+                    alignItems="center"
                   >
-                    {user.bank ? 'Update' : 'Submit'}
-                  </Button>
+                    <H1>Bluevine Details (admin only)</H1>
+                    <Button
+                      onClick={bluevineSubmit}
+                      variant="contained"
+                      disabled={
+                        !bluevineEmail ||
+                        !bluevinePassword ||
+                        !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(bluevineEmail) ||
+                        (bluevinePassword === user.bluevinePassword &&
+                          bluevineEmail === user.bluevineEmail)
+                      }
+                    >
+                      {user.bank ? 'Update' : 'Submit'}
+                    </Button>
+                  </Stack>
+                  <>
+                    <TextField
+                      fullWidth
+                      label="Bluevine Email"
+                      onChange={e => setBluevineEmail(e.target.value)}
+                      required
+                      error={!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(bluevineEmail)}
+                      value={bluevineEmail}
+                    />
+                    <TextField
+                      fullWidth
+                      label="Bluevine Password"
+                      value={bluevinePassword}
+                      onChange={e => setBluevinePassword(e.target.value)}
+                      error={!bluevinePassword}
+                      required
+                      type="password"
+                    />
+                  </>
+                  <Stack
+                    direction="row"
+                    alignItems="center"
+                    spacing={1}
+                    justifyContent="flex-end"
+                  >
+                    <StyledInfoOutlinedIcon />
+                    <P>Your information is securely encrypted with Fernet.</P>
+                  </Stack>
                 </Stack>
-                <>
-                  <TextField
-                    fullWidth
-                    label="Bluevine Email"
-                    onChange={e => setBluevineEmail(e.target.value)}
-                    required
-                    error={!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(bluevineEmail)}
-                    value={bluevineEmail}
-                  />
-                  <TextField
-                    fullWidth
-                    label="Bluevine Password"
-                    value={bluevinePassword}
-                    onChange={e => setBluevinePassword(e.target.value)}
-                    error={!bluevinePassword}
-                    required
-                    type="password"
-                  />
-                </>
-                <Stack
-                  direction="row"
-                  alignItems="center"
-                  spacing={1}
-                  justifyContent="flex-end"
-                >
-                  <StyledInfoOutlinedIcon />
-                  <P>Your information is securely encrypted with Fernet.</P>
-                </Stack>
-              </Stack>
-            </Form>
-          </Div>
+              </Form>
+            </Div>
+          )}
         </>
       )}
     </>

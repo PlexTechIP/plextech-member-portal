@@ -223,12 +223,17 @@ def protected_user_routes():
                 fetch=False,
             )
         else:
+            user = execute_query("SELECT treasurer FROM users WHERE id = %s", (id,))[0]
+            if not user["treasurer"]:
+                return {}, 401
+
             execute_query(
                 """
                 UPDATE users 
                 SET profile_blurb = %s,
                     linkedin_username = %s, instagram_username = %s,
-                    calendly_username = %s, current_company = %s
+                    calendly_username = %s, current_company = %s,
+                    current_position = %s
                 WHERE id = %s
                 """,
                 (
@@ -237,6 +242,7 @@ def protected_user_routes():
                     form.get("instagram_username").strip(),
                     form.get("calendly_username").strip(),
                     form.get("current_company").strip(),
+                    form.get("current_position").strip(),
                     id,
                 ),
                 fetch=False,
