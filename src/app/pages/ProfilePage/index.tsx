@@ -172,7 +172,10 @@ export function ProfilePage(props: Props) {
                           'https://www.instagram.com/',
                         )) ||
                       (calendlyUsername !== '' &&
-                        !calendlyUsername.startsWith('https://calendly.com/'))
+                        !calendlyUsername.startsWith(
+                          'https://calendly.com/',
+                        )) ||
+                      profileBlurb === ''
                     }
                   >
                     Update
@@ -195,6 +198,7 @@ export function ProfilePage(props: Props) {
                   onChange={e => setProfileBlurb(e.target.value)}
                   multiline
                   rows={4}
+                  required
                 />
                 <TextField
                   fullWidth
@@ -202,8 +206,12 @@ export function ProfilePage(props: Props) {
                   value={linkedinUsername}
                   onChange={e => setLinkedinUsername(e.target.value)}
                   error={
-                    linkedinUsername !== '' &&
-                    !linkedinUsername.startsWith('https://www.linkedin.com/')
+                    (linkedinUsername !== '' &&
+                      !linkedinUsername.startsWith(
+                        'https://www.linkedin.com/',
+                      )) ||
+                    (linkedinUsername === '' &&
+                      linkedinUsername !== user.linkedin_username)
                   }
                   helperText={
                     linkedinUsername !== '' &&
@@ -211,6 +219,7 @@ export function ProfilePage(props: Props) {
                       ? 'Must be a valid LinkedIn URL'
                       : ''
                   }
+                  required
                 />
                 <TextField
                   fullWidth
@@ -218,8 +227,12 @@ export function ProfilePage(props: Props) {
                   value={instagramUsername}
                   onChange={e => setInstagramUsername(e.target.value)}
                   error={
-                    instagramUsername !== '' &&
-                    !instagramUsername.startsWith('https://www.instagram.com/')
+                    (instagramUsername !== '' &&
+                      !instagramUsername.startsWith(
+                        'https://www.instagram.com/',
+                      )) ||
+                    (instagramUsername === '' &&
+                      instagramUsername !== user.instagram_username)
                   }
                   helperText={
                     instagramUsername !== '' &&
@@ -227,6 +240,7 @@ export function ProfilePage(props: Props) {
                       ? 'Must be a valid Instagram URL'
                       : ''
                   }
+                  required
                 />
                 <TextField
                   fullWidth
@@ -234,8 +248,10 @@ export function ProfilePage(props: Props) {
                   value={calendlyUsername}
                   onChange={e => setCalendlyUsername(e.target.value)}
                   error={
-                    calendlyUsername !== '' &&
-                    !calendlyUsername.startsWith('https://calendly.com/')
+                    (calendlyUsername !== '' &&
+                      !calendlyUsername.startsWith('https://calendly.com/')) ||
+                    (calendlyUsername === '' &&
+                      calendlyUsername !== user.calendly_username)
                   }
                   helperText={
                     calendlyUsername !== '' &&
@@ -243,6 +259,7 @@ export function ProfilePage(props: Props) {
                       ? 'Must be a valid Calendly URL'
                       : ''
                   }
+                  required
                 />
                 <TextField
                   fullWidth
