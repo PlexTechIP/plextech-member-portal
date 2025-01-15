@@ -22,7 +22,14 @@ export function DeleteDialog(props: Props) {
       </DialogTitle>
       <DialogActions>
         <Button onClick={props.onClose}>Cancel</Button>
-        <Button onClick={props.onDelete} variant="contained">
+        <Button
+          onClick={props.onDelete}
+          variant="contained"
+          style={{
+            backgroundColor: 'rgb(255, 138, 0)',
+            color: 'white',
+          }}
+        >
           Delete
         </Button>
       </DialogActions>

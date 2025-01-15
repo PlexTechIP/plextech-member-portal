@@ -127,6 +127,7 @@ export function MemberManagement() {
                   <TableCell>Name</TableCell>
                   <TableCell>Admin?</TableCell>
                   <TableCell>Registered?</TableCell>
+                  <TableCell>Current Role</TableCell>
                   <TableCell align="center">Delete</TableCell>
                 </TableRow>
               </TableHead>

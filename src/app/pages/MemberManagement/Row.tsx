@@ -10,6 +10,22 @@ import Checkbox from '@mui/material/Checkbox';
 import { apiRequest } from 'utils/apiRequest';
 import { Check } from '@mui/icons-material';
 import { Close } from '@mui/icons-material';
+import Select from '@mui/material/Select';
+import { MenuItem } from '@mui/material';
+
+const positions = [
+  'Developer',
+  'Senior Advisor',
+  'Project Manager',
+  'Curriculum Instructor',
+  'President',
+  'VP of Public Relations',
+  'VP of Curriculum',
+  'VP of Projects',
+  'VP of External',
+  'VP of Internal',
+  'Treasurer',
+];
 
 interface Props {
   user: User;
@@ -21,6 +37,9 @@ export default function Row(props: Props) {
 
   const [showDelete, setShowDelete] = useState<boolean>(false);
   const [checked, setChecked] = useState<boolean>();
+  const [currentPosition, setCurrentPosition] = useState<string>(
+    user.current_position || '',
+  );
 
   return (
     <>
@@ -58,6 +77,28 @@ export default function Row(props: Props) {
         </TableCell>
         <TableCell align="center">
           {user.registered ? <Check /> : <Close />}
+        </TableCell>
+        <TableCell align="center">
+          <Select
+            value={currentPosition}
+            onChange={async event => {
+              const position = event.target.value;
+              await apiRequest('/members/', 'PUT', {
+                user_id: user.id,
+                current_position: position,
+              });
+              setCurrentPosition(position);
+            }}
+            size="small"
+            fullWidth
+          >
+            <MenuItem value="">None</MenuItem>
+            {positions.map(position => (
+              <MenuItem value={position} key={position}>
+                {position}
+              </MenuItem>
+            ))}
+          </Select>
         </TableCell>
         <TableCell align="center">
           <IconButton size="small" onClick={() => setShowDelete(true)}>

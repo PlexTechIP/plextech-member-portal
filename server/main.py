@@ -13,6 +13,7 @@ from flask_jwt_extended import (
 from datetime import datetime, timedelta, timezone
 from time import time
 from cryptography.fernet import Fernet
+
 try:
     from .send_email import gmail_send_message
     from .bluevine import bluevine_send_money
@@ -156,11 +157,23 @@ def members():
         user = execute_query("SELECT treasurer FROM users WHERE id = %s", (id,))[0]
         if not user["treasurer"]:
             return {}, 401
-        execute_query(
-            "UPDATE users SET treasurer = %s WHERE id = %s",
-            (form.get("treasurer", False), form.get("user_id")),
-            fetch=False,
-        )
+
+        updates = []
+        values = []
+        if "treasurer" in form:
+            updates.append("treasurer = %s")
+            values.append(form["treasurer"])
+        if "current_position" in form:
+            updates.append("current_position = %s")
+            values.append(form["current_position"])
+
+        if updates:
+            values.append(form["user_id"])
+            execute_query(
+                f"UPDATE users SET {', '.join(updates)} WHERE id = %s",
+                tuple(values),
+                fetch=False,
+            )
         return {}, 200
 
     if request.method == "DELETE":
@@ -178,10 +191,15 @@ def members():
     if request.method == "GET":
         users = execute_query(
             """
-            SELECT id, email, registered, first_name, last_name, treasurer
+            SELECT id, email, registered, first_name, last_name, treasurer, current_position
             FROM users
             """
         )
+
+        for user in users:
+            if user["current_position"] is None:
+                user["current_position"] = ""
+
         return {"users": users}, 200
 
 
@@ -240,7 +258,7 @@ def protected_user_routes():
                 INSERT INTO users (id, email, registered, treasurer, tardies, absences, strikes)
                 VALUES (%s, %s, %s, %s, %s, %s, %s)
                 """,
-                (new_id, email, False, False, "[]", "[]", "[]"),
+                (new_id, email, False, False, None, None, None),
                 fetch=False,
             )
             query.append(
@@ -271,9 +289,15 @@ def protected_user_routes():
             (id,),
         )[0]
 
-        for field in ['profile_blurb', 'linkedin_username', 'instagram_username', 'calendly_username', 'current_company']:
+        for field in [
+            "profile_blurb",
+            "linkedin_username",
+            "instagram_username",
+            "calendly_username",
+            "current_company",
+        ]:
             if user[field] is None:
-                user[field] = ''
+                user[field] = ""
 
         if not user["registered"]:
             return {}, 401
@@ -579,7 +603,7 @@ def attendance():
                     fetch=False,
                 )
 
-        attendees = json.loads(attendance_info.get("attendees", "{}"))
+        attendees = json.loads(attendance_info.get("attendees") or "{}")
         registered_users = execute_query(
             "SELECT first_name, last_name FROM users WHERE registered = TRUE"
         )
@@ -810,9 +834,12 @@ def requests():
             res["treasurer"] = False
 
         for r in requests:
-            r["comments"] = json.loads(r["comments"])
+            r["comments"] = json.loads(r["comments"] or "[]")
             r["created_at"] = r["created_at"].strftime("%Y-%m-%d")
-            if r["status"] != "paid" or (datetime.strptime(r["created_at"], "%Y-%m-%d") > datetime.now() - timedelta(days=180)):
+            if r["status"] != "paid" or (
+                datetime.strptime(r["created_at"], "%Y-%m-%d")
+                > datetime.now() - timedelta(days=180)
+            ):
                 res[r["status"]].append(r)
 
         return res, 200
@@ -848,7 +875,7 @@ def requests():
                     id, user_id, status, item_description, amount, date,
                     comments, images, team_budget
                 )
-                VALUES (%s, %s, 'pendingReview', %s, %s, %s, '[]', %s, %s)
+                VALUES (%s, %s, 'pendingReview', %s, %s, %s, NULL, %s, %s)
                 """,
                 (
                     request_id,
@@ -874,7 +901,7 @@ def requests():
             r = execute_query(
                 "SELECT comments FROM requests WHERE id = %s", (form["request_id"],)
             )[0]
-            return {"comments": json.loads(r["comments"])}, 200
+            return {"comments": json.loads(r["comments"] or "[]")}, 200
 
         if "images" in form:
             if form["request_id"] is None:
@@ -882,7 +909,7 @@ def requests():
             r = execute_query(
                 "SELECT images FROM requests WHERE id = %s", (form["request_id"],)
             )[0]
-            return {"images": json.loads(r["images"])}, 200
+            return {"images": json.loads(r["images"] or "[]")}, 200
 
         request_id = form.pop("request_id")
         del form["id"]
@@ -909,8 +936,8 @@ def requests():
                 form["item_description"],
                 form["amount"],
                 convert_date(form["date"]),
-                json.dumps(form.get("comments", [])),
-                json.dumps(form.get("images", [])),
+                json.dumps(form.get("comments", []) or "[]"),
+                json.dumps(form.get("images", []) or "[]"),
                 form.get("team_budget"),
             ),
             fetch=False,

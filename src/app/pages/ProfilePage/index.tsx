@@ -153,6 +153,10 @@ export function ProfilePage(props: Props) {
                   <Button
                     onClick={profileSubmit}
                     variant="contained"
+                    style={{
+                      backgroundColor: 'rgb(255, 138, 0)',
+                      color: 'white',
+                    }}
                     disabled={
                       (profileBlurb === user.profile_blurb &&
                         linkedinUsername === user.linkedin_username &&
@@ -252,6 +256,10 @@ export function ProfilePage(props: Props) {
                   <Button
                     onClick={bankSubmit}
                     variant="contained"
+                    style={{
+                      backgroundColor: 'rgb(255, 138, 0)',
+                      color: 'white',
+                    }}
                     disabled={
                       !accountNumber ||
                       !routingNumber ||
@@ -332,6 +340,10 @@ export function ProfilePage(props: Props) {
                   <Button
                     onClick={bluevineSubmit}
                     variant="contained"
+                    style={{
+                      backgroundColor: 'rgb(255, 138, 0)',
+                      color: 'white',
+                    }}
                     disabled={
                       !bluevineEmail ||
                       !bluevinePassword ||
