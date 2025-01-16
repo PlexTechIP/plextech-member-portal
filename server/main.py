@@ -202,6 +202,19 @@ def members():
 
         return {"users": users}, 200
 
+# TODO: Remove dependency from plex-web on member-portal-api for public info
+# and move logic to FastAPI. 
+# Retrieves public information for the plex-web app to use.
+@app.route("/members/public-info", methods=["GET"])
+def members_public_info():
+    if request.method == "GET":
+        users = execute_query(
+            """
+            SELECT id, first_name, last_name, current_position, profile_blurb, linkedin_username, instagram_username, calendly_username, current_company
+            FROM users
+            """
+        )
+        return {"users": users}, 200
 
 @app.route("/profile/", methods=["PUT", "POST", "GET", "DELETE", "OPTIONS"])
 @jwt_required()
