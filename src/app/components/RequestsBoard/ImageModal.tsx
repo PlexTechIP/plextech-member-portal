@@ -13,9 +13,7 @@ import {
   CircularProgress,
 } from '@mui/material';
 import * as React from 'react';
-import styled from 'styled-components';
 import { Image } from 'types/types';
-import { styled as muiStyled } from '@mui/system';
 import CloseIcon from '@mui/icons-material/Close';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 
@@ -29,31 +27,39 @@ interface Props {
 
 export function ImageModal(props: Props) {
   return (
-    <StyledModal open={props.open} onClose={props.onClose}>
-      <StyledPaper>
-        <StyledStack
+    <Modal
+      open={props.open}
+      onClose={props.onClose}
+      className="w-1/2 h-full absolute inset-0 m-auto p-16"
+    >
+      <Paper className="p-12 !rounded-[48px] h-full">
+        <Stack
           direction="row"
           alignItems="center"
           justifyContent="space-between"
+          className="w-full mb-6"
         >
-          <H1>Receipts for {props.itemDescription}</H1>
+          <h1 className="m-0 overflow-hidden whitespace-nowrap text-ellipsis">
+            Receipts for {props.itemDescription}
+          </h1>
           <IconButton onClick={props.onClose}>
             <CloseIcon />
           </IconButton>
-        </StyledStack>
+        </Stack>
         {props.loading ? (
-          <StyledCircularProgress />
+          <CircularProgress className="text-[rgb(255,138,0)]" />
         ) : (
           <>
             {props.images && (
-              <ImageList cols={3} rowHeight={300} style={{ height: '100%' }}>
+              <ImageList cols={3} rowHeight={300} className="h-full">
                 {props.images!.map((image: Image) => (
                   <ImageListItem key={image.name} cols={1}>
                     <a download={image.name} href={image.data as string}>
-                      <Img
+                      <img
                         src={image.data as string}
                         alt="receipt"
                         loading="lazy"
+                        className="max-w-full max-h-full brightness-100 hover:brightness-75 transition-all duration-250"
                       />
                     </a>
                   </ImageListItem>
@@ -62,78 +68,15 @@ export function ImageModal(props: Props) {
             )}
           </>
         )}
-        <Div>
+        <div className="absolute bottom-[108px]">
           <Stack direction="row" alignItems="center" spacing={1}>
-            <StyledInfoOutlinedIcon />
-            <P>Click on an image to download it.</P>
+            <InfoOutlinedIcon className="text-gray-500 text-sm" />
+            <p className="text-gray-500 m-0">
+              Click on an image to download it.
+            </p>
           </Stack>
-        </Div>
-      </StyledPaper>
-    </StyledModal>
+        </div>
+      </Paper>
+    </Modal>
   );
 }
-
-const P = styled.p`
-  color: grey;
-  margin: 0px;
-`;
-
-const StyledInfoOutlinedIcon = muiStyled(InfoOutlinedIcon)`
-  color: grey;
-  font-size: small;
-`;
-
-const StyledModal = styled(Modal)`
-  width: 50%;
-  height: 100%;
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  margin: auto;
-  padding: 64px;
-`;
-
-const StyledStack = muiStyled(Stack)`
-  width: 100%;
-  margin-bottom: 24px;
-`;
-
-const Div = styled.div`
-  position: absolute;
-  bottom: 108px;
-`;
-
-const Img = styled.img`
-  max-width: 100%;
-  max-height: 100%;
-  filter: brightness(100%);
-  -webkit-filter: brightness(100%);
-  &:hover {
-    filter: brightness(75%);
-    -webkit-filter: brightness(75%);
-  }
-  -webkit-transition: all 0.25s ease;
-  -moz-transition: all 0.25s ease;
-  -o-transition: all 0.25s ease;
-  -ms-transition: all 0.25s ease;
-  transition: all 0.25s ease;
-`;
-
-const StyledPaper = muiStyled(Paper)`
-  padding: 48px;
-  border-radius: 48px;
-  height: 100%;
-`;
-
-const H1 = styled.h1`
-  margin: 0px;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-`;
-
-const StyledCircularProgress = muiStyled(CircularProgress)`
-  color: rgb(255, 138, 0);
-`;

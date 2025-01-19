@@ -4,8 +4,6 @@
  *
  */
 import * as React from 'react';
-import styled from 'styled-components';
-import { styled as muiStyled } from '@mui/system';
 import { PlexTechLogo } from 'images';
 import {
   Stack,
@@ -77,13 +75,20 @@ export function NewPasswordPage(props: Props) {
       {error ? (
         <ErrorModal open={!!error} error={error} />
       ) : (
-        <Div>
-          <Form elevation={3}>
+        <div className="pt-16 h-full">
+          <Paper
+            className="min-h-[95%] max-w-[600px] min-w-[500px] mx-auto p-16 !rounded-[48px]"
+            elevation={3}
+          >
             <form>
               <Stack alignItems="center" spacing={4}>
-                <Img src={PlexTechLogo} alt="PlexTech logo" />
-                <H1>Reset Password</H1>
-                <StyledStack>
+                <img
+                  src={PlexTechLogo}
+                  alt="PlexTech logo"
+                  className="max-w-[80px]"
+                />
+                <h1 className="m-0 text-[3.052rem] pt-6">Reset Password</h1>
+                <Stack className="w-full">
                   <p>New Password</p>
                   <TextField
                     variant="outlined"
@@ -112,48 +117,23 @@ export function NewPasswordPage(props: Props) {
                       'Password must be at least 8 characters long.'
                     }
                   />
-                </StyledStack>
+                </Stack>
                 <Button variant="contained" onClick={onSubmit} type="submit">
-                  {loading ? <StyledCircularProgress size={20} /> : 'Submit'}
+                  {loading ? (
+                    <CircularProgress
+                      className="text-[rgb(255,138,0)]"
+                      size={20}
+                    />
+                  ) : (
+                    'Submit'
+                  )}
                 </Button>
               </Stack>
             </form>
-          </Form>
-          <div style={{ height: '5%' }} />
-        </Div>
+          </Paper>
+          <div className="h-[5%]" />
+        </div>
       )}
     </>
   );
 }
-
-const Form = muiStyled(Paper)`
-  min-height: 95%;
-  max-width: 600px;
-  min-width: 500px;
-  margin: auto;
-  padding: 64px;
-  border-radius: 48px;
-`;
-
-const StyledStack = styled(Stack)`
-  width: 100%;
-`;
-
-const H1 = styled.h1`
-  margin: 0px;
-  font-size: 3.052rem;
-  padding-top: 24px;
-`;
-
-const Img = styled.img`
-  max-width: 80px;
-`;
-
-const Div = styled.div`
-  padding-top: 64px;
-  height: 100%;
-`;
-
-const StyledCircularProgress = muiStyled(CircularProgress)`
-  color: rgb(255, 138, 0);
-`;

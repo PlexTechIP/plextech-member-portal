@@ -17,9 +17,7 @@ import {
 import * as React from 'react';
 import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
-import styled from 'styled-components';
 import { PlexTechLogo } from 'images';
-import { styled as muiStyled } from '@mui/system';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { SignUpData } from 'types/types';
 import { ErrorModal } from 'app/components/ErrorModal';
@@ -141,7 +139,7 @@ export function SignUpPage(props: Props) {
     setLoading(false);
 
     if (!success) {
-      setError(res.errpr);
+      setError(res.error);
     }
 
     setToken(res.access_token);
@@ -158,26 +156,34 @@ export function SignUpPage(props: Props) {
       {error ? (
         <ErrorModal open={!!error} error={error} />
       ) : (
-        <Div>
-          <Form elevation={3}>
+        <div className="pt-16 h-full">
+          <Paper
+            className="min-h-[95%] w-2/5 min-w-[500px] mx-auto p-16 !rounded-[48px]"
+            elevation={3}
+          >
             <form>
               <Stack alignItems="center" spacing={4}>
-                <StyledStack
+                <Stack
                   direction="row"
                   justifyContent="space-between"
                   alignItems="flex-start"
+                  className="w-full"
                 >
                   <Button variant="contained" style={{ visibility: 'hidden' }}>
                     Back to login
                   </Button>
-                  <Img src={PlexTechLogo} alt="PlexTech logo" />
+                  <img
+                    src={PlexTechLogo}
+                    alt="PlexTech logo"
+                    className="max-w-[80px]"
+                  />
                   <Button variant="contained" onClick={onBackClick}>
                     Back to login
                   </Button>
-                </StyledStack>
-                <H1>Sign Up</H1>
+                </Stack>
+                <h1 className="m-0 text-[3.052rem] pt-6">Sign Up</h1>
                 {formData.google && <p>Signed in with Google.</p>}
-                <StyledDivider variant="middle" light />
+                <Divider className="w-full" variant="middle" light />
                 {formData.google ? (
                   <Button variant="contained" onClick={onSubmit}>
                     Sign Up
@@ -186,10 +192,10 @@ export function SignUpPage(props: Props) {
                   <>
                     <div id="google-signup" />
 
-                    <StyledDivider variant="middle" light>
+                    <Divider className="w-full" variant="middle" light>
                       or
-                    </StyledDivider>
-                    <StyledStack>
+                    </Divider>
+                    <Stack className="w-full">
                       <p>First Name</p>
                       <TextField
                         variant="outlined"
@@ -209,8 +215,8 @@ export function SignUpPage(props: Props) {
                           'Required'
                         }
                       />
-                    </StyledStack>
-                    <StyledStack>
+                    </Stack>
+                    <Stack className="w-full">
                       <p>Last Name</p>
                       <TextField
                         variant="outlined"
@@ -230,8 +236,8 @@ export function SignUpPage(props: Props) {
                           'Required'
                         }
                       />
-                    </StyledStack>
-                    <StyledStack>
+                    </Stack>
+                    <Stack className="w-full">
                       <p>Email Address</p>
                       <TextField
                         variant="outlined"
@@ -254,8 +260,8 @@ export function SignUpPage(props: Props) {
                             'You are not registered as a PlexTech member. Contact PlexTech management if this is incorrect.')
                         }
                       />
-                    </StyledStack>
-                    <StyledStack>
+                    </Stack>
+                    <Stack className="w-full">
                       <p>Password</p>
                       <TextField
                         variant="outlined"
@@ -293,7 +299,7 @@ export function SignUpPage(props: Props) {
                           'Password must be at least 8 characters long.'
                         }
                       />
-                    </StyledStack>
+                    </Stack>
                     <div />
                     <Button
                       variant="contained"
@@ -301,7 +307,10 @@ export function SignUpPage(props: Props) {
                       type="submit"
                     >
                       {loading ? (
-                        <StyledCircularProgress size={20} />
+                        <CircularProgress
+                          className="text-[rgb(255,138,0)]"
+                          size={20}
+                        />
                       ) : (
                         'Sign Up'
                       )}
@@ -310,46 +319,10 @@ export function SignUpPage(props: Props) {
                 )}
               </Stack>
             </form>
-          </Form>
-          <div style={{ height: '5%' }} />
-        </Div>
+          </Paper>
+          <div className="h-[5%]" />
+        </div>
       )}
     </>
   );
 }
-
-const Form = muiStyled(Paper)`
-  min-height: 95%;
-  width: 40%;
-  min-width: 500px;
-  margin: auto;
-  padding: 64px;
-  border-radius: 48px;
-`;
-
-const StyledStack = styled(Stack)`
-  width: 100%;
-`;
-
-const Img = styled.img`
-  max-width: 80px;
-`;
-
-const Div = styled.div`
-  padding-top: 64px;
-  height: 100%;
-`;
-
-const StyledDivider = styled(Divider)`
-  width: 100%;
-`;
-
-const H1 = styled.h1`
-  margin: 0px;
-  font-size: 3.052rem;
-  padding-top: 24px;
-`;
-
-const StyledCircularProgress = muiStyled(CircularProgress)`
-  color: rgb(255, 138, 0);
-`;

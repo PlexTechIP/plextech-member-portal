@@ -4,8 +4,6 @@
  *
  */
 import * as React from 'react';
-// import styled from 'styled-components';
-import { styled as muiStyled } from '@mui/system';
 import { Button } from '@mui/material';
 
 interface Props {
@@ -19,7 +17,7 @@ export function BottomButton(props: Props) {
   const { text, onClick, icon, sx } = props;
 
   return (
-    <StyledButton
+    <Button
       onClick={onClick}
       startIcon={icon}
       disableElevation
@@ -27,16 +25,9 @@ export function BottomButton(props: Props) {
       disableRipple
       TouchRippleProps={{ style: { display: 'none' } }}
       sx={sx}
+      className="fixed bottom-2 left-1/2 m-auto transition-transform duration-300 ease-in-out"
     >
       {text}
-    </StyledButton>
+    </Button>
   );
 }
-
-const StyledButton = muiStyled(Button)`
-  position: fixed;
-  bottom: 8px;
-  margin: auto;
-  left: 50%;
-  transition: transform 0.3s ease-in-out;
-`;

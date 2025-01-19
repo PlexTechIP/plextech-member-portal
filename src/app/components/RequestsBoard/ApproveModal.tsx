@@ -4,7 +4,6 @@
  *
  */
 import * as React from 'react';
-import styled from 'styled-components';
 import {
   Button,
   Divider,
@@ -16,7 +15,6 @@ import {
   TextField,
 } from '@mui/material';
 import { useEffect, useState } from 'react';
-import { styled as muiStyled } from '@mui/system';
 import { CommentForm } from '../CommentForm';
 import { CommentCard } from '../CommentCard';
 import jwt_decode from 'jwt-decode';
@@ -47,14 +45,23 @@ export function ApproveModal(props: Props) {
     setAmount(+((props.requestedAmount / 100) * target.value).toFixed(2));
 
   return (
-    <StyledModal open={props.open} onClose={props.onClose}>
-      <StyledPaper>
+    <Modal
+      open={props.open}
+      onClose={props.onClose}
+      className="w-1/2 min-h-full absolute inset-0 m-auto p-16"
+    >
+      <Paper className="p-12 !rounded-[48px] min-h-full">
         <Stack spacing={3}>
-          <H1>Reimbursement Request Approval</H1>
+          <h1 className="m-0 overflow-hidden whitespace-nowrap text-ellipsis text-3xl">
+            Reimbursement Request Approval
+          </h1>
           <Divider />
-          <H3>How much do you want to approve this request for?</H3>
+          <h3 className="m-0">
+            How much do you want to approve this request for?
+          </h3>
           <Stack direction="row" alignItems="center" spacing={2}>
-            <StyledTextField
+            <TextField
+              className="w-2/5"
               variant="outlined"
               type="number"
               value={amount}
@@ -96,11 +103,7 @@ export function ApproveModal(props: Props) {
                 label: '100%',
               },
             ]}
-            style={{
-              marginLeft: '8px',
-              marginRight: '8px',
-              marginBottom: '24px',
-            }}
+            className="mx-2 mb-6"
           />
           <Divider />
           {getToken() &&
@@ -143,8 +146,11 @@ export function ApproveModal(props: Props) {
               ]);
             }}
           />
-          <StyledStack direction="row" justifyContent="space-between">
-            {/* Submit Button */}
+          <Stack
+            direction="row"
+            justifyContent="space-between"
+            className="w-full"
+          >
             <Button
               variant="contained"
               onClick={() => {
@@ -163,46 +169,9 @@ export function ApproveModal(props: Props) {
             >
               Cancel
             </Button>
-          </StyledStack>
+          </Stack>
         </Stack>
-      </StyledPaper>
-    </StyledModal>
+      </Paper>
+    </Modal>
   );
 }
-
-const StyledTextField = styled(TextField)`
-  width: 40%;
-`;
-
-const StyledModal = styled(Modal)`
-  width: 50%;
-  min-height: 100%;
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  margin: auto;
-  padding: 64px;
-`;
-
-const StyledPaper = muiStyled(Paper)`
-  padding: 48px;
-  border-radius: 48px;
-  min-height: 100%;
-`;
-
-const H1 = styled.h1`
-  margin: 0px;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-`;
-
-const H3 = styled.h3`
-  margin: 0px;
-`;
-
-const StyledStack = styled(Stack)`
-  width: 100%;
-`;

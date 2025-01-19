@@ -7,7 +7,6 @@ import { ErrorModal } from 'app/components/ErrorModal';
 import * as React from 'react';
 import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
-import styled from 'styled-components';
 import dayjs, { Dayjs } from 'dayjs';
 import { TimePicker } from '@mui/x-date-pickers/TimePicker';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
@@ -20,19 +19,8 @@ import {
   Paper,
   Stack,
   TextField,
-  // Table,
-  // TableBody,
-  // TableCell,
-  // TableContainer,
-  // TableHead,
-  // TableRow,
-  // Button,
-  // InputAdornment,
-  // IconButton,
 } from '@mui/material';
-import { styled as muiStyled } from '@mui/system';
 import { Error } from 'types/types';
-// import AddIcon from '@mui/icons-material/Add';
 import { QRCodeCanvas } from 'qrcode.react';
 import { apiRequest } from 'utils/apiRequest';
 import jwt_decode from 'jwt-decode';
@@ -330,12 +318,13 @@ export function AttendancePage(props: Props) {
         <QRLandingPage {...returnValue} />
       ) : (
         <Stack spacing={2} alignItems="center">
-          <Form>
+          <Paper className="min-h-[95%] w-[40%] min-w-[500px] mx-auto p-16 !rounded-[48px] mt-8">
             <Stack spacing={3} alignItems="center">
-              <StyledStack
+              <Stack
                 direction="row"
                 justifyContent="space-evenly"
                 alignItems="center"
+                className="w-full"
               >
                 <TextField
                   label="Meeting Name"
@@ -358,12 +347,13 @@ export function AttendancePage(props: Props) {
                     disabled={isSessionActive}
                   />
                 </LocalizationProvider>
-              </StyledStack>
+              </Stack>
               {!isSessionActive && !sessions ? (
-                <StyledStack
+                <Stack
                   direction="row"
                   justifyContent="space-evenly"
                   alignItems="center"
+                  className="w-full"
                 >
                   <Button
                     variant="contained"
@@ -377,13 +367,13 @@ export function AttendancePage(props: Props) {
                   >
                     View Previous Sessions
                   </Button>
-                </StyledStack>
+                </Stack>
               ) : !sessions ? (
                 <>
-                  <P>
+                  <p className="m-0 text-gray-500">
                     Code will change in {remainingTime} second
                     {remainingTime !== 1 ? 's' : ''}
-                  </P>
+                  </p>
                   <div
                     style={{
                       position: 'relative',
@@ -411,7 +401,7 @@ export function AttendancePage(props: Props) {
                           transform: 'translate(-50%, -50%)',
                         }}
                       >
-                        <StyledCircularProgress />
+                        <CircularProgress className="text-[rgb(255,138,0)] !w-[50px] !h-[50px]" />
                       </div>
                     )}
                   </div>
@@ -483,7 +473,7 @@ export function AttendancePage(props: Props) {
                 </>
               )}
             </Stack>
-          </Form>
+          </Paper>
           <div />
           {((isSessionActive && startTime) || sessions) && (
             <AttendeesDisplay attendees={attendees} startTime={startTime!} />
@@ -497,28 +487,3 @@ export function AttendancePage(props: Props) {
     </>
   );
 }
-
-const Form = muiStyled(Paper)`
-  min-height: 95%;
-  width: 40%;
-  min-width: 500px;
-  margin: auto;
-  padding: 64px;
-  border-radius: 48px;
-  margin-top: 32px;
-`;
-
-const StyledStack = styled(Stack)`
-  width: 100%;
-`;
-
-const StyledCircularProgress = muiStyled(CircularProgress)`
-  color: rgb(255, 138, 0);
-  width: 50px !important;
-  height: 50px !important;
-  `;
-
-const P = styled.p`
-  margin: 0;
-  color: grey;
-`;

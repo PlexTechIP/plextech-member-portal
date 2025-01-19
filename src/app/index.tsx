@@ -9,7 +9,6 @@
 import * as React from 'react';
 import { Helmet } from 'react-helmet-async';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-
 import { GlobalStyle } from 'styles/global-styles';
 
 import { ReimbursementsPage } from './pages/ReimbursementsPage/Loadable';
@@ -19,7 +18,6 @@ import { useTranslation } from 'react-i18next';
 import { LoginPage } from './pages/LoginPage/Loadable';
 import { shapesBackground } from 'images';
 import { shapesBackgroundDark } from 'images';
-import styled from 'styled-components';
 import { onTokenChange } from 'utils/useToken';
 import { useEffect, useState } from 'react';
 import { TopBar } from './components/TopBar';
@@ -55,9 +53,7 @@ export function App() {
     components: {
       MuiButton: {
         styleOverrides: {
-          // Name of the slot
           root: {
-            // Some CSS
             backgroundColor: 'transparent',
             color: 'rgb(255, 138, 0)',
             fontWeight: 'bold',
@@ -106,7 +102,8 @@ export function App() {
           >
             <meta name="description" content="PlexTech Member Portal" />
           </Helmet>
-          <Div
+          <div
+            className="bg-repeat min-h-screen pb-6"
             style={{
               backgroundImage:
                 theme.palette.mode === 'dark'
@@ -139,16 +136,10 @@ export function App() {
                 </Routes>
               </>
             )}
-          </Div>
+          </div>
           <GlobalStyle />
         </BrowserRouter>
       </ThemeProvider>
     </>
   );
 }
-
-const Div = styled.div`
-  background-repeat: repeat;
-  min-height: 100vh;
-  padding-bottom: 24px;
-`;

@@ -14,7 +14,7 @@ export function DeleteDialog(props: Props) {
       onClose={props.onClose}
       open={props.open}
       PaperProps={{
-        style: { borderRadius: '24px', padding: '24px' },
+        className: '!rounded-2xl p-6',
       }}
     >
       <DialogTitle>
@@ -25,10 +25,7 @@ export function DeleteDialog(props: Props) {
         <Button
           onClick={props.onDelete}
           variant="contained"
-          style={{
-            backgroundColor: 'rgb(255, 138, 0)',
-            color: 'white',
-          }}
+          className="!bg-[rgb(255,138,0)] !text-white"
         >
           Delete
         </Button>

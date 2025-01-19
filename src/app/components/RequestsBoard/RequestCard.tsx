@@ -1,12 +1,10 @@
 import { Stack, Button, Card, useTheme, Tooltip } from '@mui/material';
 import * as React from 'react';
-import styled from 'styled-components';
 import { Error, Image, Request } from '../../../types/types';
 import EditIcon from '@mui/icons-material/Edit';
 import ImageIcon from '@mui/icons-material/Image';
 import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
 import { useState } from 'react';
-import { styled as muiStyled } from '@mui/system';
 import { Visibility } from '@mui/icons-material';
 import { ImageModal } from './ImageModal';
 import { Draggable } from 'react-beautiful-dnd';
@@ -51,12 +49,13 @@ export function RequestCard(props: Props) {
   return (
     <Draggable draggableId={props.request.id} index={props.index}>
       {(provided: any) => (
-        <StyledCard
+        <Card
           elevation={2}
           key={props.request.id}
           {...provided.draggableProps}
           {...provided.dragHandleProps}
           ref={provided.innerRef}
+          className="p-4 text-left flex flex-col !rounded-2xl w-full"
         >
           {error && <ErrorModal open={!!error} error={error} />}
           {showModal && (
@@ -69,16 +68,19 @@ export function RequestCard(props: Props) {
             />
           )}
           <Stack spacing={1}>
-            <StyledStack
+            <Stack
               direction="row"
               justifyContent="space-between"
               alignItems="center"
+              className="w-full"
             >
-              <H3>{props.request.item_description}</H3>
-              <H3 style={{ flexShrink: 0, paddingLeft: '8px' }}>
+              <h3 className="m-0 overflow-hidden whitespace-nowrap text-ellipsis">
+                {props.request.item_description}
+              </h3>
+              <h3 className="m-0 flex-shrink-0 pl-2">
                 ${props.request.amount}
-              </H3>
-            </StyledStack>
+              </h3>
+            </Stack>
             <Stack
               direction="row"
               justifyContent="space-between"
@@ -98,30 +100,34 @@ export function RequestCard(props: Props) {
                   <Tooltip
                     title={`Filter requests by ${props.request.first_name}`}
                   >
-                    <P onClick={props.onClickName}>
+                    <p
+                      className="m-0 overflow-hidden cursor-pointer"
+                      onClick={props.onClickName}
+                    >
                       {props.request.first_name}{' '}
                       {props.request.last_name?.charAt(0)}
-                    </P>
+                    </p>
                   </Tooltip>
                   {!props.request.bank_set && (
                     <Tooltip title="Bank info not set">
-                      <P style={{ color: 'red' }}>!</P>
+                      <p className="m-0 overflow-hidden text-red-500">!</p>
                     </Tooltip>
                   )}
                 </Stack>
               )}
               {props.request.comments.length > 0 && (
-                <CommentStack
+                <Stack
                   direction="row"
                   spacing={1}
                   onClick={() => props.onEdit(props.mine)}
                   alignItems="center"
+                  className="text-gray-500"
                 >
                   <ChatBubbleOutlineIcon fontSize="small" />
-                  <CommentLengthP>
+                  <p className="m-0 overflow-hidden text-xs">
                     {props.request.comments.length}
-                  </CommentLengthP>
-                </CommentStack>
+                  </p>
+                </Stack>
               )}
               <Button
                 style={{ color: theme.palette.text.primary, zIndex: 999 }}
@@ -136,43 +142,8 @@ export function RequestCard(props: Props) {
               </Button>
             </Stack>
           </Stack>
-        </StyledCard>
+        </Card>
       )}
     </Draggable>
   );
 }
-
-const StyledCard = muiStyled(Card)`
-  padding: 16px;
-  text-align: left;
-  display: flex;
-  flex-direction: column;
-  border-radius: 16px;
-  width: 100%;
-`;
-
-const H3 = styled.h3`
-  margin: 0px;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-`;
-
-const StyledStack = styled(Stack)`
-  width: 100%;
-`;
-
-const P = styled.p`
-  margin: 0;
-  overflow: hidden;
-`;
-
-const CommentStack = styled(Stack)`
-  color: grey;
-`;
-
-const CommentLengthP = styled.p`
-  margin: 0;
-  overflow: hidden;
-  font-size: 12px;
-`;

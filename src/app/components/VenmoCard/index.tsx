@@ -5,7 +5,6 @@
  */
 import { Stack } from '@mui/material';
 import * as React from 'react';
-import styled from 'styled-components';
 import { VenmoProfile } from 'types/types';
 
 interface Props {
@@ -17,25 +16,15 @@ export function VenmoCard(props: Props) {
 
   return (
     <Stack direction="row" spacing={3} alignItems="center">
-      <Img src={profile_picture_url} alt={username} />
+      <img
+        src={profile_picture_url}
+        alt={username}
+        className="!rounded-full w-16"
+      />
       <Stack>
-        <P>{display_name}</P>
-        <P2>@{username}</P2>
+        <p className="m-0">{display_name}</p>
+        <p className="m-0 text-gray-500">@{username}</p>
       </Stack>
     </Stack>
   );
 }
-
-const P = styled.p`
-  margin: 0;
-`;
-
-const P2 = styled.p`
-  margin: 0;
-  color: grey;
-`;
-
-const Img = styled.img`
-  border-radius: 50%;
-  width: 64px;
-`;

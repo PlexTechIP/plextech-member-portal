@@ -5,8 +5,6 @@
  */
 import { Stack, Paper, Button, Tooltip } from '@mui/material';
 import * as React from 'react';
-import styled from 'styled-components';
-import { styled as muiStyled } from '@mui/system';
 import { RequestCard } from './RequestCard';
 import { AllRequests, Comment, Error, Request } from '../../../types/types';
 import AddIcon from '@mui/icons-material/Add';
@@ -82,7 +80,6 @@ export function RequestsBoard(props: Props) {
     if (
       destination === null ||
       destination.droppableId === source.droppableId ||
-      // source.droppableId === 'approved' ||
       !props.isTreasurer
     ) {
       return;
@@ -222,8 +219,9 @@ export function RequestsBoard(props: Props) {
               regex.charAt(0).toUpperCase() + regex.slice(1);
 
             return (
-              <Section
+              <Paper
                 key={statusKey}
+                className="w-[calc(20%-8px)] h-full p-8 text-center !rounded-2xl"
                 style={
                   statusKey === 'approved'
                     ? { border: '2px solid rgb(255, 138, 0)' }
@@ -234,21 +232,21 @@ export function RequestsBoard(props: Props) {
                   direction="row"
                   justifyContent="center"
                   alignItems="center"
-                  style={{ paddingBottom: '16px' }}
+                  className="pb-4"
                   gap={1}
                 >
-                  <H2>
+                  <h2 className="m-0 text-2xl">
                     {statusTitleCase}
                     {props.requests &&
                     props.requests![statusKey].length !== 0 &&
                     statusKey !== 'approved'
                       ? `: $${sums[statusKey].toFixed(2)}`
                       : ''}
-                  </H2>
+                  </h2>
                   {statusKey === 'approved' && (
                     <Tooltip title="Moving a request here will pay it through Bluevine, then move it to Paid.">
                       <HelpOutline
-                        style={{ cursor: 'pointer', color: 'grey' }}
+                        className="cursor-pointer text-gray-500"
                         fontSize="small"
                       />
                     </Tooltip>
@@ -297,7 +295,7 @@ export function RequestsBoard(props: Props) {
                     )}
                   </Droppable>
                 </Stack>
-              </Section>
+              </Paper>
             );
           })}
         </Stack>
@@ -305,15 +303,3 @@ export function RequestsBoard(props: Props) {
     </>
   );
 }
-
-const Section = muiStyled(Paper)`
-  width: calc(20% - 8px);
-  height: 100%;
-  padding: 32px;
-  text-align: center;
-  border-radius: 24px;
-`;
-
-const H2 = styled.h2`
-  margin: 0px;
-`;

@@ -4,7 +4,6 @@
  *
  */
 import * as React from 'react';
-import styled from 'styled-components';
 import {
   Button,
   CircularProgress,
@@ -26,7 +25,6 @@ import ImageIcon from '@mui/icons-material/Image';
 import CloseIcon from '@mui/icons-material/Close';
 import { FormData } from '../../../types/types';
 import { Image } from '../../../types/types';
-import { styled as muiStyled } from '@mui/system';
 import DeleteIcon from '@mui/icons-material/Delete';
 import Compressor from 'compressorjs';
 import { DeleteDialog } from '../DeleteDialog';
@@ -319,7 +317,7 @@ export function ReimbursementForm(props: Props) {
   };
 
   return (
-    <Form elevation={3}>
+    <Paper className="p-12 !rounded-[48px]" elevation={3}>
       <Toaster />
       <DeleteDialog
         open={deleteModal}
@@ -334,25 +332,26 @@ export function ReimbursementForm(props: Props) {
         images={images}
         itemDescription={props.request?.item_description}
       />
-      <StyledStack
+      <Stack
         direction="row"
         justifyContent="space-between"
         alignItems="center"
-        style={{ marginBottom: '16px' }}
+        className="w-full mb-4"
       >
-        <H1>Reimbursement Request Form</H1>
+        <h1 className="m-0 text-2xl">Reimbursement Request Form</h1>
         {props.canEdit && props.request ? (
           <IconButton onClick={onShowDeleteModal}>
             <DeleteIcon fontSize="large" />
           </IconButton>
         ) : (
-          <P>*required</P>
+          <p className="m-0 text-gray-500">*required</p>
         )}
-      </StyledStack>
+      </Stack>
       <form>
         <Stack spacing={3} alignItems="flex-start">
           {/* Item Description Field */}
-          <StyledTextField
+          <TextField
+            className="w-full"
             variant="outlined"
             onChange={onItemDescriptionChange}
             value={formData.item_description}
@@ -383,7 +382,9 @@ export function ReimbursementForm(props: Props) {
               helperText={submitted && formData.amount === '' && 'Required'}
               disabled={!props.canEdit}
             />
-            {imagesLoading && <StyledCircularProgress />}
+            {imagesLoading && (
+              <CircularProgress className="text-[rgb(255,138,0)]" />
+            )}
           </Stack>
           <Divider />
 
@@ -415,7 +416,7 @@ export function ReimbursementForm(props: Props) {
               />
             </RadioGroup>
           </FormControl>
-          <StyledDivider variant="middle" light />
+          <Divider className="w-full" variant="middle" light />
 
           {/* Receipt Upload */}
           <Stack spacing={1} alignItems="flex-start">
@@ -435,7 +436,10 @@ export function ReimbursementForm(props: Props) {
                   startIcon={React.cloneElement(<ImageIcon />)}
                 >
                   {imageLoading ? (
-                    <StyledCircularProgress size={20} />
+                    <CircularProgress
+                      className="text-[rgb(255,138,0)]"
+                      size={20}
+                    />
                   ) : (
                     'Upload Receipt(s) *'
                   )}
@@ -488,11 +492,11 @@ export function ReimbursementForm(props: Props) {
               )}
           </Stack>
 
-          <StyledDivider variant="middle" light />
+          <Divider className="w-full" variant="middle" light />
 
           {formData.comments.length === 0 || (
             <>
-              <H2>Comments</H2>
+              <h3 className="m-0">Comments</h3>
               {formData.comments
                 .map((comment: Comment) => (
                   <CommentCard
@@ -502,7 +506,7 @@ export function ReimbursementForm(props: Props) {
                   />
                 ))
                 .sort()}
-              <StyledDivider variant="middle" light />
+              <Divider className="w-full" variant="middle" light />
             </>
           )}
           <CommentForm
@@ -512,7 +516,11 @@ export function ReimbursementForm(props: Props) {
             message="Add Comment (optional)"
           />
 
-          <StyledStack direction="row" justifyContent="space-between">
+          <Stack
+            direction="row"
+            justifyContent="space-between"
+            className="w-full"
+          >
             <Stack spacing={1} direction="row">
               <Button
                 variant="contained"
@@ -543,45 +551,15 @@ export function ReimbursementForm(props: Props) {
               type="submit"
               disabled={!props.canEdit}
             >
-              {isLoading ? <StyledCircularProgress size={20} /> : 'Submit'}
+              {isLoading ? (
+                <CircularProgress className="text-[rgb(255,138,0)]" size={20} />
+              ) : (
+                'Submit'
+              )}
             </Button>
-          </StyledStack>
+          </Stack>
         </Stack>
       </form>
-    </Form>
+    </Paper>
   );
 }
-
-const Form = muiStyled(Paper)`
-  padding: 48px;
-  border-radius: 48px;
-`;
-
-const StyledStack = styled(Stack)`
-  width: 100%;
-`;
-
-const StyledDivider = styled(Divider)`
-  width: 100%;
-`;
-
-const H1 = styled.h1`
-  margin: 0;
-`;
-
-const P = styled.p`
-  margin: 0;
-  color: grey;
-`;
-
-const StyledTextField = styled(TextField)`
-  width: 100%;
-`;
-
-const StyledCircularProgress = muiStyled(CircularProgress)`
-  color: rgb(255, 138, 0);
-`;
-
-const H2 = styled.h3`
-  margin: 0;
-`;

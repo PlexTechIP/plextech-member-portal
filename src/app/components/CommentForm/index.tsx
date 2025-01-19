@@ -16,7 +16,7 @@ interface Props {
 
 export function CommentForm(props: Props) {
   return (
-    <form style={{ width: '100%' }}>
+    <form className="w-full">
       <TextField
         variant="outlined"
         onChange={(event: any) => props.onChange(event.target.value)}

@@ -4,8 +4,6 @@
  *
  */
 import * as React from 'react';
-import styled from 'styled-components';
-import { styled as muiStyled } from '@mui/system';
 import {
   Card,
   Divider,
@@ -16,7 +14,7 @@ import {
   TableHead,
   TableRow,
 } from '@mui/material';
-import dayjs, { Dayjs } from 'dayjs';
+import dayjs from 'dayjs';
 import { User } from 'types/types';
 
 interface Props {
@@ -29,100 +27,66 @@ export function AttendanceCard(props: Props) {
   const { user } = props;
 
   return (
-    <StyledCard>
+    <Card className="p-12 text-left flex flex-col !rounded-[32px] w-max">
       <Stack spacing={3}>
-        <H1>Attendance</H1>
+        <h1 className="m-0">Attendance</h1>
         <Stack direction="row" spacing={3} alignItems="center">
           <Stack>
-            <H2>Absences</H2>
-            <H3>{user.absences.length}</H3>
+            <h2 className="m-0 pb-2">Absences</h2>
+            <h3 className="m-0">{user.absences.length}</h3>
           </Stack>
           <Divider orientation="vertical" flexItem />
           <Stack>
-            <H2>Tardies</H2>
-            <H3>{user.tardies.length}</H3>
+            <h2 className="m-0 pb-2">Tardies</h2>
+            <h3 className="m-0">{user.tardies.length}</h3>
           </Stack>
           <Divider orientation="vertical" flexItem />
           <Stack>
-            <H2>Strikes</H2>
-            <H3>{user.strikes.length}</H3>
+            <h2 className="m-0 pb-2">Strikes</h2>
+            <h3 className="m-0">{user.strikes.length}</h3>
           </Stack>
           <Divider orientation="vertical" flexItem />
           <Stack>
-            <H2>Slip Days Left</H2>
-            <H3>
+            <h2 className="m-0 pb-2">Slip Days Left</h2>
+            <h3 className="m-0">
               {user.absences.length + user.tardies.length < SLIP_DAYS
                 ? SLIP_DAYS - user.absences.length - user.tardies.length
                 : 0}
-            </H3>
+            </h3>
           </Stack>
         </Stack>
         {user.absences.length + user.tardies.length + user.strikes.length >
           0 && (
-          <Table size="small" aria-label="purchases">
+          <Table>
             <TableHead>
               <TableRow>
+                <TableCell>Type</TableCell>
                 <TableCell>Date</TableCell>
-                <TableCell>Tardy/Absence/Strike?</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {user.tardies
-                .map((late: Dayjs) => (
-                  <TableRow key={late.toString()}>
-                    <TableCell component="th" scope="row">
-                      {dayjs(late).format('MM/DD/YYYY')}
-                    </TableCell>
-                    <TableCell>Tardy</TableCell>
-                  </TableRow>
-                ))
-                .concat(
-                  user.absences.map((absence: Dayjs) => (
-                    <TableRow key={absence.toString()}>
-                      <TableCell component="th" scope="row">
-                        {dayjs(absence).format('MM/DD/YYYY')}
-                      </TableCell>
-                      <TableCell>Absence</TableCell>
-                    </TableRow>
-                  )),
-                )
-                .concat(
-                  user.strikes.map((s: Dayjs) => (
-                    <TableRow key={s.toString()}>
-                      <TableCell component="th" scope="row">
-                        {dayjs(s).format('MM/DD/YYYY')}
-                      </TableCell>
-                      <TableCell>Strike</TableCell>
-                    </TableRow>
-                  )),
-                )
-                .sort()}
+              {user.absences.map((absence: dayjs.Dayjs) => (
+                <TableRow key={absence.toString()}>
+                  <TableCell>Absence</TableCell>
+                  <TableCell>{absence.format('MM/DD/YYYY')}</TableCell>
+                </TableRow>
+              ))}
+              {user.tardies.map((tardy: dayjs.Dayjs) => (
+                <TableRow key={tardy.toString()}>
+                  <TableCell>Tardy</TableCell>
+                  <TableCell>{tardy.format('MM/DD/YYYY')}</TableCell>
+                </TableRow>
+              ))}
+              {user.strikes.map((strike: dayjs.Dayjs) => (
+                <TableRow key={strike.toString()}>
+                  <TableCell>Strike</TableCell>
+                  <TableCell>{strike.format('MM/DD/YYYY')}</TableCell>
+                </TableRow>
+              ))}
             </TableBody>
           </Table>
         )}
       </Stack>
-    </StyledCard>
+    </Card>
   );
 }
-
-const StyledCard = muiStyled(Card)`
-  padding: 48px;
-  text-align: left;
-  display: flex;
-  flex-direction: column;
-  border-radius: 32px;
-  width: max-content;  
-`;
-
-const H1 = styled.h1`
-  margin: 0;
-`;
-
-const H2 = styled.h2`
-  margin: 0;
-  padding-bottom: 8px;
-`;
-
-const H3 = styled.h3`
-  margin: 0;
-`;

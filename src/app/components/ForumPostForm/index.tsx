@@ -4,9 +4,7 @@
  *
  */
 import * as React from 'react';
-import styled from 'styled-components';
 import { Post } from 'types/types';
-import { styled as muiStyled } from '@mui/system';
 import { Divider, IconButton, Paper, Stack } from '@mui/material';
 import { useEffect, useState } from 'react';
 import CloseIcon from '@mui/icons-material/Close';
@@ -60,60 +58,38 @@ export function ForumPostForm(props: Props) {
   });
 
   return (
-    <StyledPaper>
+    <Paper className="!rounded-[48px] p-8 text-left flex flex-col">
       <Stack spacing={2}>
         <Stack>
-          <StyledStack
+          <Stack
             direction="row"
             justifyContent="space-between"
             alignItems="center"
+            className="w-full"
           >
-            <H1>{post.title}</H1>
+            <h1 className="m-0">{post.title}</h1>
             <IconButton onClick={props.onClose}>
               <CloseIcon fontSize="large" />
             </IconButton>
-          </StyledStack>
+          </Stack>
         </Stack>
         <Divider />
-        <P>{post.body}</P>
-        <StyledStack
+        <p className="m-0">{post.body}</p>
+        <Stack
           direction="row"
           justifyContent="space-between"
           alignItems="center"
+          className="w-full"
         >
-          <H4>
+          <h4 className="m-0">
             {post.anonymous
               ? 'Anonymous'
               : `${post.first_name} ${post.last_name}`}
-          </H4>
-          <H4>{post.date.format('MM/DD/YYYY')}</H4>
+          </h4>
+          <h4 className="m-0">{post.date.format('MM/DD/YYYY')}</h4>
           <VotingButtons post={post} onVote={() => {}} userId={props.userId} />
-        </StyledStack>
+        </Stack>
       </Stack>
-    </StyledPaper>
+    </Paper>
   );
 }
-
-const StyledPaper = muiStyled(Paper)`
-  border-radius: 48px;
-  padding: 32px;
-  text-align: left;
-  display: flex;
-  flex-direction: column;
-`;
-
-const StyledStack = muiStyled(Stack)`
-  width: 100%;
-`;
-
-const H1 = styled.h1`
-  margin: 0;
-`;
-
-const P = styled.p`
-  margin: 0;
-`;
-
-const H4 = styled.h4`
-  margin: 0;
-`;

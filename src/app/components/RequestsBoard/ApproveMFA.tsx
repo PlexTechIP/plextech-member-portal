@@ -4,7 +4,6 @@
  *
  */
 import * as React from 'react';
-import styled from 'styled-components';
 import {
   Button,
   Divider,
@@ -46,7 +45,7 @@ export function ApproveMFA(props: Props) {
         onClose={() => props.onClose(false)}
         open={props.open}
         PaperProps={{
-          style: { borderRadius: '48px', padding: '48px' },
+          className: '!rounded-[48px] p-12',
         }}
       >
         {success ? (
@@ -54,12 +53,14 @@ export function ApproveMFA(props: Props) {
         ) : (
           <>
             <Stack spacing={3}>
-              <H1>Reimbursement Request Approval</H1>
+              <h1 className="m-0 overflow-hidden whitespace-nowrap text-ellipsis text-3xl">
+                Reimbursement Request Approval
+              </h1>
               <Divider />
-              <H3>
+              <h3 className="m-0 text-xl">
                 An MFA code has been sent from BlueVine. Please enter the code
                 below to approve the reimbursement request.
-              </H3>
+              </h3>
               <TextField
                 label="MFA Code"
                 variant="outlined"
@@ -79,14 +80,3 @@ export function ApproveMFA(props: Props) {
     </>
   );
 }
-
-const H1 = styled.h1`
-  margin: 0px;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-`;
-
-const H3 = styled.h3`
-  margin: 0px;
-`;

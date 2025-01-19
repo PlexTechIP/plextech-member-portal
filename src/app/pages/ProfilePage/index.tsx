@@ -6,12 +6,9 @@
 
 import * as React from 'react';
 import { useEffect, useState } from 'react';
-import styled from 'styled-components';
 import { Error, User } from 'types/types';
 import { Helmet } from 'react-helmet-async';
 import { ErrorModal } from 'app/components/ErrorModal';
-import { styled as muiStyled } from '@mui/system';
-// import { AttendanceCard } from 'app/components/AttendanceCard';
 import { Button, Card, Stack, TextField } from '@mui/material';
 import { apiRequest } from 'utils/apiRequest';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
@@ -142,18 +139,18 @@ export function ProfilePage(props: Props) {
         <meta name="description" content="Profile information" />
       </Helmet>
       {error && <ErrorModal open={!!error} error={error} />}
-      <Div />
+      <div className="min-h-[95%] w-3/4 min-w-[500px] mx-auto px-16 pt-8 !rounded-[48px]" />
       {user && (
         <>
-          <Div>
-            <Form>
+          <div className="min-h-[95%] w-3/4 min-w-[500px] mx-auto px-16 pt-8 !rounded-[48px]">
+            <Card className="p-12 w-4/5 !rounded-[32px]">
               <Stack spacing={4}>
                 <Stack
                   direction="row"
                   justifyContent="space-between"
                   alignItems="center"
                 >
-                  <H1>Member Details</H1>
+                  <h1 className="m-0">Member Details</h1>
                   <Button
                     onClick={profileSubmit}
                     variant="contained"
@@ -268,17 +265,17 @@ export function ProfilePage(props: Props) {
                   onChange={e => setCurrentCompany(e.target.value)}
                 />
               </Stack>
-            </Form>
-          </Div>
-          <Div>
-            <Form>
+            </Card>
+          </div>
+          <div className="min-h-[95%] w-3/4 min-w-[500px] mx-auto px-16 pt-8 !rounded-[48px]">
+            <Card className="p-12 w-4/5 !rounded-[32px]">
               <Stack spacing={4}>
                 <Stack
                   direction="row"
                   justifyContent="space-between"
                   alignItems="center"
                 >
-                  <H1>Bank Details</H1>
+                  <h1 className="m-0">Bank Details</h1>
                   <Button
                     onClick={bankSubmit}
                     variant="contained"
@@ -344,22 +341,24 @@ export function ProfilePage(props: Props) {
                   spacing={1}
                   justifyContent="flex-end"
                 >
-                  <StyledInfoOutlinedIcon />
-                  <P>Your information is securely encrypted with Fernet.</P>
+                  <InfoOutlinedIcon className="text-gray-500 text-sm" />
+                  <p className="m-0 text-gray-500">
+                    Your information is securely encrypted with Fernet.
+                  </p>
                 </Stack>
               </Stack>
-            </Form>
-          </Div>
+            </Card>
+          </div>
           {admin && (
-            <Div>
-              <Form>
+            <div className="min-h-[95%] w-3/4 min-w-[500px] mx-auto px-16 pt-8 !rounded-[48px]">
+              <Card className="p-12 w-4/5 !rounded-[32px]">
                 <Stack spacing={4}>
                   <Stack
                     direction="row"
                     justifyContent="space-between"
                     alignItems="center"
                   >
-                    <H1>Bluevine Details (admin only)</H1>
+                    <h1 className="m-0">Bluevine Details (admin only)</h1>
                     <Button
                       onClick={bluevineSubmit}
                       variant="contained"
@@ -399,46 +398,17 @@ export function ProfilePage(props: Props) {
                     spacing={1}
                     justifyContent="flex-end"
                   >
-                    <StyledInfoOutlinedIcon />
-                    <P>Your information is securely encrypted with Fernet.</P>
+                    <InfoOutlinedIcon className="text-gray-500 text-sm" />
+                    <p className="m-0 text-gray-500">
+                      Your information is securely encrypted with Fernet.
+                    </p>
                   </Stack>
                 </Stack>
-              </Form>
-            </Div>
+              </Card>
+            </div>
           )}
         </>
       )}
     </>
   );
 }
-
-const Form = muiStyled(Card)`
-  padding: 48px;
-  width: 80%;
-  border-radius: 32px;
-`;
-
-const Div = styled.div`
-  min-height: 95%;
-  width: 75%;
-  min-width: 500px;
-  margin: auto;
-  padding-left: 64px;
-  padding-right: 64px;
-  padding-top: 32px;
-  border-radius: 48px;
-`;
-
-const H1 = styled.h1`
-  margin: 0;
-`;
-
-const P = styled.p`
-  margin: 0;
-  color: grey;
-`;
-
-const StyledInfoOutlinedIcon = muiStyled(InfoOutlinedIcon)`
-  color: grey;
-  font-size: small;
-`;

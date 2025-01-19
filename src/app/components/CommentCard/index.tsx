@@ -4,8 +4,6 @@
  *
  */
 import * as React from 'react';
-import { styled as muiStyled } from '@mui/system';
-import styled from 'styled-components';
 import { Card, Stack } from '@mui/material';
 import { Comment } from '../../../types/types';
 
@@ -16,40 +14,23 @@ interface Props {
 
 export function CommentCard(props: Props) {
   const { id, comment } = props;
+  const isOwn = id === comment.user_id;
 
   return (
-    <StyledCard
-      style={{
-        alignSelf: id === comment.user_id ? 'flex-end' : 'flex-start',
-        borderBottomLeftRadius: id === comment.user_id ? '24px' : '0',
-        borderBottomRightRadius: id === comment.user_id ? '0' : '24px',
-        backgroundColor:
-          id === comment.user_id ? 'rgba(255, 138, 0, 0.3)' : 'white',
-      }}
+    <Card
+      className={`w-1/2 p-4 !rounded-t-2xl ${
+        isOwn
+          ? 'self-end !rounded-bl-2xl bg-[rgba(255,138,0,0.3)]'
+          : 'self-start !rounded-br-2xl bg-white'
+      }`}
     >
       <Stack direction="row" justifyContent="space-between" alignItems="center">
-        <H4>
+        <h4 className="m-0">
           {comment.first_name} {comment.last_name}
-        </H4>
-        <H4>{comment.date.format('MM/DD/YYYY')}</H4>
+        </h4>
+        <h4 className="m-0">{comment.date.format('MM/DD/YYYY')}</h4>
       </Stack>
-      <P>{comment.message}</P>
-    </StyledCard>
+      <p className="m-0 text-gray-500">{comment.message}</p>
+    </Card>
   );
 }
-
-const StyledCard = muiStyled(Card)`
-  width: 50%;
-  padding: 16px;
-  border-top-right-radius: 24px;
-  border-top-left-radius: 24px;
-`;
-
-const H4 = styled.h4`
-  margin: 0;
-`;
-
-const P = styled.p`
-  margin: 0;
-  color: grey;
-`;

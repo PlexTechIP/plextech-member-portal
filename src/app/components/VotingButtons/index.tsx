@@ -4,7 +4,6 @@
  *
  */
 import * as React from 'react';
-import styled from 'styled-components';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import { Stack, IconButton } from '@mui/material';
@@ -24,83 +23,76 @@ interface Props {
 }
 
 export function VotingButtons(props: Props) {
-  const { post, userId } = props;
-
-  const [hasUpvoted, setHasUpvoted] = useState<boolean>(
-    post.upvotes.includes(userId),
+  const [upvoted, setUpvoted] = useState<boolean>(
+    props.post.upvotes.includes(props.userId),
   );
-  const [hasDownvoted, setHasDownvoted] = useState<boolean>(
-    post.downvotes.includes(userId),
+  const [downvoted, setDownvoted] = useState<boolean>(
+    props.post.downvotes.includes(props.userId),
   );
 
-  const onVote = (isUpvote: boolean) => {
+  const handleUpvote = () => {
     if (!props.onVote) return;
 
-    const param = {
-      removeFromDownvote: false,
-      removeFromUpvote: false,
-      addToDownvote: false,
-      addToUpvote: false,
-      postId: post.id!,
-    };
-
-    if (isUpvote) {
-      if (hasUpvoted) {
-        post.upvotes = post.upvotes.filter((id: string) => id !== userId);
-        param.removeFromUpvote = true;
-      } else {
-        post.upvotes.push(props.userId);
-        param.addToUpvote = true;
-        if (hasDownvoted) {
-          post.downvotes = post.downvotes.filter((id: string) => id !== userId);
-          setHasDownvoted(false);
-          param.removeFromDownvote = true;
-        }
-      }
-      setHasUpvoted(!hasUpvoted);
+    if (upvoted) {
+      props.onVote({
+        removeFromDownvote: false,
+        removeFromUpvote: true,
+        addToDownvote: false,
+        addToUpvote: false,
+        postId: props.post.id!,
+      });
+      setUpvoted(false);
     } else {
-      if (hasDownvoted) {
-        post.downvotes = post.downvotes.filter((id: string) => id !== userId);
-        param.removeFromDownvote = true;
-      } else {
-        post.downvotes.push(props.userId);
-        param.addToDownvote = true;
-        if (hasUpvoted) {
-          post.upvotes = post.upvotes.filter((id: string) => id !== userId);
-          setHasUpvoted(false);
-          param.removeFromUpvote = true;
-        }
-      }
-      setHasDownvoted(!hasDownvoted);
+      props.onVote({
+        removeFromDownvote: downvoted,
+        removeFromUpvote: false,
+        addToDownvote: false,
+        addToUpvote: true,
+        postId: props.post.id!,
+      });
+      setUpvoted(true);
+      setDownvoted(false);
     }
+  };
 
-    props.onVote(param);
+  const handleDownvote = () => {
+    if (!props.onVote) return;
+
+    if (downvoted) {
+      props.onVote({
+        removeFromDownvote: true,
+        removeFromUpvote: false,
+        addToDownvote: false,
+        addToUpvote: false,
+        postId: props.post.id!,
+      });
+      setDownvoted(false);
+    } else {
+      props.onVote({
+        removeFromDownvote: false,
+        removeFromUpvote: upvoted,
+        addToDownvote: true,
+        addToUpvote: false,
+        postId: props.post.id!,
+      });
+      setDownvoted(true);
+      setUpvoted(false);
+    }
   };
 
   return (
-    <Stack direction="row" spacing={2} alignItems="center">
-      <IconButton onClick={() => onVote(true)}>
-        <KeyboardArrowUpIcon
-          style={{ color: hasUpvoted ? 'green' : 'inherit' }}
-        />
+    <Stack direction="row" alignItems="center">
+      <IconButton onClick={handleUpvote}>
+        <KeyboardArrowUpIcon color={upvoted ? 'primary' : undefined} />
       </IconButton>
-      <Div>
-        <P>{post.upvotes.length - post.downvotes.length}</P>
-      </Div>
-      <IconButton onClick={() => onVote(false)}>
-        <KeyboardArrowDownIcon
-          style={{ color: hasDownvoted ? 'red' : 'inherit' }}
-        />
+      <div className="w-8 text-center">
+        <p className="m-0">
+          {props.post.upvotes.length - props.post.downvotes.length}
+        </p>
+      </div>
+      <IconButton onClick={handleDownvote}>
+        <KeyboardArrowDownIcon color={downvoted ? 'primary' : undefined} />
       </IconButton>
     </Stack>
   );
 }
-
-const Div = styled.div`
-  width: 2em;
-  text-align: center;
-`;
-
-const P = styled.p`
-  margin: 0;
-`;

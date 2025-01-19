@@ -19,7 +19,6 @@ import {
   useTheme,
 } from '@mui/material';
 import * as React from 'react';
-import styled from 'styled-components';
 import MenuIcon from '@mui/icons-material/Menu';
 import { PlexTechLogo } from 'images';
 import KeyboardArrowLeftIcon from '@mui/icons-material/KeyboardArrowLeft';
@@ -47,7 +46,6 @@ const iconMap = {
   Members: <RecentActorsIcon />,
   Categories: <AttachMoneyIcon />,
   Attendance: <BallotIcon />,
-  // Forum: <ForumIcon />,
 };
 
 const protectedTabs = ['Members', 'Attendance', 'Categories'];
@@ -81,7 +79,12 @@ export function TopBar(props: Props) {
             theme.palette.mode === 'dark' ? '#333333' : '#cccccc',
         }}
       >
-        <StyledStack direction="row" alignItems="center" spacing={2}>
+        <Stack
+          direction="row"
+          alignItems="center"
+          spacing={2}
+          className="w-full"
+        >
           <IconButton
             aria-label="menu"
             edge="start"
@@ -90,29 +93,44 @@ export function TopBar(props: Props) {
           >
             <MenuIcon />
           </IconButton>
-          <Img src={PlexTechLogo} />
-          <StyledStack direction="row" alignItems="center" spacing={1}>
-            <StyledStack direction="row" justifyContent="space-between">
-              <A href="/">
-                <H1 style={{ color: theme.palette.text.primary }}>
+          <img src={PlexTechLogo} className="h-6" alt="PlexTech Logo" />
+          <Stack
+            direction="row"
+            alignItems="center"
+            spacing={1}
+            className="w-full"
+          >
+            <Stack
+              direction="row"
+              justifyContent="space-between"
+              className="w-full"
+            >
+              <a href="/" className="no-underline text-inherit text-2xl">
+                <h2
+                  className="m-0 pl-2"
+                  style={{ color: theme.palette.text.primary }}
+                >
                   PlexTech Member Portal
-                </H1>
-              </A>
-              <H1 style={{ color: theme.palette.text.primary }}>
+                </h2>
+              </a>
+              <h2
+                className="m-0 pl-2 text-2xl"
+                style={{ color: theme.palette.text.primary }}
+              >
                 {page || 'Profile'}
-              </H1>
-            </StyledStack>
+              </h2>
+            </Stack>
             <IconButton onClick={() => props.setIsDarkMode(!props.isDarkMode)}>
               {props.isDarkMode ? <Brightness7 /> : <Brightness4 />}
             </IconButton>
-          </StyledStack>
+          </Stack>
           <Drawer
             anchor="left"
             variant="temporary"
             open={props.open}
             onClose={() => props.setOpen(false)}
           >
-            <Box style={{ width: '250px' }}>
+            <Box className="w-[250px]">
               <Stack direction="row" justifyContent="space-between">
                 <div />
                 <IconButton
@@ -165,26 +183,8 @@ export function TopBar(props: Props) {
               </List>
             </Box>
           </Drawer>
-        </StyledStack>
+        </Stack>
       </Toolbar>
     </AppBar>
   );
 }
-
-const Img = styled.img`
-  height: 24px;
-`;
-
-const H1 = styled.h2`
-  margin: 0px;
-  padding-left: 8px;
-`;
-
-const A = styled.a`
-  text-decoration: none;
-  color: inherit;
-`;
-
-const StyledStack = styled(Stack)`
-  width: 100%;
-`;

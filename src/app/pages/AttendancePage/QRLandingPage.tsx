@@ -1,7 +1,5 @@
 import { Paper, Stack } from '@mui/material';
 import React from 'react';
-import styled from 'styled-components';
-import { styled as muiStyled } from '@mui/material';
 import dayjs, { Dayjs } from 'dayjs';
 import { PError } from 'images';
 import { PCold } from 'images';
@@ -17,16 +15,18 @@ interface Props {
 export function QRLandingPage(props: Props) {
   if (props.error?.errorCode === 402) {
     return (
-      <Form>
+      <Paper className="min-h-[95%] w-1/2 min-w-[700px] mx-auto p-16 !rounded-[48px] mt-8">
         <Stack
           direction="row"
           alignItems="center"
           justifyContent="space-between"
         >
-          <H2>Sorry! This code is invalid, please try scanning it again.</H2>
-          <Img src={PCold} alt="Plexie cold" />
+          <h2 className="m-0">
+            Sorry! This code is invalid, please try scanning it again.
+          </h2>
+          <img src={PCold} alt="Plexie cold" className="max-h-[200px]" />
         </Stack>
-      </Form>
+      </Paper>
     );
   }
 
@@ -45,7 +45,7 @@ export function QRLandingPage(props: Props) {
   );
 
   return (
-    <Form>
+    <Paper className="min-h-[95%] w-1/2 min-w-[700px] mx-auto p-16 !rounded-[48px] mt-8">
       <Stack spacing={2}>
         <Stack
           direction="row"
@@ -54,38 +54,21 @@ export function QRLandingPage(props: Props) {
         >
           <Stack spacing={1}>
             {isLate ? (
-              <H2 style={{ color: 'red' }}>You are late!</H2>
+              <h2 className="m-0 text-red-500">You are late!</h2>
             ) : (
-              <H2 style={{ color: 'green' }}>You are on time!</H2>
+              <h2 className="m-0 text-green-500">You are on time!</h2>
             )}
 
-            <H2>Code scanned at: {props.attendanceTime}</H2>
-            <H2>Meeting start time: {props.startTime}</H2>
+            <h2 className="m-0">Code scanned at: {props.attendanceTime}</h2>
+            <h2 className="m-0">Meeting start time: {props.startTime}</h2>
           </Stack>
           {isLate ? (
-            <Img src={PError} alt="Plexie sad" />
+            <img src={PError} alt="Plexie sad" className="max-h-[200px]" />
           ) : (
-            <Img src={PRegular} alt="Plexie happy" />
+            <img src={PRegular} alt="Plexie happy" className="max-h-[200px]" />
           )}
         </Stack>
       </Stack>
-    </Form>
+    </Paper>
   );
 }
-const Img = styled.img`
-  max-height: 200px;
-`;
-
-const H2 = styled.h2`
-  margin: 0;
-`;
-
-const Form = muiStyled(Paper)`
-  min-height: 95%;
-  width: 50%;
-  min-width: 700px;
-  margin: auto;
-  padding: 64px;
-  border-radius: 48px;
-  margin-top: 32px;
-`;

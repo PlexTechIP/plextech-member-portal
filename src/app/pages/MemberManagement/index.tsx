@@ -20,7 +20,6 @@ import {
   InputAdornment,
   IconButton,
 } from '@mui/material';
-import { styled as muiStyled } from '@mui/system';
 import { Error, User } from 'types/types';
 import Row from './Row';
 import AddIcon from '@mui/icons-material/Add';
@@ -101,7 +100,7 @@ export function MemberManagement() {
         <meta name="description" content="Member management" />
       </Helmet>
       {error && <ErrorModal open={!!error} error={error} />}
-      <Form>
+      <Paper className="min-h-[95%] w-3/5 min-w-[500px] mx-auto p-16 !rounded-[48px]">
         <Stack spacing={4}>
           <TextField
             label="Add User(s)"
@@ -139,16 +138,7 @@ export function MemberManagement() {
             </Table>
           </TableContainer>
         </Stack>
-      </Form>
+      </Paper>
     </>
   );
 }
-
-const Form = muiStyled(Paper)`
-  min-height: 95%;
-  width: 60%;
-  min-width: 500px;
-  margin: auto;
-  padding: 64px;
-  border-radius: 48px;
-`;

@@ -5,8 +5,6 @@
  */
 import { Modal, Stack, Paper, IconButton } from '@mui/material';
 import * as React from 'react';
-import { styled as muiStyled } from '@mui/system';
-import styled from 'styled-components';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import { errorImg } from 'images';
 import { Error } from 'types/types';
@@ -27,57 +25,35 @@ export function ErrorModal(props: Props) {
   });
 
   return (
-    <StyledModal open={props.open}>
-      <StyledPaper>
+    <Modal
+      open={props.open}
+      className="w-1/2 min-w-[500px] h-full absolute inset-0 m-auto p-16"
+    >
+      <Paper className="p-12 !rounded-[48px]">
         <Stack spacing={2}>
           <Stack
             direction="row"
             alignItems="center"
             justifyContent="space-between"
           >
-            <H1>
+            <h1 className="m-0">
               Error{props.error.errorCode && ` ${props.error.errorCode}`}:{' '}
               {props.error.errorMessage}
-            </H1>
+            </h1>
             <IconButton onClick={onRefresh}>
               <RefreshIcon />
             </IconButton>
           </Stack>
-          <P>
+          <p className="m-0">
             Try refreshing the page and contact{' '}
             <a href="mailto:shamith09@berkeley.edu?subject=[Plexfinance Error]">
               shamith09@berkeley.edu
             </a>{' '}
             if the issue persists.
-          </P>
-          <img src={errorImg} alt="error"></img>
+          </p>
+          <img src={errorImg} alt="error" />
         </Stack>
-      </StyledPaper>
-    </StyledModal>
+      </Paper>
+    </Modal>
   );
 }
-
-const StyledPaper = muiStyled(Paper)`
-  padding: 48px;
-  border-radius: 48px;
-`;
-
-const H1 = styled.h1`
-  margin: 0px;
-`;
-
-const P = styled.p`
-  margin: 0px;
-`;
-const StyledModal = styled(Modal)`
-  width: 50%;
-  min-width: 500px;
-  height: 100%;
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  margin: auto;
-  padding: 64px;
-`;

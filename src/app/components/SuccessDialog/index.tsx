@@ -4,7 +4,6 @@
  *
  */
 import * as React from 'react';
-// import styled from 'styled-components';
 import AnimatedCheckmark, { MODES } from 'react-animated-checkmark';
 import { Dialog } from '@mui/material';
 
@@ -23,7 +22,7 @@ export function SuccessDialog(props: Props) {
       onClose={props.onClose}
       open={props.open}
       PaperProps={{
-        style: { borderRadius: '48px', padding: '48px' },
+        className: '!rounded-[48px] p-12',
       }}
     >
       <AnimatedCheckmark mode={MODES.SUCCESS} />

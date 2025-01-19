@@ -1,13 +1,11 @@
 import * as React from 'react';
 import { Helmet } from 'react-helmet-async';
-import styled from 'styled-components';
 import { Stack, Modal, CircularProgress } from '@mui/material';
 import { RequestsBoard } from 'app/components/RequestsBoard';
 import { useEffect, useState } from 'react';
 import { ReimbursementForm } from 'app/components/ReimbursementForm';
 import { AllRequests, Error, Request } from 'types/types';
 import { ErrorModal } from 'app/components/ErrorModal';
-import { styled as muiStyled } from '@mui/system';
 import dayjs from 'dayjs';
 import { BottomButton } from 'app/components/BottomButton';
 import { apiRequest } from 'utils/apiRequest';
@@ -142,7 +140,6 @@ export function ReimbursementsPage(props: Props) {
     setReceiptRequired(!newRequest);
   };
 
-  // userFilter is a user id
   const refreshRequests = async (userFilter?: string) => {
     setFilter(!!userFilter);
     setIsLoading(true);
@@ -183,7 +180,11 @@ export function ReimbursementsPage(props: Props) {
         <ErrorModal open={!error} error={error} />
       ) : (
         <>
-          <StyledModal open={showModal} onClose={onClose}>
+          <Modal
+            open={showModal}
+            onClose={onClose}
+            className="w-1/2 min-w-[500px] h-full absolute inset-0 m-auto p-16 overflow-auto scrollbar-hide"
+          >
             <>
               <ReimbursementForm
                 request={request}
@@ -199,8 +200,10 @@ export function ReimbursementsPage(props: Props) {
                 receiptRequired={receiptRequired}
               />
             </>
-          </StyledModal>
-          {isLoading && <StyledCircularProgress />}
+          </Modal>
+          {isLoading && (
+            <CircularProgress className="text-[rgb(255,138,0)] absolute inset-0 m-auto" />
+          )}
           {filter && (
             <BottomButton
               text="Back to All"
@@ -215,7 +218,10 @@ export function ReimbursementsPage(props: Props) {
             />
           )}
 
-          <StyledStack justifyContent="space-between">
+          <Stack
+            className="w-full h-full pt-6 px-12"
+            justifyContent="space-between"
+          >
             <RequestsBoard
               requests={isLoading ? null : requests}
               onEdit={handleShowModal}
@@ -224,7 +230,7 @@ export function ReimbursementsPage(props: Props) {
               userName={userName}
               refreshRequests={refreshRequests}
             />
-          </StyledStack>
+          </Stack>
           <BottomButton
             text="Back to Top"
             onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
@@ -246,40 +252,3 @@ export function ReimbursementsPage(props: Props) {
     </>
   );
 }
-
-const StyledStack = styled(Stack)`
-  width: 100%;
-  height: 100%;
-  padding-top: 24px;
-  padding-left: 48px;
-  padding-right: 48px;
-`;
-
-const StyledModal = styled(Modal)`
-  width: 50%;
-  min-width: 500px;
-  height: 100%;
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  margin: auto;
-  padding: 64px;
-  overflow: auto;
-  -ms-overflow-style: none; /* IE and Edge */
-  scrollbar-width: none;
-  ::-webkit-scrollbar {
-    display: none;
-  }
-`;
-
-const StyledCircularProgress = muiStyled(CircularProgress)`
-  color: rgb(255, 138, 0);
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  margin: auto;
-`;

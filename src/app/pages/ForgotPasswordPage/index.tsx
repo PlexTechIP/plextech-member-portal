@@ -13,8 +13,6 @@ import {
 import { ErrorModal } from 'app/components/ErrorModal';
 import * as React from 'react';
 import { Helmet } from 'react-helmet-async';
-import { styled as muiStyled } from '@mui/system';
-import styled from 'styled-components';
 import { PlexTechLogo } from 'images';
 import { useState } from 'react';
 import { PasswordResetPage } from '../PasswordResetPage/Loadable';
@@ -80,30 +78,38 @@ export function ForgotPasswordPage(props: Props) {
       {error ? (
         <ErrorModal open={!!error} error={error} />
       ) : (
-        <Div>
-          <Form elevation={3}>
+        <div className="pt-16 h-full">
+          <Paper
+            className="min-h-[95%] w-[40%] min-w-[500px] mx-auto p-16 !rounded-[48px]"
+            elevation={3}
+          >
             <form>
               <Stack alignItems="center" spacing={4}>
-                <StyledStack
+                <Stack
                   direction="row"
                   justifyContent="space-between"
                   alignItems="flex-start"
+                  className="w-full"
                 >
                   <Button variant="contained" style={{ visibility: 'hidden' }}>
                     Back to login
                   </Button>
-                  <Img src={PlexTechLogo} alt="PlexTech logo" />
+                  <img
+                    src={PlexTechLogo}
+                    alt="PlexTech logo"
+                    className="max-w-[80px]"
+                  />
                   <Button variant="contained" onClick={props.onBack}>
                     Back to login
                   </Button>
-                </StyledStack>
-                <H1>Forgot Password</H1>
+                </Stack>
+                <h1 className="m-0 text-[3.052rem] pt-6">Forgot Password</h1>
                 <p>
                   We'll send a 5-digit code to your email address that you can
                   use to reset your password. This code will expire in 5
                   minutes. Please keep this tab open.
                 </p>
-                <StyledStack>
+                <Stack className="w-full">
                   <p>Email Address</p>
                   <TextField
                     variant="outlined"
@@ -118,49 +124,24 @@ export function ForgotPasswordPage(props: Props) {
                         "Account doesn't exist. Go back to the login page to make an account.")
                     }
                   />
-                </StyledStack>
+                </Stack>
 
                 <Button variant="contained" onClick={onSubmit} type="submit">
-                  {loading ? <StyledCircularProgress size={20} /> : 'Submit'}
+                  {loading ? (
+                    <CircularProgress
+                      className="text-[rgb(255,138,0)]"
+                      size={20}
+                    />
+                  ) : (
+                    'Submit'
+                  )}
                 </Button>
               </Stack>
             </form>
-          </Form>
-          <div style={{ height: '5%' }} />
-        </Div>
+          </Paper>
+          <div className="h-[5%]" />
+        </div>
       )}
     </>
   );
 }
-
-const Form = muiStyled(Paper)`
-  min-height: 95%;
-  width: 40%;
-  min-width: 500px;
-  margin: auto;
-  padding: 64px;
-  border-radius: 48px;
-`;
-
-const StyledStack = styled(Stack)`
-  width: 100%;
-`;
-
-const H1 = styled.h1`
-  margin: 0px;
-  font-size: 3.052rem;
-  padding-top: 24px;
-`;
-
-const Img = styled.img`
-  max-width: 80px;
-`;
-
-const Div = styled.div`
-  padding-top: 64px;
-  height: 100%;
-`;
-
-const StyledCircularProgress = muiStyled(CircularProgress)`
-  color: rgb(255, 138, 0);
-`;

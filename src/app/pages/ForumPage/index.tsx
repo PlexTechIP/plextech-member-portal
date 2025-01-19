@@ -10,7 +10,6 @@ import dayjs from 'dayjs';
 import * as React from 'react';
 import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
-import styled from 'styled-components';
 import { Error, Post } from 'types/types';
 import AddIcon from '@mui/icons-material/Add';
 import { ForumPostForm } from 'app/components/ForumPostForm';
@@ -89,13 +88,16 @@ export function ForumPage(props: Props) {
         />
       </Helmet>
       {error && <ErrorModal open={!!error} error={error} />}
-      <StyledModal open={showForm}>
+      <Modal
+        open={showForm}
+        className="w-1/2 min-w-[500px] h-full absolute inset-0 m-auto p-16"
+      >
         <ForumPostForm
           userId={(jwt_decode(getToken()!) as { sub: string }).sub}
           onClose={() => setShowForm(false)}
         />
-      </StyledModal>
-      <Div>
+      </Modal>
+      <div className="min-h-[95%] w-1/2 min-w-[500px] mx-auto p-16 [&_.MuiButton-root]:!rounded-[48px]">
         <Stack spacing={2}>
           <Button
             onClick={() => setShowForm(true)}
@@ -118,31 +120,7 @@ export function ForumPage(props: Props) {
               />
             ))}
         </Stack>
-      </Div>
+      </div>
     </>
   );
 }
-
-const Div = styled.div`
-  min-height: 95%;
-  width: 50%;
-  min-width: 500px;
-  margin: auto;
-  padding: 64px;
-  .MuiButton-root {
-    border-radius: 48px;
-  }
-`;
-
-const StyledModal = styled(Modal)`
-  width: 50%;
-  min-width: 500px;
-  height: 100%;
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  margin: auto;
-  padding: 64px;
-`;

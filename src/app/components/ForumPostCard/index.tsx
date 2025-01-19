@@ -4,9 +4,7 @@
  *
  */
 import * as React from 'react';
-import styled from 'styled-components';
 import { Post } from 'types/types';
-import { styled as muiStyled } from '@mui/system';
 import { Card, Divider, IconButton, Stack, useTheme } from '@mui/material';
 import { useState } from 'react';
 import { PostModal } from './PostModal';
@@ -41,24 +39,25 @@ export function ForumPostCard(props: Props) {
         onVote={props.onVote}
         userId={props.userId}
       />
-      <StyledCard>
+      <Card className="p-8 text-left flex flex-col !rounded-[48px]">
         <Stack spacing={2}>
-          <StyledStack
+          <Stack
             direction="row"
             justifyContent="space-between"
             alignItems="center"
+            className="w-full"
           >
-            <H1>{props.post.title}</H1>
-            <H2>{props.post.date.format('MM/DD/YYYY')}</H2>
-          </StyledStack>
+            <h1 className="m-0">{props.post.title}</h1>
+            <h2 className="m-0">{props.post.date.format('MM/DD/YYYY')}</h2>
+          </Stack>
           <Divider />
 
           <Stack direction="row" alignItems="center">
-            <P>
+            <p className="m-0 whitespace-nowrap overflow-hidden text-ellipsis">
               {props.post.body.length > 100
                 ? props.post.body.slice(0, 100) + '...'
                 : props.post.body}
-            </P>
+            </p>
             {props.post.body.length > 100 && (
               <button
                 onClick={() => setShowModal(true)}
@@ -77,16 +76,17 @@ export function ForumPostCard(props: Props) {
             )}
           </Stack>
 
-          <StyledStack
+          <Stack
             direction="row"
             justifyContent="space-between"
             alignItems="center"
+            className="w-full"
           >
-            <H4>
+            <h4 className="m-0">
               {props.post.anonymous
                 ? 'Anonymous'
                 : `${props.post.first_name} ${props.post.last_name}`}
-            </H4>
+            </h4>
             <IconButton onClick={() => setShowModal(true)}>
               <ChatBubbleOutlineIcon fontSize="small" />
             </IconButton>
@@ -95,40 +95,9 @@ export function ForumPostCard(props: Props) {
               onVote={props.onVote}
               userId={props.userId}
             />
-          </StyledStack>
+          </Stack>
         </Stack>
-      </StyledCard>
+      </Card>
     </>
   );
 }
-
-const StyledCard = muiStyled(Card)`
-  padding: 32px;
-  text-align: left;
-  display: flex;
-  flex-direction: column;
-  border-radius: 48px;
-`;
-
-const StyledStack = muiStyled(Stack)`
-  width: 100%;
-`;
-
-const H1 = styled.h1`
-  margin: 0;
-`;
-
-const H2 = styled.h2`
-  margin: 0;
-`;
-
-const H4 = styled.h4`
-  margin: 0;
-`;
-
-const P = styled.p`
-  margin: 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-`;

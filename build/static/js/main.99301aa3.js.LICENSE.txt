@@ -6,8 +6,6 @@ object-assign
 
 /*! js-cookie v3.0.5 | MIT */
 
-/*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/facebook/regenerator/blob/main/LICENSE */
-
 /**
  * @license React
  * react-dom.production.min.js
@@ -54,14 +52,6 @@ object-assign
  *
  * Copyright (c) Facebook, Inc. and its affiliates.
  *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- */
-
-/**
- * @mui/styled-engine v5.13.2
- *
- * @license MIT
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  */
