@@ -2,8 +2,8 @@
 . "$(dirname "$0")/_/husky.sh"
 
 if git diff --cached --name-only | grep -q "^src/"; then
-    yarn checkTs
-    yarn lint-staged
-    NODE_ENV=production yarn build
+    bun run checkTs
+    bun run lint-staged
+    NODE_ENV=production bun run build
     git add build/
 fi
