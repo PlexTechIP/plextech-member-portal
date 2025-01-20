@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 from dotenv import load_dotenv
 from os import getenv
 from random import randint
@@ -1112,12 +1112,31 @@ def update_profile_image():
             return {"error": "No selected file"}, 400
 
         # Save to file
-        profile_dir = "./images" if getenv("ENVIRONMENT") == "local" else "/home/p/pl/plextech/app/public/profile-pictures"
+        profile_dir = (
+            "./images"
+            if getenv("ENVIRONMENT") == "local"
+            else "/home/p/pl/plextech/app/public/profile-pictures"
+        )
         if not os.path.exists(profile_dir):
             return {"error": "Profile pictures directory does not exist"}, 500
 
         file.save(f"{profile_dir}/{id}.jpg")
         return {}, 200
+
+
+@app.route("/profile/image/<user_id>", methods=["GET"])
+def get_profile_image(user_id):
+    profile_dir = (
+        "./images"
+        if getenv("ENVIRONMENT") == "local"
+        else "/home/p/pl/plextech/app/public/profile-pictures"
+    )
+    image_path = f"{profile_dir}/{user_id}.jpg"
+
+    if not os.path.exists(image_path):
+        return {"error": "Image not found"}, 404
+
+    return send_from_directory(profile_dir, f"{user_id}.jpg", mimetype="image/jpeg")
 
 
 if __name__ == "__main__":

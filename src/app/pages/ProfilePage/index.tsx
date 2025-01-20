@@ -23,7 +23,7 @@ import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import { SuccessDialog } from 'app/components/SuccessDialog';
 import AvatarEditor from 'react-avatar-editor';
 import { Dialog, DialogContent, DialogActions } from '@mui/material';
-import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
+import UploadIcon from '@mui/icons-material/Upload';
 
 interface Props {}
 
@@ -67,7 +67,6 @@ export function ProfilePage(props: Props) {
   const handleSave = async () => {
     if (editorRef.current) {
       const canvas = editorRef.current.getImageScaledToCanvas();
-      // Convert canvas to blob
       canvas.toBlob(
         async blob => {
           if (!blob) return;
@@ -81,7 +80,11 @@ export function ProfilePage(props: Props) {
             formData,
           );
           if (success) {
-            setImageUrl(`/images/${user?.id}.jpg?${new Date().getTime()}`);
+            setImageUrl(
+              `${process.env.REACT_APP_BACKEND_URL}/profile/image/${
+                user?.id
+              }?${new Date().getTime()}`,
+            );
             setOpenCrop(false);
             setSuccess(true);
           }
@@ -111,7 +114,11 @@ export function ProfilePage(props: Props) {
       setInstagramUsername(res.instagram_username || '');
       setCalendlyUsername(res.calendly_username || '');
       setCurrentCompany(res.current_company || '');
-      setImageUrl(`/images/${res.id}.jpg?${new Date().getTime()}`);
+      setImageUrl(
+        `${process.env.REACT_APP_BACKEND_URL}/profile/image/${
+          res.id
+        }?${new Date().getTime()}`,
+      );
       if (res.bank) {
         setAccountNumber(res.bank.account_number);
         setRoutingNumber(res.bank.routing_number);
@@ -204,7 +211,7 @@ export function ProfilePage(props: Props) {
                   justifyContent="space-between"
                   alignItems="center"
                 >
-                  <h1 className="m-0">Member Details</h1>
+                  <h1 className="text-2xl m-0">Member Details</h1>
                   <Button
                     onClick={profileSubmit}
                     variant="contained"
@@ -234,33 +241,47 @@ export function ProfilePage(props: Props) {
                 </Stack>
                 <div className="flex justify-center mb-4">
                   <div className="relative">
-                    <Avatar
-                      src={imageUrl}
-                      sx={{ width: 150, height: 150 }}
-                      className="cursor-pointer"
-                    />
-                    <input
-                      accept="image/*"
-                      type="file"
-                      id="icon-button-file"
-                      onChange={handleImageChange}
-                      className="hidden"
-                    />
-                    <label htmlFor="icon-button-file">
-                      <IconButton
-                        className="absolute bottom-0 right-0 bg-white shadow-md hover:bg-gray-100"
-                        component="span"
-                      >
-                        <PhotoCameraIcon />
-                      </IconButton>
-                    </label>
+                    <div className="flex items-end">
+                      <Avatar
+                        src={imageUrl}
+                        sx={{ width: 150, height: 150 }}
+                        className="cursor-pointer"
+                      />
+                      <input
+                        accept="image/*"
+                        type="file"
+                        id="icon-button-file"
+                        onChange={handleImageChange}
+                        className="hidden"
+                      />
+                      <label htmlFor="icon-button-file">
+                        <IconButton
+                          className="absolute bottom-0 right-0 bg-white shadow-md hover:bg-gray-100"
+                          component="span"
+                        >
+                          <UploadIcon />
+                        </IconButton>
+                      </label>
+                    </div>
                   </div>
                 </div>
 
-                <Dialog open={openCrop} onClose={() => setOpenCrop(false)}>
-                  <DialogContent>
+                <Dialog
+                  open={openCrop}
+                  onClose={() => setOpenCrop(false)}
+                  PaperProps={{
+                    style: {
+                      borderRadius: '24px',
+                      padding: '16px',
+                    },
+                  }}
+                >
+                  <DialogContent className="!pb-0">
+                    <h2 className="text-xl font-bold mb-4">
+                      Edit Profile Picture
+                    </h2>
                     {image && (
-                      <div>
+                      <div className="flex flex-col items-center">
                         <Editor
                           ref={editorRef}
                           image={image}
@@ -271,7 +292,7 @@ export function ProfilePage(props: Props) {
                           color={[0, 0, 0, 0.6]}
                           scale={scale}
                         />
-                        <div className="mt-4">
+                        <div className="mt-6 w-full">
                           <p className="text-sm text-gray-600 mb-2">Zoom</p>
                           <Slider
                             value={scale}
@@ -284,9 +305,11 @@ export function ProfilePage(props: Props) {
                       </div>
                     )}
                   </DialogContent>
-                  <DialogActions>
+                  <DialogActions className="p-6">
                     <Button onClick={() => setOpenCrop(false)}>Cancel</Button>
-                    <Button onClick={handleSave}>Save</Button>
+                    <Button variant="contained" onClick={handleSave}>
+                      Save
+                    </Button>
                   </DialogActions>
                 </Dialog>
                 <TextField
@@ -391,7 +414,7 @@ export function ProfilePage(props: Props) {
                 justifyContent="space-between"
                 alignItems="center"
               >
-                <h1 className="m-0">Bank Details</h1>
+                <h1 className="text-2xl m-0">Bank Details</h1>
                 <Button
                   onClick={bankSubmit}
                   variant="contained"
@@ -475,7 +498,7 @@ export function ProfilePage(props: Props) {
                 justifyContent="space-between"
                 alignItems="center"
               >
-                <h1 className="m-0">Bluevine Details (admin only)</h1>
+                <h1 className="text-2xl m-0">Bluevine Details (admin only)</h1>
                 <Button
                   onClick={bluevineSubmit}
                   variant="contained"
