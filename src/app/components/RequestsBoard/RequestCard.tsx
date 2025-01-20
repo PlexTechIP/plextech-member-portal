@@ -7,7 +7,7 @@ import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
 import { useState } from 'react';
 import { Visibility } from '@mui/icons-material';
 import { ImageModal } from './ImageModal';
-import { Draggable } from 'react-beautiful-dnd';
+import { Draggable } from '@hello-pangea/dnd';
 import { ErrorModal } from '../ErrorModal';
 import { apiRequest } from 'utils/apiRequest';
 
@@ -52,9 +52,9 @@ export function RequestCard(props: Props) {
         <Card
           elevation={2}
           key={props.request.id}
+          ref={provided.innerRef}
           {...provided.draggableProps}
           {...provided.dragHandleProps}
-          ref={provided.innerRef}
           className="p-4 text-left flex flex-col !rounded-2xl w-full"
         >
           {error && <ErrorModal open={!!error} error={error} />}

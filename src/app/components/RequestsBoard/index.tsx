@@ -8,7 +8,7 @@ import * as React from 'react';
 import { RequestCard } from './RequestCard';
 import { AllRequests, Comment, Error, Request } from '../../../types/types';
 import AddIcon from '@mui/icons-material/Add';
-import { DragDropContext, Droppable } from 'react-beautiful-dnd';
+import { DragDropContext, Droppable } from '@hello-pangea/dnd';
 import jwt_decode from 'jwt-decode';
 import { useEffect, useState } from 'react';
 import { ErrorModal } from '../ErrorModal';

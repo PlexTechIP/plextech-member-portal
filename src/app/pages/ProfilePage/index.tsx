@@ -196,6 +196,8 @@ export function ProfilePage(props: Props) {
                   multiline
                   rows={4}
                   required
+                  inputProps={{ maxLength: 250 }}
+                  helperText={`${profileBlurb.length} / 250`}
                 />
                 <TextField
                   fullWidth

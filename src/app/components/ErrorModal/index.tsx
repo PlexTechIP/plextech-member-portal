@@ -36,7 +36,7 @@ export function ErrorModal(props: Props) {
             alignItems="center"
             justifyContent="space-between"
           >
-            <h1 className="m-0">
+            <h1 className="m-0 text-3xl">
               Error{props.error.errorCode && ` ${props.error.errorCode}`}:{' '}
               {props.error.errorMessage}
             </h1>

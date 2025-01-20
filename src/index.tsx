@@ -10,7 +10,6 @@ import 'react-app-polyfill/stable';
 
 import * as React from 'react';
 import ReactDOM from 'react-dom/client';
-import { Provider } from 'react-redux';
 
 // Use consistent styling
 import 'sanitize.css/sanitize.css';
@@ -33,13 +32,11 @@ const root = ReactDOM.createRoot(
 );
 
 root.render(
-  <Provider store={store}>
-    <HelmetProvider>
-      {/* <React.StrictMode> */} {/* Commented for drag and drop */}
-      <App />
-      {/* </React.StrictMode> */}
-    </HelmetProvider>
-  </Provider>,
+  <HelmetProvider>
+    {/* <React.StrictMode> */} {/* Commented for drag and drop */}
+    <App />
+    {/* </React.StrictMode> */}
+  </HelmetProvider>,
 );
 
 // Hot reloadable translation json files

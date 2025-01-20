@@ -9,7 +9,7 @@
 import * as React from 'react';
 import { Helmet } from 'react-helmet-async';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { GlobalStyle } from 'styles/global-styles';
+import 'styles/tailwind.css';
 
 import { ReimbursementsPage } from './pages/ReimbursementsPage/Loadable';
 import { CategoriesPage } from './pages/CategoriesPage/Loadable';
@@ -137,7 +137,6 @@ export function App() {
               </>
             )}
           </div>
-          <GlobalStyle />
         </BrowserRouter>
       </ThemeProvider>
     </>

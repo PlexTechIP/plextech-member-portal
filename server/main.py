@@ -232,7 +232,7 @@ def protected_user_routes():
                 WHERE id = %s
                 """,
                 (
-                    form.get("profile_blurb").strip(),
+                    form.get("profile_blurb").strip()[:250],
                     form.get("linkedin_username").strip(),
                     form.get("instagram_username").strip(),
                     form.get("calendly_username").strip(),
