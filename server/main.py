@@ -40,13 +40,32 @@ CORS(
                 "https://plextech.studentorg.berkeley.edu",
                 "https://accounts.google.com",
                 "http://localhost:3000",
+                "https://www.googleapis.com",
+                "https://oauth2.googleapis.com",
             ],
             "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
             "allow_headers": ["Content-Type", "Authorization", "X-Requested-With"],
             "supports_credentials": True,
+            "expose_headers": ["Content-Type", "Authorization"],
+            "allow_credentials": True,
         }
     },
 )
+
+
+# Add CORS preflight handling
+@app.route("/", defaults={"path": ""}, methods=["OPTIONS"])
+@app.route("/<path:path>", methods=["OPTIONS"])
+def handle_options(path):
+    response = app.make_default_options_response()
+    response.headers["Access-Control-Allow-Origin"] = request.headers.get("Origin", "*")
+    response.headers["Access-Control-Allow-Credentials"] = "true"
+    response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
+    response.headers["Access-Control-Allow-Headers"] = (
+        "Content-Type, Authorization, X-Requested-With"
+    )
+    return response
+
 
 app.config["CORS_HEADERS"] = "Content-Type"
 app.config["JWT_SECRET_KEY"] = getenv("JWT_SECRET_KEY")
