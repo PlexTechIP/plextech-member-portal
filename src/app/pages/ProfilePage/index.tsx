@@ -9,16 +9,33 @@ import { useEffect, useState } from 'react';
 import { Error, User } from 'types/types';
 import { Helmet } from 'react-helmet-async';
 import { ErrorModal } from 'app/components/ErrorModal';
-import { Button, Card, Stack, TextField } from '@mui/material';
+import {
+  Button,
+  Card,
+  Stack,
+  TextField,
+  Avatar,
+  IconButton,
+  Slider,
+} from '@mui/material';
 import { apiRequest } from 'utils/apiRequest';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import { SuccessDialog } from 'app/components/SuccessDialog';
+import AvatarEditor from 'react-avatar-editor';
+import { Dialog, DialogContent, DialogActions } from '@mui/material';
+import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
 
 interface Props {}
+
+const Editor = AvatarEditor as any;
 
 export function ProfilePage(props: Props) {
   const [error, setError] = useState<Error>();
   const [user, setUser] = useState<User>();
+  const [imageUrl, setImageUrl] = useState<string>('');
+  const [openCrop, setOpenCrop] = useState(false);
+  const [image, setImage] = useState<File | null>(null);
+  const editorRef = React.useRef<AvatarEditor>(null);
 
   const [admin, setAdmin] = useState<boolean>(false);
 
@@ -37,6 +54,43 @@ export function ProfilePage(props: Props) {
   const [instagramUsername, setInstagramUsername] = useState<string>('');
   const [calendlyUsername, setCalendlyUsername] = useState<string>('');
   const [currentCompany, setCurrentCompany] = useState<string>('');
+
+  const [scale, setScale] = useState(1.2);
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setImage(e.target.files[0]);
+      setOpenCrop(true);
+    }
+  };
+
+  const handleSave = async () => {
+    if (editorRef.current) {
+      const canvas = editorRef.current.getImageScaledToCanvas();
+      // Convert canvas to blob
+      canvas.toBlob(
+        async blob => {
+          if (!blob) return;
+
+          const formData = new FormData();
+          formData.append('image', blob, 'profile.jpg');
+
+          const [success] = await apiRequest(
+            '/profile/image/',
+            'PUT',
+            formData,
+          );
+          if (success) {
+            setImageUrl(`/images/${user?.id}.jpg?${new Date().getTime()}`);
+            setOpenCrop(false);
+            setSuccess(true);
+          }
+        },
+        'image/jpeg',
+        0.95,
+      );
+    }
+  };
 
   useEffect(() => {
     const f = async () => {
@@ -57,6 +111,7 @@ export function ProfilePage(props: Props) {
       setInstagramUsername(res.instagram_username || '');
       setCalendlyUsername(res.calendly_username || '');
       setCurrentCompany(res.current_company || '');
+      setImageUrl(`/images/${res.id}.jpg?${new Date().getTime()}`);
       if (res.bank) {
         setAccountNumber(res.bank.account_number);
         setRoutingNumber(res.bank.routing_number);
@@ -139,12 +194,11 @@ export function ProfilePage(props: Props) {
         <meta name="description" content="Profile information" />
       </Helmet>
       {error && <ErrorModal open={!!error} error={error} />}
-      <div className="min-h-[95%] w-3/4 min-w-[500px] mx-auto px-16 pt-8 !rounded-[48px]" />
-      {user && (
-        <>
-          <div className="min-h-[95%] w-3/4 min-w-[500px] mx-auto px-16 pt-8 !rounded-[48px]">
-            <Card className="p-12 w-4/5 !rounded-[32px]">
-              <Stack spacing={4}>
+      <div className="min-h-[95%] w-3/4 min-w-[500px] mx-auto px-16 pt-8 !rounded-[48px]">
+        <Card className="p-12 w-4/5 !rounded-[32px]">
+          <Stack spacing={4}>
+            {user && (
+              <>
                 <Stack
                   direction="row"
                   justifyContent="space-between"
@@ -178,6 +232,63 @@ export function ProfilePage(props: Props) {
                     Update
                   </Button>
                 </Stack>
+                <div className="flex justify-center mb-4">
+                  <div className="relative">
+                    <Avatar
+                      src={imageUrl}
+                      sx={{ width: 150, height: 150 }}
+                      className="cursor-pointer"
+                    />
+                    <input
+                      accept="image/*"
+                      type="file"
+                      id="icon-button-file"
+                      onChange={handleImageChange}
+                      className="hidden"
+                    />
+                    <label htmlFor="icon-button-file">
+                      <IconButton
+                        className="absolute bottom-0 right-0 bg-white shadow-md hover:bg-gray-100"
+                        component="span"
+                      >
+                        <PhotoCameraIcon />
+                      </IconButton>
+                    </label>
+                  </div>
+                </div>
+
+                <Dialog open={openCrop} onClose={() => setOpenCrop(false)}>
+                  <DialogContent>
+                    {image && (
+                      <div>
+                        <Editor
+                          ref={editorRef}
+                          image={image}
+                          width={250}
+                          height={250}
+                          border={50}
+                          borderRadius={125}
+                          color={[0, 0, 0, 0.6]}
+                          scale={scale}
+                        />
+                        <div className="mt-4">
+                          <p className="text-sm text-gray-600 mb-2">Zoom</p>
+                          <Slider
+                            value={scale}
+                            min={1}
+                            max={3}
+                            step={0.1}
+                            onChange={(_, value) => setScale(value as number)}
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </DialogContent>
+                  <DialogActions>
+                    <Button onClick={() => setOpenCrop(false)}>Cancel</Button>
+                    <Button onClick={handleSave}>Save</Button>
+                  </DialogActions>
+                </Dialog>
                 <TextField
                   fullWidth
                   label="Current Position (admin only)"
@@ -266,150 +377,152 @@ export function ProfilePage(props: Props) {
                   value={currentCompany}
                   onChange={e => setCurrentCompany(e.target.value)}
                 />
-              </Stack>
-            </Card>
-          </div>
-          <div className="min-h-[95%] w-3/4 min-w-[500px] mx-auto px-16 pt-8 !rounded-[48px]">
-            <Card className="p-12 w-4/5 !rounded-[32px]">
-              <Stack spacing={4}>
-                <Stack
-                  direction="row"
-                  justifyContent="space-between"
-                  alignItems="center"
+              </>
+            )}
+          </Stack>
+        </Card>
+      </div>
+      {user && (
+        <div className="min-h-[95%] w-3/4 min-w-[500px] mx-auto px-16 pt-8 !rounded-[48px]">
+          <Card className="p-12 w-4/5 !rounded-[32px]">
+            <Stack spacing={4}>
+              <Stack
+                direction="row"
+                justifyContent="space-between"
+                alignItems="center"
+              >
+                <h1 className="m-0">Bank Details</h1>
+                <Button
+                  onClick={bankSubmit}
+                  variant="contained"
+                  disabled={
+                    !accountNumber ||
+                    !routingNumber ||
+                    (accountNumber === user.bank?.account_number &&
+                      routingNumber === user.bank?.routing_number &&
+                      bankName === user.bank?.bank_name) ||
+                    !bankName
+                  }
                 >
-                  <h1 className="m-0">Bank Details</h1>
-                  <Button
-                    onClick={bankSubmit}
-                    variant="contained"
-                    disabled={
-                      !accountNumber ||
-                      !routingNumber ||
-                      (accountNumber === user.bank?.account_number &&
-                        routingNumber === user.bank?.routing_number &&
-                        bankName === user.bank?.bank_name) ||
-                      !bankName
-                    }
-                  >
-                    {user.bank ? 'Update' : 'Submit'}
-                  </Button>
-                </Stack>
-                <>
-                  <TextField
-                    fullWidth
-                    label="Account Number"
-                    onChange={e => setAccountNumber(e.target.value)}
-                    required
-                    error={
-                      !(
-                        (accountNumber && /^\d+$/.test(accountNumber)) ||
-                        accountNumber === user.bank?.account_number
-                      )
-                    }
-                    value={accountNumber}
-                    type="password"
-                  />
-                  <TextField
-                    fullWidth
-                    label="Routing Number"
-                    value={routingNumber}
-                    onChange={e => setRoutingNumber(e.target.value)}
-                    required
-                    error={
-                      !(
-                        (routingNumber && /^\d+$/.test(routingNumber)) ||
-                        routingNumber === user.bank?.routing_number
-                      )
-                    }
-                    type="password"
-                  />
-                </>
-                <>
-                  <TextField
-                    fullWidth
-                    label="Bank Name"
-                    value={bankName}
-                    onChange={e => setBankName(e.target.value)}
-                    required
-                    error={!(bankName || bankName === user.bank?.bank_name)}
-                  />
-                  <SuccessDialog
-                    open={success}
-                    onClose={() => setSuccess(false)}
-                  />
-                </>
-                <Stack
-                  direction="row"
-                  alignItems="center"
-                  spacing={1}
-                  justifyContent="flex-end"
-                >
-                  <InfoOutlinedIcon className="text-gray-500 text-sm" />
-                  <p className="m-0 text-gray-500">
-                    Your information is securely encrypted with Fernet.
-                  </p>
-                </Stack>
+                  {user.bank ? 'Update' : 'Submit'}
+                </Button>
               </Stack>
-            </Card>
-          </div>
-          {admin && (
-            <div className="min-h-[95%] w-3/4 min-w-[500px] mx-auto px-16 pt-8 !rounded-[48px]">
-              <Card className="p-12 w-4/5 !rounded-[32px]">
-                <Stack spacing={4}>
-                  <Stack
-                    direction="row"
-                    justifyContent="space-between"
-                    alignItems="center"
-                  >
-                    <h1 className="m-0">Bluevine Details (admin only)</h1>
-                    <Button
-                      onClick={bluevineSubmit}
-                      variant="contained"
-                      disabled={
-                        !bluevineEmail ||
-                        !bluevinePassword ||
-                        !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(bluevineEmail) ||
-                        (bluevinePassword === user.bluevinePassword &&
-                          bluevineEmail === user.bluevineEmail)
-                      }
-                    >
-                      {user.bank ? 'Update' : 'Submit'}
-                    </Button>
-                  </Stack>
-                  <>
-                    <TextField
-                      fullWidth
-                      label="Bluevine Email"
-                      onChange={e => setBluevineEmail(e.target.value)}
-                      required
-                      error={!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(bluevineEmail)}
-                      value={bluevineEmail}
-                    />
-                    <TextField
-                      fullWidth
-                      label="Bluevine Password"
-                      value={bluevinePassword}
-                      onChange={e => setBluevinePassword(e.target.value)}
-                      error={!bluevinePassword}
-                      required
-                      type="password"
-                    />
-                  </>
-                  <Stack
-                    direction="row"
-                    alignItems="center"
-                    spacing={1}
-                    justifyContent="flex-end"
-                  >
-                    <InfoOutlinedIcon className="text-gray-500 text-sm" />
-                    <p className="m-0 text-gray-500">
-                      Your information is securely encrypted with Fernet.
-                    </p>
-                  </Stack>
-                </Stack>
-              </Card>
-            </div>
-          )}
-        </>
+              <>
+                <TextField
+                  fullWidth
+                  label="Account Number"
+                  onChange={e => setAccountNumber(e.target.value)}
+                  required
+                  error={
+                    !(
+                      (accountNumber && /^\d+$/.test(accountNumber)) ||
+                      accountNumber === user.bank?.account_number
+                    )
+                  }
+                  value={accountNumber}
+                  type="password"
+                />
+                <TextField
+                  fullWidth
+                  label="Routing Number"
+                  value={routingNumber}
+                  onChange={e => setRoutingNumber(e.target.value)}
+                  required
+                  error={
+                    !(
+                      (routingNumber && /^\d+$/.test(routingNumber)) ||
+                      routingNumber === user.bank?.routing_number
+                    )
+                  }
+                  type="password"
+                />
+              </>
+              <>
+                <TextField
+                  fullWidth
+                  label="Bank Name"
+                  value={bankName}
+                  onChange={e => setBankName(e.target.value)}
+                  required
+                  error={!(bankName || bankName === user.bank?.bank_name)}
+                />
+                <SuccessDialog
+                  open={success}
+                  onClose={() => setSuccess(false)}
+                />
+              </>
+              <Stack
+                direction="row"
+                alignItems="center"
+                spacing={1}
+                justifyContent="flex-end"
+              >
+                <InfoOutlinedIcon className="text-gray-500 text-sm" />
+                <p className="m-0 text-gray-500">
+                  Your information is securely encrypted with Fernet.
+                </p>
+              </Stack>
+            </Stack>
+          </Card>
+        </div>
+      )}
+      {admin && user && (
+        <div className="min-h-[95%] w-3/4 min-w-[500px] mx-auto px-16 pt-8 !rounded-[48px]">
+          <Card className="p-12 w-4/5 !rounded-[32px]">
+            <Stack spacing={4}>
+              <Stack
+                direction="row"
+                justifyContent="space-between"
+                alignItems="center"
+              >
+                <h1 className="m-0">Bluevine Details (admin only)</h1>
+                <Button
+                  onClick={bluevineSubmit}
+                  variant="contained"
+                  disabled={
+                    !bluevineEmail ||
+                    !bluevinePassword ||
+                    !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(bluevineEmail) ||
+                    (bluevinePassword === user.bluevinePassword &&
+                      bluevineEmail === user.bluevineEmail)
+                  }
+                >
+                  {user.bank ? 'Update' : 'Submit'}
+                </Button>
+              </Stack>
+              <>
+                <TextField
+                  fullWidth
+                  label="Bluevine Email"
+                  onChange={e => setBluevineEmail(e.target.value)}
+                  required
+                  error={!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(bluevineEmail)}
+                  value={bluevineEmail}
+                />
+                <TextField
+                  fullWidth
+                  label="Bluevine Password"
+                  value={bluevinePassword}
+                  onChange={e => setBluevinePassword(e.target.value)}
+                  error={!bluevinePassword}
+                  required
+                  type="password"
+                />
+              </>
+              <Stack
+                direction="row"
+                alignItems="center"
+                spacing={1}
+                justifyContent="flex-end"
+              >
+                <InfoOutlinedIcon className="text-gray-500 text-sm" />
+                <p className="m-0 text-gray-500">
+                  Your information is securely encrypted with Fernet.
+                </p>
+              </Stack>
+            </Stack>
+          </Card>
+        </div>
       )}
     </>
   );

@@ -8,9 +8,11 @@ export const apiRequest = async (
   on401: () => void = removeToken,
 ) => {
   try {
-    let headers: any = {
-      'Content-Type': 'application/json',
-    };
+    let headers: any = {};
+
+    if (!(bodyData instanceof FormData)) {
+      headers['Content-Type'] = 'application/json';
+    }
 
     if (token) {
       headers.Authorization = 'Bearer ' + token;
@@ -26,7 +28,8 @@ export const apiRequest = async (
       referrerPolicy: 'no-referrer',
     };
     if (bodyData) {
-      data.body = JSON.stringify(bodyData);
+      data.body =
+        bodyData instanceof FormData ? bodyData : JSON.stringify(bodyData);
     }
 
     const response = await fetch(

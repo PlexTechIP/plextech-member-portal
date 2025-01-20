@@ -13,6 +13,7 @@ from flask_jwt_extended import (
 from datetime import datetime, timedelta, timezone
 from time import time
 from cryptography.fernet import Fernet
+import os
 
 try:
     from .send_email import gmail_send_message
@@ -201,6 +202,7 @@ def members():
                 user["current_position"] = ""
 
         return {"users": users}, 200
+
 
 @app.route("/profile/", methods=["PUT", "POST", "GET", "DELETE", "OPTIONS"])
 @jwt_required()
@@ -1093,6 +1095,28 @@ def bank_details():
                 fetch=False,
             )
 
+        return {}, 200
+
+
+@app.route("/profile/image/", methods=["PUT"])
+@jwt_required()
+def update_profile_image():
+    if request.method == "PUT":
+        id = get_jwt_identity()
+
+        if "image" not in request.files:
+            return {"error": "No image file"}, 400
+
+        file = request.files["image"]
+        if file.filename == "":
+            return {"error": "No selected file"}, 400
+
+        # Save to file
+        profile_dir = "./images" if getenv("ENVIRONMENT") == "local" else "/home/p/pl/plextech/app/public/profile-pictures"
+        if not os.path.exists(profile_dir):
+            return {"error": "Profile pictures directory does not exist"}, 500
+
+        file.save(f"{profile_dir}/{id}.jpg")
         return {}, 200
 
 
