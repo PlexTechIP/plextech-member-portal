@@ -222,10 +222,6 @@ def protected_user_routes():
                 fetch=False,
             )
         else:
-            user = execute_query("SELECT treasurer FROM users WHERE id = %s", (id,))[0]
-            if not user["treasurer"]:
-                return {}, 401
-
             execute_query(
                 """
                 UPDATE users 
