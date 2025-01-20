@@ -14,6 +14,7 @@ from datetime import datetime, timedelta, timezone
 from time import time
 from cryptography.fernet import Fernet
 import os
+from flask_cors import CORS
 
 try:
     from .send_email import gmail_send_message
@@ -31,6 +32,22 @@ import uuid
 load_dotenv()
 
 app = Flask(__name__)
+CORS(
+    app,
+    resources={
+        r"/*": {
+            "origins": [
+                "https://plextech.studentorg.berkeley.edu",
+                "https://accounts.google.com",
+                "http://localhost:3000",
+            ],
+            "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+            "allow_headers": ["Content-Type", "Authorization", "X-Requested-With"],
+            "supports_credentials": True,
+        }
+    },
+)
+
 app.config["CORS_HEADERS"] = "Content-Type"
 app.config["JWT_SECRET_KEY"] = getenv("JWT_SECRET_KEY")
 app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(hours=1)
@@ -78,23 +95,6 @@ def generate_uuid():
 
 @app.after_request
 def after_request(response):
-    # cors
-    if getenv("ENVIRONMENT") == "local":
-        origin = "*"
-    else:
-        # origin = "https://plextech-member-portal.vercel.app"
-        origin = "https://plextech.studentorg.berkeley.edu"
-
-    response.headers.add(
-        "Access-Control-Allow-Origin",
-        origin,
-    )
-    response.headers.add(
-        "Access-Control-Allow-Headers", "Content-Type,Authorization,X-Requested-With"
-    )
-    response.headers.add("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE,OPTIONS")
-    response.headers.add("Access-Control-Allow-Credentials", "true")
-
     # refresh expiring jwt
     try:
         exp_timestamp = get_jwt()["exp"]
@@ -108,7 +108,6 @@ def after_request(response):
                 response.data = json.dumps(data)
         return response
     except (RuntimeError, KeyError):
-        # Case where there is not a valid JWT. Just return the original response
         return response
 
 
