@@ -67,7 +67,13 @@ export function ProfilePage(props: Props) {
   const handleSave = async () => {
     if (editorRef.current) {
       const canvas = editorRef.current.getImageScaledToCanvas();
-      canvas.toBlob(
+      const tempCanvas = document.createElement('canvas');
+      tempCanvas.width = 500;
+      tempCanvas.height = 500;
+      const ctx = tempCanvas.getContext('2d');
+      ctx?.drawImage(canvas, 0, 0, 500, 500);
+
+      tempCanvas.toBlob(
         async blob => {
           if (!blob) return;
 
