@@ -253,7 +253,8 @@ def protected_user_routes():
                 SET profile_blurb = %s,
                     linkedin_username = %s, instagram_username = %s,
                     calendly_username = %s, current_company = %s,
-                    current_position = %s
+                    current_position = %s,
+                    first_name = %s, last_name = %s
                 WHERE id = %s
                 """,
                 (
@@ -263,6 +264,8 @@ def protected_user_routes():
                     form.get("calendly_username").strip(),
                     form.get("current_company").strip(),
                     form.get("current_position").strip(),
+                    form.get("first_name").strip(),
+                    form.get("last_name").strip(),
                     id,
                 ),
                 fetch=False,

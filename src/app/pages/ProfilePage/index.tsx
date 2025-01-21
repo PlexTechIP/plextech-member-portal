@@ -54,6 +54,8 @@ export function ProfilePage(props: Props) {
   const [instagramUsername, setInstagramUsername] = useState<string>('');
   const [calendlyUsername, setCalendlyUsername] = useState<string>('');
   const [currentCompany, setCurrentCompany] = useState<string>('');
+  const [firstName, setFirstName] = useState<string>('');
+  const [lastName, setLastName] = useState<string>('');
 
   const [scale, setScale] = useState(1.2);
 
@@ -120,6 +122,8 @@ export function ProfilePage(props: Props) {
       setInstagramUsername(res.instagram_username || '');
       setCalendlyUsername(res.calendly_username || '');
       setCurrentCompany(res.current_company || '');
+      setFirstName(res.first_name || '');
+      setLastName(res.last_name || '');
       setImageUrl(
         `${process.env.REACT_APP_BACKEND_URL}/profile/image/${
           res.id
@@ -190,6 +194,8 @@ export function ProfilePage(props: Props) {
       instagram_username: instagramUsername,
       calendly_username: calendlyUsername,
       current_company: currentCompany,
+      first_name: firstName,
+      last_name: lastName,
     });
 
     if (!success) {
@@ -226,7 +232,9 @@ export function ProfilePage(props: Props) {
                         linkedinUsername === user.linkedin_username &&
                         instagramUsername === user.instagram_username &&
                         calendlyUsername === user.calendly_username &&
-                        currentCompany === user.current_company) ||
+                        currentCompany === user.current_company &&
+                        firstName === user.first_name &&
+                        lastName === user.last_name) ||
                       (linkedinUsername !== '' &&
                         !linkedinUsername.startsWith(
                           'https://www.linkedin.com/',
@@ -239,7 +247,9 @@ export function ProfilePage(props: Props) {
                         !calendlyUsername.startsWith(
                           'https://calendly.com/',
                         )) ||
-                      profileBlurb === ''
+                      profileBlurb === '' ||
+                      firstName === '' ||
+                      lastName === ''
                     }
                   >
                     Update
@@ -321,6 +331,22 @@ export function ProfilePage(props: Props) {
                     </Button>
                   </DialogActions>
                 </Dialog>
+                <Stack direction="row" spacing={2}>
+                  <TextField
+                    fullWidth
+                    label="First Name"
+                    value={firstName}
+                    onChange={e => setFirstName(e.target.value)}
+                    required
+                  />
+                  <TextField
+                    fullWidth
+                    label="Last Name"
+                    value={lastName}
+                    onChange={e => setLastName(e.target.value)}
+                    required
+                  />
+                </Stack>
                 <TextField
                   fullWidth
                   label="Current Position (admin only)"
