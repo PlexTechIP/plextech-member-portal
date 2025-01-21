@@ -31,18 +31,30 @@ import uuid
 
 load_dotenv()
 
+# Set up environment-specific CORS settings
+if getenv("ENVIRONMENT") == "local":
+    origins = ["http://localhost:3000"]
+else:
+    origins = [
+        "https://plextech.studentorg.berkeley.edu",
+        "https://plextech-member-portal.vercel.app",
+    ]
+
+# Add Google OAuth domains
+origins.extend(
+    [
+        "https://accounts.google.com",
+        "https://www.googleapis.com",
+        "https://oauth2.googleapis.com",
+    ]
+)
+
 app = Flask(__name__)
 CORS(
     app,
     resources={
         r"/*": {
-            "origins": [
-                "https://plextech.studentorg.berkeley.edu",
-                "https://accounts.google.com",
-                "http://localhost:3000",
-                "https://www.googleapis.com",
-                "https://oauth2.googleapis.com",
-            ],
+            "origins": origins,
             "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
             "allow_headers": ["Content-Type", "Authorization", "X-Requested-With"],
             "supports_credentials": True,
@@ -53,17 +65,28 @@ CORS(
 )
 
 
-# Add CORS preflight handling
-@app.route("/", defaults={"path": ""}, methods=["OPTIONS"])
-@app.route("/<path:path>", methods=["OPTIONS"])
-def handle_options(path):
-    response = app.make_default_options_response()
-    response.headers["Access-Control-Allow-Origin"] = request.headers.get("Origin", "*")
-    response.headers["Access-Control-Allow-Credentials"] = "true"
-    response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
-    response.headers["Access-Control-Allow-Headers"] = (
-        "Content-Type, Authorization, X-Requested-With"
-    )
+# Add logging for CORS issues
+@app.after_request
+def after_request(response):
+    # Log CORS headers for debugging
+    if getenv("ENVIRONMENT") != "local":
+        logging.info(f"Request Origin: {request.headers.get('Origin')}")
+        logging.info(f"Response CORS headers: {dict(response.headers)}")
+
+    # refresh expiring jwt
+    try:
+        exp_timestamp = get_jwt()["exp"]
+        now = datetime.now(timezone.utc)
+        target_timestamp = datetime.timestamp(now + timedelta(minutes=30))
+        if target_timestamp > exp_timestamp:
+            access_token = create_access_token(identity=get_jwt_identity())
+            data = response.get_json()
+            if type(data) is dict:
+                data["access_token"] = access_token
+                response.data = json.dumps(data)
+    except (RuntimeError, KeyError):
+        pass
+
     return response
 
 
@@ -110,24 +133,6 @@ def execute_query(query, params=None, fetch=True):
 
 def generate_uuid():
     return str(uuid.uuid4())
-
-
-@app.after_request
-def after_request(response):
-    # refresh expiring jwt
-    try:
-        exp_timestamp = get_jwt()["exp"]
-        now = datetime.now(timezone.utc)
-        target_timestamp = datetime.timestamp(now + timedelta(minutes=30))
-        if target_timestamp > exp_timestamp:
-            access_token = create_access_token(identity=get_jwt_identity())
-            data = response.get_json()
-            if type(data) is dict:
-                data["access_token"] = access_token
-                response.data = json.dumps(data)
-        return response
-    except (RuntimeError, KeyError):
-        return response
 
 
 def get_hashed_password(plain_text_password):
