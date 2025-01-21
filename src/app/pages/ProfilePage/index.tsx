@@ -90,7 +90,7 @@ export function ProfilePage(props: Props) {
           }
         },
         'image/jpeg',
-        0.95,
+        0.8,
       );
     }
   };
