@@ -338,6 +338,10 @@ export function ProfilePage(props: Props) {
                     value={firstName}
                     onChange={e => setFirstName(e.target.value)}
                     required
+                    error={firstName === ''}
+                    helperText={
+                      firstName === '' ? 'First name is required' : ''
+                    }
                   />
                   <TextField
                     fullWidth
@@ -345,6 +349,8 @@ export function ProfilePage(props: Props) {
                     value={lastName}
                     onChange={e => setLastName(e.target.value)}
                     required
+                    error={lastName === ''}
+                    helperText={lastName === '' ? 'Last name is required' : ''}
                   />
                 </Stack>
                 <TextField
@@ -356,6 +362,12 @@ export function ProfilePage(props: Props) {
                     readOnly: !admin,
                   }}
                   disabled={!admin}
+                  error={admin && currentPosition === ''}
+                  helperText={
+                    admin && currentPosition === ''
+                      ? 'Position is required for admins'
+                      : ''
+                  }
                 />
                 <TextField
                   fullWidth
@@ -366,7 +378,12 @@ export function ProfilePage(props: Props) {
                   rows={4}
                   required
                   inputProps={{ maxLength: 250 }}
-                  helperText={`${profileBlurb.length} / 250`}
+                  error={profileBlurb === ''}
+                  helperText={
+                    profileBlurb === ''
+                      ? 'Profile blurb is required'
+                      : `${profileBlurb.length} / 250`
+                  }
                 />
                 <TextField
                   fullWidth
@@ -374,12 +391,8 @@ export function ProfilePage(props: Props) {
                   value={linkedinUsername}
                   onChange={e => setLinkedinUsername(e.target.value)}
                   error={
-                    (linkedinUsername !== '' &&
-                      !linkedinUsername.startsWith(
-                        'https://www.linkedin.com/',
-                      )) ||
-                    (linkedinUsername === '' &&
-                      linkedinUsername !== user.linkedin_username)
+                    linkedinUsername !== '' &&
+                    !linkedinUsername.startsWith('https://www.linkedin.com/')
                   }
                   helperText={
                     linkedinUsername !== '' &&
@@ -395,12 +408,8 @@ export function ProfilePage(props: Props) {
                   value={instagramUsername}
                   onChange={e => setInstagramUsername(e.target.value)}
                   error={
-                    (instagramUsername !== '' &&
-                      !instagramUsername.startsWith(
-                        'https://www.instagram.com/',
-                      )) ||
-                    (instagramUsername === '' &&
-                      instagramUsername !== user.instagram_username)
+                    instagramUsername !== '' &&
+                    !instagramUsername.startsWith('https://www.instagram.com/')
                   }
                   helperText={
                     instagramUsername !== '' &&
@@ -416,10 +425,8 @@ export function ProfilePage(props: Props) {
                   value={calendlyUsername}
                   onChange={e => setCalendlyUsername(e.target.value)}
                   error={
-                    (calendlyUsername !== '' &&
-                      !calendlyUsername.startsWith('https://calendly.com/')) ||
-                    (calendlyUsername === '' &&
-                      calendlyUsername !== user.calendly_username)
+                    calendlyUsername !== '' &&
+                    !calendlyUsername.startsWith('https://calendly.com/')
                   }
                   helperText={
                     calendlyUsername !== '' &&
@@ -434,6 +441,11 @@ export function ProfilePage(props: Props) {
                   label="Current Company"
                   value={currentCompany}
                   onChange={e => setCurrentCompany(e.target.value)}
+                  error={currentCompany === ''}
+                  helperText={
+                    currentCompany === '' ? 'Company is required' : ''
+                  }
+                  required
                 />
               </>
             )}
@@ -477,6 +489,14 @@ export function ProfilePage(props: Props) {
                       accountNumber === user.bank?.account_number
                     )
                   }
+                  helperText={
+                    !(
+                      (accountNumber && /^\d+$/.test(accountNumber)) ||
+                      accountNumber === user.bank?.account_number
+                    )
+                      ? 'Must be a valid account number'
+                      : ''
+                  }
                   value={accountNumber}
                   type="password"
                 />
@@ -492,6 +512,14 @@ export function ProfilePage(props: Props) {
                       routingNumber === user.bank?.routing_number
                     )
                   }
+                  helperText={
+                    !(
+                      (routingNumber && /^\d+$/.test(routingNumber)) ||
+                      routingNumber === user.bank?.routing_number
+                    )
+                      ? 'Must be a valid routing number'
+                      : ''
+                  }
                   type="password"
                 />
               </>
@@ -503,6 +531,11 @@ export function ProfilePage(props: Props) {
                   onChange={e => setBankName(e.target.value)}
                   required
                   error={!(bankName || bankName === user.bank?.bank_name)}
+                  helperText={
+                    !(bankName || bankName === user.bank?.bank_name)
+                      ? 'Bank name is required'
+                      : ''
+                  }
                 />
                 <SuccessDialog
                   open={success}
@@ -555,6 +588,11 @@ export function ProfilePage(props: Props) {
                   onChange={e => setBluevineEmail(e.target.value)}
                   required
                   error={!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(bluevineEmail)}
+                  helperText={
+                    !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(bluevineEmail)
+                      ? 'Must be a valid email address'
+                      : ''
+                  }
                   value={bluevineEmail}
                 />
                 <TextField
@@ -563,6 +601,7 @@ export function ProfilePage(props: Props) {
                   value={bluevinePassword}
                   onChange={e => setBluevinePassword(e.target.value)}
                   error={!bluevinePassword}
+                  helperText={!bluevinePassword ? 'Password is required' : ''}
                   required
                   type="password"
                 />
