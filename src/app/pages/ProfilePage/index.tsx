@@ -207,420 +207,410 @@ export function ProfilePage(props: Props) {
   };
 
   return (
-    <>
+    <Stack
+      spacing={4}
+      justifyContent="center"
+      alignItems="center"
+      className="w-full pt-8 px-8"
+    >
       <Helmet>
         <title>Profile</title>
         <meta name="description" content="Profile information" />
       </Helmet>
       {error && <ErrorModal open={!!error} error={error} />}
-      <div className="min-h-[95%] w-3/4 min-w-[500px] mx-auto px-16 pt-8 !rounded-[48px]">
-        <Card className="p-12 w-4/5 !rounded-[32px]">
-          <Stack spacing={4}>
-            {user && (
-              <>
-                <Stack
-                  direction="row"
-                  justifyContent="space-between"
-                  alignItems="center"
+      <Card className="px-16 py-16 w-full max-w-[1000px] !rounded-[32px] justify-center items-center">
+        <Stack spacing={4}>
+          {user && (
+            <>
+              <Stack
+                direction="row"
+                justifyContent="space-between"
+                alignItems="center"
+              >
+                <h1 className="text-2xl m-0">Member Details</h1>
+                <Button
+                  onClick={profileSubmit}
+                  variant="contained"
+                  disabled={
+                    (profileBlurb === user.profile_blurb &&
+                      linkedinUsername === user.linkedin_username &&
+                      instagramUsername === user.instagram_username &&
+                      calendlyUsername === user.calendly_username &&
+                      currentCompany === user.current_company &&
+                      firstName === user.first_name &&
+                      lastName === user.last_name) ||
+                    (linkedinUsername !== '' &&
+                      !linkedinUsername.startsWith(
+                        'https://www.linkedin.com/',
+                      )) ||
+                    (instagramUsername !== '' &&
+                      !instagramUsername.startsWith(
+                        'https://www.instagram.com/',
+                      )) ||
+                    (calendlyUsername !== '' &&
+                      !calendlyUsername.startsWith('https://calendly.com/')) ||
+                    profileBlurb === '' ||
+                    firstName === '' ||
+                    lastName === ''
+                  }
                 >
-                  <h1 className="text-2xl m-0">Member Details</h1>
-                  <Button
-                    onClick={profileSubmit}
-                    variant="contained"
-                    disabled={
-                      (profileBlurb === user.profile_blurb &&
-                        linkedinUsername === user.linkedin_username &&
-                        instagramUsername === user.instagram_username &&
-                        calendlyUsername === user.calendly_username &&
-                        currentCompany === user.current_company &&
-                        firstName === user.first_name &&
-                        lastName === user.last_name) ||
-                      (linkedinUsername !== '' &&
-                        !linkedinUsername.startsWith(
-                          'https://www.linkedin.com/',
-                        )) ||
-                      (instagramUsername !== '' &&
-                        !instagramUsername.startsWith(
-                          'https://www.instagram.com/',
-                        )) ||
-                      (calendlyUsername !== '' &&
-                        !calendlyUsername.startsWith(
-                          'https://calendly.com/',
-                        )) ||
-                      profileBlurb === '' ||
-                      firstName === '' ||
-                      lastName === ''
-                    }
-                  >
-                    Update
-                  </Button>
-                </Stack>
-                <div className="flex flex-col items-center mb-4">
-                  <div className="relative">
-                    <div className="flex items-end">
-                      <div className="flex flex-col items-center">
-                        <h3 className="text-lg mb-2">Profile Picture</h3>
-                        <Avatar
-                          src={imageUrl}
-                          sx={{ width: 150, height: 150 }}
-                          className="cursor-pointer"
-                        />
-                        <input
-                          accept="image/*"
-                          type="file"
-                          id="icon-button-file"
-                          onChange={handleImageChange}
-                          className="hidden"
-                        />
-                      </div>
-                      <label htmlFor="icon-button-file">
-                        <IconButton
-                          className="absolute bottom-0 right-0 bg-white shadow-md hover:bg-gray-100"
-                          component="span"
-                        >
-                          <UploadIcon />
-                        </IconButton>
-                      </label>
+                  Update
+                </Button>
+              </Stack>
+              <div className="flex flex-col items-center mb-4">
+                <div className="relative">
+                  <div className="flex items-end">
+                    <div className="flex flex-col items-center">
+                      <h3 className="text-lg mb-2">Profile Picture</h3>
+                      <Avatar
+                        src={imageUrl}
+                        sx={{ width: 150, height: 150 }}
+                        className="cursor-pointer"
+                      />
+                      <input
+                        accept="image/*"
+                        type="file"
+                        id="icon-button-file"
+                        onChange={handleImageChange}
+                        className="hidden"
+                      />
                     </div>
+                    <label htmlFor="icon-button-file">
+                      <IconButton
+                        className="absolute bottom-0 right-0 bg-white shadow-md hover:bg-gray-100"
+                        component="span"
+                      >
+                        <UploadIcon />
+                      </IconButton>
+                    </label>
                   </div>
                 </div>
+              </div>
 
-                <Dialog
-                  open={openCrop}
-                  onClose={() => setOpenCrop(false)}
-                  PaperProps={{
-                    style: {
-                      borderRadius: '24px',
-                      padding: '16px',
-                    },
-                  }}
-                >
-                  <DialogContent className="!pb-0">
-                    <h2 className="text-xl font-bold mb-4">
-                      Edit Profile Picture
-                    </h2>
-                    {image && (
-                      <div className="flex flex-col items-center">
-                        <Editor
-                          ref={editorRef}
-                          image={image}
-                          width={250}
-                          height={250}
-                          border={50}
-                          borderRadius={125}
-                          color={[0, 0, 0, 0.6]}
-                          scale={scale}
+              <Dialog
+                open={openCrop}
+                onClose={() => setOpenCrop(false)}
+                PaperProps={{
+                  style: {
+                    borderRadius: '24px',
+                    padding: '16px',
+                  },
+                }}
+              >
+                <DialogContent className="!pb-0">
+                  <h2 className="text-xl font-bold mb-4">
+                    Edit Profile Picture
+                  </h2>
+                  {image && (
+                    <div className="flex flex-col items-center">
+                      <Editor
+                        ref={editorRef}
+                        image={image}
+                        width={250}
+                        height={250}
+                        border={50}
+                        borderRadius={125}
+                        color={[0, 0, 0, 0.6]}
+                        scale={scale}
+                      />
+                      <div className="mt-6 w-full">
+                        <p className="text-sm text-gray-600 mb-2">Zoom</p>
+                        <Slider
+                          value={scale}
+                          min={1}
+                          max={3}
+                          step={0.1}
+                          onChange={(_, value) => setScale(value as number)}
                         />
-                        <div className="mt-6 w-full">
-                          <p className="text-sm text-gray-600 mb-2">Zoom</p>
-                          <Slider
-                            value={scale}
-                            min={1}
-                            max={3}
-                            step={0.1}
-                            onChange={(_, value) => setScale(value as number)}
-                          />
-                        </div>
                       </div>
-                    )}
-                  </DialogContent>
-                  <DialogActions className="p-6">
-                    <Button onClick={() => setOpenCrop(false)}>Cancel</Button>
-                    <Button variant="contained" onClick={handleSave}>
-                      Save
-                    </Button>
-                  </DialogActions>
-                </Dialog>
-                <Stack direction="row" spacing={2}>
-                  <TextField
-                    fullWidth
-                    label="First Name"
-                    value={firstName}
-                    onChange={e => setFirstName(e.target.value)}
-                    required
-                    error={firstName === ''}
-                    helperText={
-                      firstName === '' ? 'First name is required' : ''
-                    }
-                  />
-                  <TextField
-                    fullWidth
-                    label="Last Name"
-                    value={lastName}
-                    onChange={e => setLastName(e.target.value)}
-                    required
-                    error={lastName === ''}
-                    helperText={lastName === '' ? 'Last name is required' : ''}
-                  />
-                </Stack>
+                    </div>
+                  )}
+                </DialogContent>
+                <DialogActions className="p-6">
+                  <Button onClick={() => setOpenCrop(false)}>Cancel</Button>
+                  <Button variant="contained" onClick={handleSave}>
+                    Save
+                  </Button>
+                </DialogActions>
+              </Dialog>
+              <Stack direction="row" spacing={2}>
                 <TextField
                   fullWidth
-                  label="Current Position (admin only)"
-                  value={currentPosition}
-                  onChange={e => setCurrentPosition(e.target.value)}
-                  InputProps={{
-                    readOnly: !admin,
-                  }}
-                  disabled={!admin}
-                  error={admin && currentPosition === ''}
-                  helperText={
-                    admin && currentPosition === ''
-                      ? 'Position is required for admins'
-                      : ''
-                  }
-                />
-                <TextField
-                  fullWidth
-                  label="Profile Blurb"
-                  value={profileBlurb}
-                  onChange={e => setProfileBlurb(e.target.value)}
-                  multiline
-                  rows={4}
+                  label="First Name"
+                  value={firstName}
+                  onChange={e => setFirstName(e.target.value)}
                   required
-                  inputProps={{ maxLength: 250 }}
-                  error={profileBlurb === ''}
-                  helperText={
-                    profileBlurb === ''
-                      ? 'Profile blurb is required'
-                      : `${profileBlurb.length} / 250`
-                  }
+                  error={firstName === ''}
+                  helperText={firstName === '' ? 'First name is required' : ''}
                 />
                 <TextField
                   fullWidth
-                  label="LinkedIn URL"
-                  value={linkedinUsername}
-                  onChange={e => setLinkedinUsername(e.target.value)}
-                  error={
-                    linkedinUsername !== '' &&
-                    !linkedinUsername.startsWith('https://www.linkedin.com/')
-                  }
-                  helperText={
-                    linkedinUsername !== '' &&
-                    !linkedinUsername.startsWith('https://www.linkedin.com/')
-                      ? 'Must be a valid LinkedIn URL'
-                      : ''
-                  }
+                  label="Last Name"
+                  value={lastName}
+                  onChange={e => setLastName(e.target.value)}
                   required
+                  error={lastName === ''}
+                  helperText={lastName === '' ? 'Last name is required' : ''}
                 />
-                <TextField
-                  fullWidth
-                  label="Instagram URL"
-                  value={instagramUsername}
-                  onChange={e => setInstagramUsername(e.target.value)}
-                  error={
-                    instagramUsername !== '' &&
-                    !instagramUsername.startsWith('https://www.instagram.com/')
-                  }
-                  helperText={
-                    instagramUsername !== '' &&
-                    !instagramUsername.startsWith('https://www.instagram.com/')
-                      ? 'Must be a valid Instagram URL'
-                      : ''
-                  }
-                  required
-                />
-                <TextField
-                  fullWidth
-                  label="Calendly URL"
-                  value={calendlyUsername}
-                  onChange={e => setCalendlyUsername(e.target.value)}
-                  error={
-                    calendlyUsername !== '' &&
-                    !calendlyUsername.startsWith('https://calendly.com/')
-                  }
-                  helperText={
-                    calendlyUsername !== '' &&
-                    !calendlyUsername.startsWith('https://calendly.com/')
-                      ? 'Must be a valid Calendly URL'
-                      : ''
-                  }
-                  required
-                />
-                <TextField
-                  fullWidth
-                  label="Current Company"
-                  value={currentCompany}
-                  onChange={e => setCurrentCompany(e.target.value)}
-                  error={currentCompany === ''}
-                  helperText={
-                    currentCompany === '' ? 'Company is required' : ''
-                  }
-                  required
-                />
-              </>
-            )}
+              </Stack>
+              <TextField
+                fullWidth
+                label="Current Position (admin only)"
+                value={currentPosition}
+                onChange={e => setCurrentPosition(e.target.value)}
+                InputProps={{
+                  readOnly: !admin,
+                }}
+                disabled={!admin}
+                error={admin && currentPosition === ''}
+                helperText={
+                  admin && currentPosition === ''
+                    ? 'Position is required for admins'
+                    : ''
+                }
+              />
+              <TextField
+                fullWidth
+                label="Profile Blurb"
+                value={profileBlurb}
+                onChange={e => setProfileBlurb(e.target.value)}
+                multiline
+                rows={4}
+                required
+                inputProps={{ maxLength: 250 }}
+                error={profileBlurb === ''}
+                helperText={
+                  profileBlurb === ''
+                    ? 'Profile blurb is required'
+                    : `${profileBlurb.length} / 250`
+                }
+              />
+              <TextField
+                fullWidth
+                label="LinkedIn URL"
+                value={linkedinUsername}
+                onChange={e => setLinkedinUsername(e.target.value)}
+                error={
+                  linkedinUsername !== '' &&
+                  !linkedinUsername.startsWith('https://www.linkedin.com/')
+                }
+                helperText={
+                  linkedinUsername !== '' &&
+                  !linkedinUsername.startsWith('https://www.linkedin.com/')
+                    ? 'Must be a valid LinkedIn URL'
+                    : ''
+                }
+                required
+              />
+              <TextField
+                fullWidth
+                label="Instagram URL"
+                value={instagramUsername}
+                onChange={e => setInstagramUsername(e.target.value)}
+                error={
+                  instagramUsername !== '' &&
+                  !instagramUsername.startsWith('https://www.instagram.com/')
+                }
+                helperText={
+                  instagramUsername !== '' &&
+                  !instagramUsername.startsWith('https://www.instagram.com/')
+                    ? 'Must be a valid Instagram URL'
+                    : ''
+                }
+                required
+              />
+              <TextField
+                fullWidth
+                label="Calendly URL"
+                value={calendlyUsername}
+                onChange={e => setCalendlyUsername(e.target.value)}
+                error={
+                  calendlyUsername !== '' &&
+                  !calendlyUsername.startsWith('https://calendly.com/')
+                }
+                helperText={
+                  calendlyUsername !== '' &&
+                  !calendlyUsername.startsWith('https://calendly.com/')
+                    ? 'Must be a valid Calendly URL'
+                    : ''
+                }
+                required
+              />
+              <TextField
+                fullWidth
+                label="Current Company"
+                value={currentCompany}
+                onChange={e => setCurrentCompany(e.target.value)}
+                error={currentCompany === ''}
+                helperText={currentCompany === '' ? 'Company is required' : ''}
+                required
+              />
+            </>
+          )}
+        </Stack>
+      </Card>
+      {user && (
+        <Card className="px-16 py-16 w-full max-w-[1000px] !rounded-[32px] justify-center items-center">
+          <Stack spacing={4}>
+            <Stack
+              direction="row"
+              justifyContent="space-between"
+              alignItems="center"
+            >
+              <h1 className="text-2xl m-0">Bank Details</h1>
+              <Button
+                onClick={bankSubmit}
+                variant="contained"
+                disabled={
+                  !accountNumber ||
+                  !routingNumber ||
+                  (accountNumber === user.bank?.account_number &&
+                    routingNumber === user.bank?.routing_number &&
+                    bankName === user.bank?.bank_name) ||
+                  !bankName
+                }
+              >
+                {user.bank ? 'Update' : 'Submit'}
+              </Button>
+            </Stack>
+            <>
+              <TextField
+                fullWidth
+                label="Account Number"
+                onChange={e => setAccountNumber(e.target.value)}
+                required
+                error={
+                  !(
+                    (accountNumber && /^\d+$/.test(accountNumber)) ||
+                    accountNumber === user.bank?.account_number
+                  )
+                }
+                helperText={
+                  !(
+                    (accountNumber && /^\d+$/.test(accountNumber)) ||
+                    accountNumber === user.bank?.account_number
+                  )
+                    ? 'Must be a valid account number'
+                    : ''
+                }
+                value={accountNumber}
+                type="password"
+              />
+              <TextField
+                fullWidth
+                label="Routing Number"
+                value={routingNumber}
+                onChange={e => setRoutingNumber(e.target.value)}
+                required
+                error={
+                  !(
+                    (routingNumber && /^\d+$/.test(routingNumber)) ||
+                    routingNumber === user.bank?.routing_number
+                  )
+                }
+                helperText={
+                  !(
+                    (routingNumber && /^\d+$/.test(routingNumber)) ||
+                    routingNumber === user.bank?.routing_number
+                  )
+                    ? 'Must be a valid routing number'
+                    : ''
+                }
+                type="password"
+              />
+            </>
+            <>
+              <TextField
+                fullWidth
+                label="Bank Name"
+                value={bankName}
+                onChange={e => setBankName(e.target.value)}
+                required
+                error={!(bankName || bankName === user.bank?.bank_name)}
+                helperText={
+                  !(bankName || bankName === user.bank?.bank_name)
+                    ? 'Bank name is required'
+                    : ''
+                }
+              />
+              <SuccessDialog open={success} onClose={() => setSuccess(false)} />
+            </>
+            <Stack
+              direction="row"
+              alignItems="center"
+              spacing={1}
+              justifyContent="flex-end"
+            >
+              <InfoOutlinedIcon className="text-gray-500 text-sm" />
+              <p className="m-0 text-gray-500">
+                Your information is securely encrypted with Fernet.
+              </p>
+            </Stack>
           </Stack>
         </Card>
-      </div>
-      {user && (
-        <div className="min-h-[95%] w-3/4 min-w-[500px] mx-auto px-16 pt-8 !rounded-[48px]">
-          <Card className="p-12 w-4/5 !rounded-[32px]">
-            <Stack spacing={4}>
-              <Stack
-                direction="row"
-                justifyContent="space-between"
-                alignItems="center"
-              >
-                <h1 className="text-2xl m-0">Bank Details</h1>
-                <Button
-                  onClick={bankSubmit}
-                  variant="contained"
-                  disabled={
-                    !accountNumber ||
-                    !routingNumber ||
-                    (accountNumber === user.bank?.account_number &&
-                      routingNumber === user.bank?.routing_number &&
-                      bankName === user.bank?.bank_name) ||
-                    !bankName
-                  }
-                >
-                  {user.bank ? 'Update' : 'Submit'}
-                </Button>
-              </Stack>
-              <>
-                <TextField
-                  fullWidth
-                  label="Account Number"
-                  onChange={e => setAccountNumber(e.target.value)}
-                  required
-                  error={
-                    !(
-                      (accountNumber && /^\d+$/.test(accountNumber)) ||
-                      accountNumber === user.bank?.account_number
-                    )
-                  }
-                  helperText={
-                    !(
-                      (accountNumber && /^\d+$/.test(accountNumber)) ||
-                      accountNumber === user.bank?.account_number
-                    )
-                      ? 'Must be a valid account number'
-                      : ''
-                  }
-                  value={accountNumber}
-                  type="password"
-                />
-                <TextField
-                  fullWidth
-                  label="Routing Number"
-                  value={routingNumber}
-                  onChange={e => setRoutingNumber(e.target.value)}
-                  required
-                  error={
-                    !(
-                      (routingNumber && /^\d+$/.test(routingNumber)) ||
-                      routingNumber === user.bank?.routing_number
-                    )
-                  }
-                  helperText={
-                    !(
-                      (routingNumber && /^\d+$/.test(routingNumber)) ||
-                      routingNumber === user.bank?.routing_number
-                    )
-                      ? 'Must be a valid routing number'
-                      : ''
-                  }
-                  type="password"
-                />
-              </>
-              <>
-                <TextField
-                  fullWidth
-                  label="Bank Name"
-                  value={bankName}
-                  onChange={e => setBankName(e.target.value)}
-                  required
-                  error={!(bankName || bankName === user.bank?.bank_name)}
-                  helperText={
-                    !(bankName || bankName === user.bank?.bank_name)
-                      ? 'Bank name is required'
-                      : ''
-                  }
-                />
-                <SuccessDialog
-                  open={success}
-                  onClose={() => setSuccess(false)}
-                />
-              </>
-              <Stack
-                direction="row"
-                alignItems="center"
-                spacing={1}
-                justifyContent="flex-end"
-              >
-                <InfoOutlinedIcon className="text-gray-500 text-sm" />
-                <p className="m-0 text-gray-500">
-                  Your information is securely encrypted with Fernet.
-                </p>
-              </Stack>
-            </Stack>
-          </Card>
-        </div>
       )}
       {admin && user && (
-        <div className="min-h-[95%] w-3/4 min-w-[500px] mx-auto px-16 pt-8 !rounded-[48px]">
-          <Card className="p-12 w-4/5 !rounded-[32px]">
-            <Stack spacing={4}>
-              <Stack
-                direction="row"
-                justifyContent="space-between"
-                alignItems="center"
+        <Card className="px-16 py-16 w-full max-w-[1000px] !rounded-[32px] justify-center items-center">
+          <Stack spacing={4}>
+            <Stack
+              direction="row"
+              justifyContent="space-between"
+              alignItems="center"
+            >
+              <h1 className="text-2xl m-0">Bluevine Details (admin only)</h1>
+              <Button
+                onClick={bluevineSubmit}
+                variant="contained"
+                disabled={
+                  !bluevineEmail ||
+                  !bluevinePassword ||
+                  !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(bluevineEmail) ||
+                  (bluevinePassword === user.bluevinePassword &&
+                    bluevineEmail === user.bluevineEmail)
+                }
               >
-                <h1 className="text-2xl m-0">Bluevine Details (admin only)</h1>
-                <Button
-                  onClick={bluevineSubmit}
-                  variant="contained"
-                  disabled={
-                    !bluevineEmail ||
-                    !bluevinePassword ||
-                    !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(bluevineEmail) ||
-                    (bluevinePassword === user.bluevinePassword &&
-                      bluevineEmail === user.bluevineEmail)
-                  }
-                >
-                  {user.bank ? 'Update' : 'Submit'}
-                </Button>
-              </Stack>
-              <>
-                <TextField
-                  fullWidth
-                  label="Bluevine Email"
-                  onChange={e => setBluevineEmail(e.target.value)}
-                  required
-                  error={!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(bluevineEmail)}
-                  helperText={
-                    !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(bluevineEmail)
-                      ? 'Must be a valid email address'
-                      : ''
-                  }
-                  value={bluevineEmail}
-                />
-                <TextField
-                  fullWidth
-                  label="Bluevine Password"
-                  value={bluevinePassword}
-                  onChange={e => setBluevinePassword(e.target.value)}
-                  error={!bluevinePassword}
-                  helperText={!bluevinePassword ? 'Password is required' : ''}
-                  required
-                  type="password"
-                />
-              </>
-              <Stack
-                direction="row"
-                alignItems="center"
-                spacing={1}
-                justifyContent="flex-end"
-              >
-                <InfoOutlinedIcon className="text-gray-500 text-sm" />
-                <p className="m-0 text-gray-500">
-                  Your information is securely encrypted with Fernet.
-                </p>
-              </Stack>
+                {user.bank ? 'Update' : 'Submit'}
+              </Button>
             </Stack>
-          </Card>
-        </div>
+            <>
+              <TextField
+                fullWidth
+                label="Bluevine Email"
+                onChange={e => setBluevineEmail(e.target.value)}
+                required
+                error={!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(bluevineEmail)}
+                helperText={
+                  !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(bluevineEmail)
+                    ? 'Must be a valid email address'
+                    : ''
+                }
+                value={bluevineEmail}
+              />
+              <TextField
+                fullWidth
+                label="Bluevine Password"
+                value={bluevinePassword}
+                onChange={e => setBluevinePassword(e.target.value)}
+                error={!bluevinePassword}
+                helperText={!bluevinePassword ? 'Password is required' : ''}
+                required
+                type="password"
+              />
+            </>
+            <Stack
+              direction="row"
+              alignItems="center"
+              spacing={1}
+              justifyContent="flex-end"
+            >
+              <InfoOutlinedIcon className="text-gray-500 text-sm" />
+              <p className="m-0 text-gray-500">
+                Your information is securely encrypted with Fernet.
+              </p>
+            </Stack>
+          </Stack>
+        </Card>
       )}
-    </>
+    </Stack>
   );
 }
