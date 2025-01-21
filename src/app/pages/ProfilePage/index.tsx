@@ -239,21 +239,24 @@ export function ProfilePage(props: Props) {
                     Update
                   </Button>
                 </Stack>
-                <div className="flex justify-center mb-4">
+                <div className="flex flex-col items-center mb-4">
                   <div className="relative">
                     <div className="flex items-end">
-                      <Avatar
-                        src={imageUrl}
-                        sx={{ width: 150, height: 150 }}
-                        className="cursor-pointer"
-                      />
-                      <input
-                        accept="image/*"
-                        type="file"
-                        id="icon-button-file"
-                        onChange={handleImageChange}
-                        className="hidden"
-                      />
+                      <div className="flex flex-col items-center">
+                        <h3 className="text-lg mb-2">Profile Picture</h3>
+                        <Avatar
+                          src={imageUrl}
+                          sx={{ width: 150, height: 150 }}
+                          className="cursor-pointer"
+                        />
+                        <input
+                          accept="image/*"
+                          type="file"
+                          id="icon-button-file"
+                          onChange={handleImageChange}
+                          className="hidden"
+                        />
+                      </div>
                       <label htmlFor="icon-button-file">
                         <IconButton
                           className="absolute bottom-0 right-0 bg-white shadow-md hover:bg-gray-100"
