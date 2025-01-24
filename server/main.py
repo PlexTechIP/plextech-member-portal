@@ -471,7 +471,7 @@ def login_signup_add_PIC():
                 SET registered = TRUE, first_name = %s, last_name = %s, google = TRUE
                 WHERE id = %s
                 """,
-                (form["firstName"], form["lastName"], user["id"]),
+                (form["first_name"], form["last_name"], user["id"]),
                 fetch=False,
             )
         else:
@@ -487,7 +487,7 @@ def login_signup_add_PIC():
                     password = %s, google = FALSE
                 WHERE id = %s
                 """,
-                (form["firstName"], form["lastName"], form["password"], user["id"]),
+                (form["first_name"], form["last_name"], form["password"], user["id"]),
                 fetch=False,
             )
 
@@ -823,8 +823,8 @@ def requests():
             return {}, 401
 
         res = {
-            "firstName": user.get("first_name", ""),
-            "lastName": user.get("last_name", ""),
+            "first_name": user.get("first_name", ""),
+            "last_name": user.get("last_name", ""),
             "treasurer": user.get("treasurer", False),
             "pendingReview": [],
             "underReview": [],
@@ -1006,7 +1006,7 @@ def forum():
         user = execute_query(
             "SELECT first_name, last_name FROM users WHERE id = %s", (id,)
         )[0]
-        return {"firstName": user["first_name"], "lastName": user["last_name"]}, 200
+        return {"first_name": user["first_name"], "last_name": user["last_name"]}, 200
 
     if request.method == "GET":
         posts = execute_query(
