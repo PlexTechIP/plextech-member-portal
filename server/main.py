@@ -33,11 +33,11 @@ load_dotenv()
 
 # Set up environment-specific CORS settings
 if getenv("ENVIRONMENT") == "local":
-    origins = ["http://localhost:3000"]
+    origins = ["http://localhost:3000", "http://127.0.0.1:3000"]
 else:
     origins = [
         "https://plextech.studentorg.berkeley.edu",
-        "https://plextech-member-portal.vercel.app",
+        # "https://plextech-member-portal.vercel.app",
     ]
 
 # Add Google OAuth domains
@@ -52,16 +52,12 @@ origins.extend(
 app = Flask(__name__)
 CORS(
     app,
-    resources={
-        r"/*": {
-            "origins": origins,
-            "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-            "allow_headers": ["Content-Type", "Authorization", "X-Requested-With"],
-            "supports_credentials": True,
-            "expose_headers": ["Content-Type", "Authorization"],
-            "allow_credentials": True,
-        }
-    },
+    origins=origins,
+    methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_headers=["Content-Type", "Authorization", "X-Requested-With"],
+    supports_credentials=True,
+    expose_headers=["Content-Type", "Authorization"],
+    allow_credentials=True,
 )
 
 
@@ -247,6 +243,25 @@ def protected_user_routes():
                 fetch=False,
             )
         else:
+            # Validate links and profile blurb
+            linkedin = form.get("linkedin_username", "").strip()
+            instagram = form.get("instagram_username", "").strip()
+            calendly = form.get("calendly_username", "").strip()
+            profile_blurb = form.get("profile_blurb", "").strip()
+
+            if linkedin and not linkedin.startswith("https://www.linkedin.com/"):
+                return {
+                    "error": {"errorMessage": "Invalid LinkedIn URL", "errorCode": 400}
+                }, 400
+            if instagram and not instagram.startswith("https://www.instagram.com/"):
+                return {
+                    "error": {"errorMessage": "Invalid Instagram URL", "errorCode": 400}
+                }, 400
+            if calendly and not calendly.startswith("https://calendly.com/"):
+                return {
+                    "error": {"errorMessage": "Invalid Calendly URL", "errorCode": 400}
+                }, 400
+
             execute_query(
                 """
                 UPDATE users 
@@ -258,14 +273,14 @@ def protected_user_routes():
                 WHERE id = %s
                 """,
                 (
-                    form.get("profile_blurb").strip()[:250],
-                    form.get("linkedin_username").strip(),
-                    form.get("instagram_username").strip(),
-                    form.get("calendly_username").strip(),
-                    form.get("current_company").strip(),
-                    form.get("current_position").strip(),
-                    form.get("first_name").strip(),
-                    form.get("last_name").strip(),
+                    profile_blurb[:250],  # Limit profile blurb to 250 characters
+                    linkedin[:250],
+                    instagram[:250],
+                    calendly[:250],
+                    form.get("current_company", "").strip()[:250],
+                    form.get("current_position", "").strip()[:250],
+                    form.get("first_name", "").strip()[:250],
+                    form.get("last_name", "").strip()[:250],
                     id,
                 ),
                 fetch=False,

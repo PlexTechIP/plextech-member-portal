@@ -89,14 +89,14 @@ export function SignUpPage(props: Props) {
   const onFirstNameChange = ({ target }) => {
     setFormData((prevState: SignUpData) => ({
       ...prevState,
-      firstName: target.value,
+      first_name: target.value,
     }));
   };
 
   const onLastNameChange = ({ target }) => {
     setFormData((prevState: SignUpData) => ({
       ...prevState,
-      lastName: target.value,
+      last_name: target.value,
     }));
   };
 
