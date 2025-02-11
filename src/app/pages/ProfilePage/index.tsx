@@ -24,6 +24,7 @@ import { SuccessDialog } from 'app/components/SuccessDialog';
 import AvatarEditor from 'react-avatar-editor';
 import { Dialog, DialogContent, DialogActions } from '@mui/material';
 import UploadIcon from '@mui/icons-material/Upload';
+import { usePlaidLink } from 'react-plaid-link';
 
 interface Props {}
 
@@ -58,6 +59,10 @@ export function ProfilePage(props: Props) {
   const [lastName, setLastName] = useState<string>('');
 
   const [scale, setScale] = useState(1.2);
+
+  const [linkToken, setLinkToken] = useState<string>('');
+
+  const [bankConnected, setBankConnected] = useState<boolean>(false);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -129,6 +134,7 @@ export function ProfilePage(props: Props) {
           res.id
         }?${new Date().getTime()}`,
       );
+      setBankConnected(!!res.plaid_access_token);
       if (res.bank) {
         setAccountNumber(res.bank.account_number);
         setRoutingNumber(res.bank.routing_number);
@@ -138,31 +144,36 @@ export function ProfilePage(props: Props) {
     f();
   }, [props]);
 
-  const bankSubmit = async () => {
-    const bodyData = { bankName };
-    if (accountNumber !== user?.bank?.account_number) {
-      bodyData['account_number'] = accountNumber;
+  useEffect(() => {
+    const getLinkToken = async () => {
+      const [success, res] = await apiRequest('/bank/', 'GET');
+      if (success) {
+        setLinkToken(res.link_token);
+      }
+    };
+    getLinkToken();
+  }, []);
+
+  const { open, ready } = usePlaidLink({
+    token: linkToken,
+    onSuccess: async (public_token, metadata) => {
+      const [success, res] = await apiRequest('/bank/', 'PUT', {
+        public_token: public_token,
+      });
+
+      if (!success) {
+        setError(res.error);
+        return;
+      }
+
+      setSuccess(true);
+    },
+  });
+
+  const bankSubmit = () => {
+    if (ready) {
+      open();
     }
-    if (routingNumber !== user?.bank?.routing_number) {
-      bodyData['routing_number'] = routingNumber;
-    }
-
-    const [success, res] = await apiRequest('/bank/', 'PUT', bodyData);
-
-    if (!success) {
-      setError(res.error);
-      return;
-    }
-
-    setUser((prevUser: User | undefined) => ({
-      ...prevUser!,
-      bank: {
-        ...prevUser!.bank,
-        ...bodyData,
-      },
-    }));
-
-    setSuccess(true);
   };
 
   const bluevineSubmit = async () => {
@@ -458,83 +469,21 @@ export function ProfilePage(props: Props) {
               alignItems="center"
             >
               <h1 className="text-2xl m-0">Bank Details</h1>
-              <Button
-                onClick={bankSubmit}
-                variant="contained"
-                disabled={
-                  !accountNumber ||
-                  !routingNumber ||
-                  (accountNumber === user.bank?.account_number &&
-                    routingNumber === user.bank?.routing_number &&
-                    bankName === user.bank?.bank_name) ||
-                  !bankName
-                }
-              >
-                {user.bank ? 'Update' : 'Submit'}
+              <Button onClick={bankSubmit} variant="contained">
+                {bankConnected
+                  ? 'Update Bank Connection'
+                  : 'Connect Bank Account'}
               </Button>
             </Stack>
-            <>
-              <TextField
-                fullWidth
-                label="Account Number"
-                onChange={e => setAccountNumber(e.target.value)}
-                required
-                error={
-                  !(
-                    (accountNumber && /^\d+$/.test(accountNumber)) ||
-                    accountNumber === user.bank?.account_number
-                  )
-                }
-                helperText={
-                  !(
-                    (accountNumber && /^\d+$/.test(accountNumber)) ||
-                    accountNumber === user.bank?.account_number
-                  )
-                    ? 'Must be a valid account number'
-                    : ''
-                }
-                value={accountNumber}
-                type="password"
-              />
-              <TextField
-                fullWidth
-                label="Routing Number"
-                value={routingNumber}
-                onChange={e => setRoutingNumber(e.target.value)}
-                required
-                error={
-                  !(
-                    (routingNumber && /^\d+$/.test(routingNumber)) ||
-                    routingNumber === user.bank?.routing_number
-                  )
-                }
-                helperText={
-                  !(
-                    (routingNumber && /^\d+$/.test(routingNumber)) ||
-                    routingNumber === user.bank?.routing_number
-                  )
-                    ? 'Must be a valid routing number'
-                    : ''
-                }
-                type="password"
-              />
-            </>
-            <>
-              <TextField
-                fullWidth
-                label="Bank Name"
-                value={bankName}
-                onChange={e => setBankName(e.target.value)}
-                required
-                error={!(bankName || bankName === user.bank?.bank_name)}
-                helperText={
-                  !(bankName || bankName === user.bank?.bank_name)
-                    ? 'Bank name is required'
-                    : ''
-                }
-              />
-              <SuccessDialog open={success} onClose={() => setSuccess(false)} />
-            </>
+            {bankConnected ? (
+              <p className="text-green-600">
+                ✓ Bank account connected via Plaid
+              </p>
+            ) : (
+              <p className="text-gray-500">
+                Connect your bank account to receive reimbursements
+              </p>
+            )}
             <Stack
               direction="row"
               alignItems="center"
@@ -543,7 +492,7 @@ export function ProfilePage(props: Props) {
             >
               <InfoOutlinedIcon className="text-gray-500 text-sm" />
               <p className="m-0 text-gray-500">
-                Your information is securely encrypted with Fernet.
+                Your bank connection is securely managed by Plaid.
               </p>
             </Stack>
           </Stack>

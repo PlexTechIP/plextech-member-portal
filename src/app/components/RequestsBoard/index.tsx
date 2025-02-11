@@ -15,8 +15,8 @@ import { ErrorModal } from '../ErrorModal';
 import { ApproveModal } from './ApproveModal';
 import { apiRequest } from 'utils/apiRequest';
 import { getToken } from 'utils/useToken';
-import { ApproveMFA } from './ApproveMFA';
 import { HelpOutline } from '@mui/icons-material';
+import { SuccessDialog } from '../SuccessDialog';
 
 interface Props {
   requests: AllRequests | null;
@@ -52,8 +52,7 @@ export function RequestsBoard(props: Props) {
   const [sourceStatus, setSourceStatus] = useState<string>('');
   const [sourceIndex, setSourceIndex] = useState<number>(0);
   const [destinationIndex, setDestinationIndex] = useState<number>(0);
-  const [showMFA, setShowMFA] = useState<boolean>(false);
-  const [approvedRequest, setApprovedRequest] = useState<Request>();
+  const [success, setSuccess] = useState<boolean>(false);
 
   useEffect(() => {
     const tempSums: Sums = {
@@ -133,7 +132,9 @@ export function RequestsBoard(props: Props) {
 
     if (!success) {
       if (res.status === 407) {
-        setError({ errorMessage: 'User has not set payment information.' });
+        setError({
+          errorMessage: 'User needs to connect their bank account via Plaid.',
+        });
         return;
       }
       setError(res.error);
@@ -144,9 +145,6 @@ export function RequestsBoard(props: Props) {
       sourceIndex,
       1,
     )[0];
-
-    setApprovedRequest(request);
-
     props.requests!.approved.splice(destinationIndex, 0, request);
 
     setSums((prevState: Sums) => ({
@@ -156,26 +154,22 @@ export function RequestsBoard(props: Props) {
     }));
 
     setShowApproveModal(false);
-    setShowMFA(true);
-  };
+    setSuccess(true);
 
-  const onApproveMFA = (success: boolean) => {
-    setShowMFA(false);
+    // Move to paid immediately since Plaid handles the payment
+    setTimeout(() => {
+      setSuccess(false);
+      props.requests!.approved = props.requests!.approved.filter(
+        (r: Request) => r.id !== request.id,
+      );
+      props.requests!['paid'].splice(0, 0, request);
 
-    if (!success) return;
-
-    props.requests!.approved = props.requests!.approved.filter(
-      (request: Request) => request.id !== approvedRequest!.id,
-    );
-
-    props.requests!['paid'].splice(0, 0, approvedRequest!);
-
-    setSums((prevState: Sums) => ({
-      ...prevState,
-      approved:
-        prevState.approved - parseFloat((approvedRequest as any)!.amount),
-      paid: prevState.paid + parseFloat((approvedRequest as any)!.amount),
-    }));
+      setSums((prevState: Sums) => ({
+        ...prevState,
+        approved: prevState.approved - parseFloat(amount),
+        paid: prevState.paid + parseFloat(amount),
+      }));
+    }, 2000);
   };
 
   const onClickName = (request: Request) => {
@@ -210,7 +204,7 @@ export function RequestsBoard(props: Props) {
         onSubmit={onApprove}
         userName={props.userName}
       />
-      {showMFA && <ApproveMFA open={showMFA} onClose={onApproveMFA} />}
+      <SuccessDialog open={success} onClose={() => setSuccess(false)} />
       <DragDropContext onDragEnd={onDragEnd}>
         <Stack direction="row" spacing={1}>
           {statuses.map((statusKey: string) => {
@@ -244,7 +238,7 @@ export function RequestsBoard(props: Props) {
                       : ''}
                   </h2>
                   {statusKey === 'approved' && (
-                    <Tooltip title="Moving a request here will pay it through Bluevine, then move it to Paid.">
+                    <Tooltip title="Moving a request here will process the payment through Plaid and automatically move it to Paid when complete.">
                       <HelpOutline
                         className="cursor-pointer text-gray-500"
                         fontSize="small"

@@ -27,7 +27,10 @@ CREATE TABLE users (
     linkedin_username VARCHAR(255),
     instagram_username VARCHAR(255),
     calendly_username VARCHAR(255),
-    current_company VARCHAR(255)
+    current_company VARCHAR(255),
+    plaid_access_token VARCHAR(255),
+    plaid_item_id VARCHAR(255),
+    plaid_account_id VARCHAR(255)
 );
 
 CREATE TABLE requests (

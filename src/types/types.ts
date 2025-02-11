@@ -94,6 +94,9 @@ export interface User {
   instagram_username?: string;
   calendly_username?: string;
   current_company?: string;
+  plaid_access_token?: string;
+  plaid_item_id?: string;
+  plaid_account_id?: string;
 }
 
 export interface Post {

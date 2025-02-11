@@ -18,10 +18,19 @@ from flask_cors import CORS
 
 try:
     from .send_email import gmail_send_message
-    from .bluevine import bluevine_send_money
+    from .plaid_integration import (
+        create_link_token,
+        exchange_public_token,
+        get_account_info,
+        initiate_payment,
+    )
 except ImportError:
     from send_email import gmail_send_message
-    from bluevine import bluevine_send_money
+    from plaid_integration import (
+        create_link_token,
+        exchange_public_token,
+        get_account_info,
+    )
 import time
 import bcrypt
 import mysql.connector
@@ -57,7 +66,6 @@ CORS(
     allow_headers=["Content-Type", "Authorization", "X-Requested-With"],
     supports_credentials=True,
     expose_headers=["Content-Type", "Authorization"],
-    allow_credentials=True,
 )
 
 
@@ -94,6 +102,9 @@ jwt = JWTManager(app)
 ACCOUNT_NUMBER_KEY = getenv("FERNET_ACCOUNT_NUMBER_KEY")
 ROUTING_NUMBER_KEY = getenv("FERNET_ROUTING_NUMBER_KEY")
 BLUEVINE_PASSWORD_KEY = getenv("FERNET_BLUEVINE_PASSWORD_NUMBER_KEY")
+PLAID_ACCESS_TOKEN_KEY = getenv("FERNET_PLAID_ACCESS_TOKEN_KEY")
+PLAID_ITEM_ID_KEY = getenv("FERNET_PLAID_ITEM_ID_KEY")
+PLAID_ACCOUNT_ID_KEY = getenv("FERNET_PLAID_ACCOUNT_ID_KEY")
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s - %(message)s")
 
@@ -722,52 +733,39 @@ def approve_request(request_id):
         if form["status"] == "approved":
             requester = execute_query(
                 """
-                SELECT first_name, last_name, bank_account_number, bank_routing_number,
-                       bank_name, email, id
+                SELECT first_name, last_name, plaid_access_token, plaid_account_id,
+                       email, id
                 FROM users 
                 WHERE id = %s
                 """,
                 (r["user_id"],),
             )[0]
 
-            if not requester["bank_account_number"]:
-                return {"error": "Need to set bank info"}, 407
+            if not requester["plaid_access_token"]:
+                return {"error": "Need to connect bank account"}, 407
 
-            bluevine_user = execute_query(
-                "SELECT bluevine_email, bluevine_password FROM users WHERE id = %s",
-                (id,),
-            )[0]
-
-            bluevine_send_money(
-                fullName=f"{requester['first_name']} {requester['last_name']}",
-                accountNumber=decrypt(
-                    requester["bank_account_number"], ACCOUNT_NUMBER_KEY
-                ),
-                routingNumber=decrypt(
-                    requester["bank_routing_number"], ROUTING_NUMBER_KEY
-                ),
-                bankName=requester["bank_name"],
-                amount=form["amount"],
-                user_id=requester["id"],
-                email=requester["email"],
-                comments=form["comments"],
-                request_id=request_id,
-                description=r["item_description"],
-                bluevineEmail=bluevine_user["bluevine_email"],
-                bluevinePassword=decrypt(
-                    bluevine_user["bluevine_password"], BLUEVINE_PASSWORD_KEY
-                ),
+            payment_id = initiate_payment(
+                decrypt(requester["plaid_access_token"], PLAID_ACCESS_TOKEN_KEY),
+                decrypt(requester["plaid_account_id"], PLAID_ACCOUNT_ID_KEY),
+                form["amount"],
             )
 
-        execute_query(
-            """
-            UPDATE requests 
-            SET status = %s, comments = %s
-            WHERE id = %s
-            """,
-            (form["status"], json.dumps(form["comments"]), request_id),
-            fetch=False,
-        )
+            if not payment_id:
+                return {"error": "Failed to initiate payment"}, 500
+
+            execute_query(
+                """
+                UPDATE requests 
+                SET status = %s, comments = JSON_ARRAY_APPEND(
+                    COALESCE(comments, '[]'),
+                    '$',
+                    %s
+                )
+                WHERE id = %s
+                """,
+                (form["status"], json.dumps(form["comments"]), request_id),
+                fetch=False,
+            )
 
         return {}, 200
 
@@ -1095,48 +1093,52 @@ def forum():
         return {}, 200
 
 
-@app.route("/bank/", methods=["PUT"])
+@app.route("/bank/", methods=["GET", "PUT"])
 @jwt_required()
 def bank_details():
     if request.method == "OPTIONS":
         return {}, 200
 
+    id = get_jwt_identity()
+
+    if request.method == "GET":
+        link_token = create_link_token(id)
+        if not link_token:
+            return {"error": "Failed to create link token"}, 500
+        return {"link_token": link_token}, 200
+
     if request.method == "PUT":
-        id = get_jwt_identity()
         form = dict(request.json)
 
-        update_fields = []
-        params = []
+        if "public_token" in form:
+            access_token, item_id = exchange_public_token(form["public_token"])
+            if not access_token:
+                return {"error": "Failed to exchange token"}, 500
 
-        if "accountNumber" in form and form["accountNumber"]:
-            update_fields.append("bank_account_number = %s")
-            params.append(
-                encrypt(str(form["accountNumber"]).strip(), ACCOUNT_NUMBER_KEY)
-            )
+            accounts, ach_numbers = get_account_info(access_token)
+            if not accounts or not ach_numbers:
+                return {"error": "Failed to get account info"}, 500
 
-        if "routingNumber" in form and form["routingNumber"]:
-            update_fields.append("bank_routing_number = %s")
-            params.append(
-                encrypt(str(form["routingNumber"]).strip(), ROUTING_NUMBER_KEY)
-            )
-
-        if "bankName" in form and form["bankName"]:
-            update_fields.append("bank_name = %s")
-            params.append(form["bankName"].strip())
-
-        if update_fields:
-            params.append(id)
             execute_query(
-                f"""
+                """
                 UPDATE users 
-                SET {', '.join(update_fields)}
+                SET plaid_access_token = %s,
+                    plaid_item_id = %s,
+                    plaid_account_id = %s
                 WHERE id = %s
                 """,
-                tuple(params),
+                (
+                    encrypt(access_token, PLAID_ACCESS_TOKEN_KEY),
+                    encrypt(item_id, PLAID_ITEM_ID_KEY),
+                    encrypt(accounts[0]["account_id"], PLAID_ACCOUNT_ID_KEY),
+                    id,
+                ),
                 fetch=False,
             )
 
-        return {}, 200
+            return {}, 200
+
+        return {"error": "Invalid request"}, 400
 
 
 @app.route("/profile/image/", methods=["PUT"])

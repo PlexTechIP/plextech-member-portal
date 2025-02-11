@@ -14,6 +14,7 @@ import Select from '@mui/material/Select';
 import { MenuItem } from '@mui/material';
 
 const positions = [
+  'Student',
   'Developer',
   'Senior Developer',
   'Senior Advisor',
