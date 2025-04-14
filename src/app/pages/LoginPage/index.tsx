@@ -30,7 +30,7 @@ import { apiRequest } from 'utils/apiRequest';
 import { setToken, getToken } from 'utils/useToken';
 import Cookies from 'js-cookie';
 
-interface Props { }
+interface Props {}
 
 export function LoginPage(props: Props) {
   const [submitted, setSubmitted] = useState<boolean>(false);
@@ -185,92 +185,101 @@ export function LoginPage(props: Props) {
                 />
                 <h1 className="m-0 text-[3.052rem] pt-6">Login</h1>
                 <div id="google-signin" />
-                <Divider className="w-full" variant="middle" light>
-                  or
-                </Divider>
-
-                {false && <>  <Stack className="w-full">
-                  <p>Email Address</p>
-                  <TextField
-                    variant="outlined"
-                    required
-                    size="small"
-                    value={formData.google ? '' : formData.email}
-                    onChange={onEmailChange}
-                    error={
-                      (submitted && formData.email === '') ||
-                      (formData.google && incorrect) ||
-                      incorrect
-                    }
-                    helperText={
-                      (submitted && formData.email === '' && 'Required') ||
-                      (formData.google &&
-                        incorrect &&
-                        'You are not registered as a PlexTech member. Contact PlexTech management if this is incorrect.') ||
-                      (incorrect && 'Incorrect email or password.')
-                    }
-                  />
-                </Stack>
-                  <Stack className="w-full">
-                    <p>Password</p>
-                    <TextField
-                      variant="outlined"
-                      type={showPassword ? 'text' : 'password'}
-                      autoComplete="current-password"
-                      required
-                      size="small"
-                      InputProps={{
-                        endAdornment: (
-                          <InputAdornment position="end">
-                            <IconButton
-                              onClick={onShowPassword}
-                              onMouseDown={onShowPassword}
-                            >
-                              {showPassword ? <Visibility /> : <VisibilityOff />}
-                            </IconButton>
-                          </InputAdornment>
-                        ),
-                      }}
-                      value={formData.google ? '' : formData.password}
-                      onChange={onPasswordChange}
-                      error={
-                        !formData.google &&
-                        ((submitted && formData.password === '') || incorrect)
-                      }
-                      helperText={
-                        !formData.google &&
-                        ((submitted && formData.password === '' && 'Required') ||
-                          (incorrect && 'Incorrect email or password.'))
-                      }
-                    />
-                  </Stack>
-                  <Stack direction="row" spacing={3}>
-                    <Button
-                      variant="contained"
-                      onClick={onSubmit}
-                      type="submit"
-                      style={{
-                        backgroundColor: 'rgb(255, 138, 0)',
-                        color: 'white',
-                      }}
-                    >
-                      {loading ? (
-                        <CircularProgress
-                          className="text-[rgb(255,138,0)]"
-                          size={20}
-                        />
-                      ) : (
-                        'Log In'
-                      )}
+                {false && (
+                  <>
+                    {' '}
+                    <Divider className="w-full" variant="middle" light>
+                      or
+                    </Divider>
+                    <Stack className="w-full">
+                      <p>Email Address</p>
+                      <TextField
+                        variant="outlined"
+                        required
+                        size="small"
+                        value={formData.google ? '' : formData.email}
+                        onChange={onEmailChange}
+                        error={
+                          (submitted && formData.email === '') ||
+                          (formData.google && incorrect) ||
+                          incorrect
+                        }
+                        helperText={
+                          (submitted && formData.email === '' && 'Required') ||
+                          (formData.google &&
+                            incorrect &&
+                            'You are not registered as a PlexTech member. Contact PlexTech management if this is incorrect.') ||
+                          (incorrect && 'Incorrect email or password.')
+                        }
+                      />
+                    </Stack>
+                    <Stack className="w-full">
+                      <p>Password</p>
+                      <TextField
+                        variant="outlined"
+                        type={showPassword ? 'text' : 'password'}
+                        autoComplete="current-password"
+                        required
+                        size="small"
+                        InputProps={{
+                          endAdornment: (
+                            <InputAdornment position="end">
+                              <IconButton
+                                onClick={onShowPassword}
+                                onMouseDown={onShowPassword}
+                              >
+                                {showPassword ? (
+                                  <Visibility />
+                                ) : (
+                                  <VisibilityOff />
+                                )}
+                              </IconButton>
+                            </InputAdornment>
+                          ),
+                        }}
+                        value={formData.google ? '' : formData.password}
+                        onChange={onPasswordChange}
+                        error={
+                          !formData.google &&
+                          ((submitted && formData.password === '') || incorrect)
+                        }
+                        helperText={
+                          !formData.google &&
+                          ((submitted &&
+                            formData.password === '' &&
+                            'Required') ||
+                            (incorrect && 'Incorrect email or password.'))
+                        }
+                      />
+                    </Stack>
+                    <Stack direction="row" spacing={3}>
+                      <Button
+                        variant="contained"
+                        onClick={onSubmit}
+                        type="submit"
+                        style={{
+                          backgroundColor: 'rgb(255, 138, 0)',
+                          color: 'white',
+                        }}
+                      >
+                        {loading ? (
+                          <CircularProgress
+                            className="text-[rgb(255,138,0)]"
+                            size={20}
+                          />
+                        ) : (
+                          'Log In'
+                        )}
+                      </Button>
+                      <Button variant="contained" onClick={onForgotPassword}>
+                        Forgot Password?
+                      </Button>
+                    </Stack>
+                    <Button variant="contained" onClick={onSignUpClick}>
+                      Don't have an account yet?
                     </Button>
-                    <Button variant="contained" onClick={onForgotPassword}>
-                      Forgot Password?
-                    </Button>
-                  </Stack>
-                  <Button variant="contained" onClick={onSignUpClick}>
-                    Don't have an account yet?
-                  </Button>
-                </>}
+                  </>
+                )}
               </Stack>
             </form>
           </Paper>
