@@ -57,6 +57,14 @@ export function ProfilePage(props: Props) {
   const [firstName, setFirstName] = useState<string>('');
   const [lastName, setLastName] = useState<string>('');
 
+  const calendarUrlPrefixes = [
+    'https://calendly.com/',
+    'https://calendar.google.com/',
+    'https://www.google.com/calendar/',
+  ];
+  const isCalendlyOrGoogleCalendarUrl = (value: string) =>
+    calendarUrlPrefixes.some(prefix => value.startsWith(prefix));
+
   const [scale, setScale] = useState(1.2);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -248,7 +256,7 @@ export function ProfilePage(props: Props) {
                         'https://www.instagram.com/',
                       )) ||
                     (calendlyUsername !== '' &&
-                      !calendlyUsername.startsWith('https://calendly.com/')) ||
+                      !isCalendlyOrGoogleCalendarUrl(calendlyUsername)) ||
                     profileBlurb === '' ||
                     firstName === '' ||
                     lastName === ''
@@ -421,17 +429,17 @@ export function ProfilePage(props: Props) {
               />
               <TextField
                 fullWidth
-                label="Calendly URL"
+                label="Calendly or Google Calendar URL"
                 value={calendlyUsername}
                 onChange={e => setCalendlyUsername(e.target.value)}
                 error={
                   calendlyUsername !== '' &&
-                  !calendlyUsername.startsWith('https://calendly.com/')
+                  !isCalendlyOrGoogleCalendarUrl(calendlyUsername)
                 }
                 helperText={
                   calendlyUsername !== '' &&
-                  !calendlyUsername.startsWith('https://calendly.com/')
-                    ? 'Must be a valid Calendly URL'
+                  !isCalendlyOrGoogleCalendarUrl(calendlyUsername)
+                    ? 'Must be a valid Calendly or Google Calendar URL'
                     : ''
                 }
                 required

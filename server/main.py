@@ -248,6 +248,11 @@ def protected_user_routes():
             instagram = form.get("instagram_username", "").strip()
             calendly = form.get("calendly_username", "").strip()
             profile_blurb = form.get("profile_blurb", "").strip()
+            calendar_url_prefixes = (
+                "https://calendly.com/",
+                "https://calendar.google.com/",
+                "https://www.google.com/calendar/",
+            )
 
             if linkedin and not linkedin.startswith("https://www.linkedin.com/"):
                 return {
@@ -257,9 +262,12 @@ def protected_user_routes():
                 return {
                     "error": {"errorMessage": "Invalid Instagram URL", "errorCode": 400}
                 }, 400
-            if calendly and not calendly.startswith("https://calendly.com/"):
+            if calendly and not calendly.startswith(calendar_url_prefixes):
                 return {
-                    "error": {"errorMessage": "Invalid Calendly URL", "errorCode": 400}
+                    "error": {
+                        "errorMessage": "Invalid Calendly or Google Calendar URL",
+                        "errorCode": 400,
+                    }
                 }, 400
 
             execute_query(
