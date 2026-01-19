@@ -250,7 +250,7 @@ def protected_user_routes():
             profile_blurb = form.get("profile_blurb", "").strip()
             calendar_url_prefixes = (
                 "https://calendly.com/",
-                "https://calendar.google.com/",
+                "https://calendar.app.google/",
                 "https://www.google.com/calendar/",
             )
 

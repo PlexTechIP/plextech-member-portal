@@ -59,7 +59,7 @@ export function ProfilePage(props: Props) {
 
   const calendarUrlPrefixes = [
     'https://calendly.com/',
-    'https://calendar.google.com/',
+    'https://calendar.app.google/',
     'https://www.google.com/calendar/',
   ];
   const isCalendlyOrGoogleCalendarUrl = (value: string) =>
