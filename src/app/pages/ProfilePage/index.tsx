@@ -90,16 +90,18 @@ export function ProfilePage(props: Props) {
           const formData = new FormData();
           formData.append('image', blob, 'profile.jpg');
 
-          const [success] = await apiRequest(
+          const [success, response] = await apiRequest(
             '/profile/image/',
             'PUT',
             formData,
           );
           if (success) {
             setImageUrl(
-              `${process.env.REACT_APP_BACKEND_URL}/profile/image/${
-                user?.id
-              }?${new Date().getTime()}`,
+              response.image_url?.startsWith('http')
+                ? `${response.image_url}?${new Date().getTime()}`
+                : `${process.env.REACT_APP_BACKEND_URL}${
+                    response.image_url || `/profile/image/${user?.id}`
+                  }?${new Date().getTime()}`,
             );
             setOpenCrop(false);
             setSuccess(true);
