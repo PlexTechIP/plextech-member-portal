@@ -3,7 +3,6 @@
     "noImplicitAny": false,
     "target": "es6",
     "lib": ["dom", "dom.iterable", "esnext"],
-    "types": ["node", "jest", "webpack-env"],
     "allowJs": true,
     "skipLibCheck": true,
     "esModuleInterop": true,
