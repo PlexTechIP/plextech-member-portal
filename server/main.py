@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, send_from_directory
+from flask import Flask, request, jsonify, redirect, send_from_directory
 from dotenv import load_dotenv
 from os import getenv
 from random import randint
@@ -28,6 +28,7 @@ import mysql.connector
 import json
 import logging
 import uuid
+import requests
 
 load_dotenv()
 
@@ -127,6 +128,32 @@ def execute_query(query, params=None, fetch=True):
         db.close()
 
 
+def upload_profile_image_to_blob(user_id, image_bytes, content_type):
+    upload_url = getenv("PROFILE_IMAGE_UPLOAD_URL")
+    upload_secret = getenv("PROFILE_IMAGE_UPLOAD_SECRET")
+    if not upload_url and not upload_secret:
+        return None
+    if not upload_url or not upload_secret:
+        raise RuntimeError("Profile image Blob upload is only partially configured")
+
+    response = requests.post(
+        upload_url,
+        data=image_bytes,
+        headers={
+            "Authorization": f"Bearer {upload_secret}",
+            "Content-Type": content_type,
+            "X-Member-Id": user_id,
+        },
+        timeout=30,
+    )
+    response.raise_for_status()
+    result = response.json()
+    image_url = result.get("url")
+    if not image_url or not image_url.startswith("https://"):
+        raise RuntimeError("Blob upload did not return a valid public URL")
+    return image_url
+
+
 def generate_uuid():
     return str(uuid.uuid4())
 
@@ -221,6 +248,25 @@ def members():
                 user["current_position"] = ""
 
         return {"users": users}, 200
+
+
+@app.route("/public-members-info", methods=["GET"])
+def public_members_info():
+    users = execute_query(
+        """
+        SELECT id, first_name, last_name, current_position, profile_blurb,
+               linkedin_username, instagram_username, calendly_username,
+               current_company, big_id, image_url
+        FROM users
+        WHERE registered = TRUE
+        """
+    )
+
+    for user in users:
+        if not user.get("image_url"):
+            user["image_url"] = f"/public/profile-pictures/{user['id']}.jpg"
+
+    return {"users": users}, 200
 
 
 @app.route("/profile/", methods=["PUT", "POST", "GET", "DELETE", "OPTIONS"])
@@ -1160,7 +1206,14 @@ def update_profile_image():
         if file.filename == "":
             return {"error": "No selected file"}, 400
 
-        # Save to file
+        image_bytes = file.read()
+        if not image_bytes:
+            return {"error": "Image is empty"}, 400
+        if len(image_bytes) > 4 * 1024 * 1024:
+            return {"error": "Image exceeds the 4 MB limit"}, 413
+
+        # Retain a local copy during the migration so the legacy image URL
+        # remains available as a fallback.
         profile_dir = (
             "./images"
             if getenv("ENVIRONMENT") == "local"
@@ -1169,12 +1222,40 @@ def update_profile_image():
         if not os.path.exists(profile_dir):
             return {"error": "Profile pictures directory does not exist"}, 500
 
-        file.save(f"{profile_dir}/{id}.jpg")
-        return {}, 200
+        image_path = f"{profile_dir}/{id}.jpg"
+        with open(image_path, "wb") as image_file:
+            image_file.write(image_bytes)
+
+        try:
+            image_url = upload_profile_image_to_blob(
+                id,
+                image_bytes,
+                file.mimetype or "image/jpeg",
+            )
+        except (requests.RequestException, RuntimeError, ValueError) as error:
+            logging.error("Profile image Blob upload failed: %s", error)
+            return {"error": "Profile image storage is temporarily unavailable"}, 502
+
+        if image_url:
+            execute_query(
+                "UPDATE users SET image_url = %s WHERE id = %s",
+                (image_url, id),
+                fetch=False,
+            )
+            return {"image_url": image_url}, 200
+
+        return {"image_url": f"/profile/image/{id}"}, 200
 
 
 @app.route("/profile/image/<user_id>", methods=["GET"])
 def get_profile_image(user_id):
+    user = execute_query(
+        "SELECT image_url FROM users WHERE id = %s",
+        (user_id,),
+    )
+    if user and user[0].get("image_url", "").startswith("https://"):
+        return redirect(user[0]["image_url"], code=302)
+
     profile_dir = (
         "./images"
         if getenv("ENVIRONMENT") == "local"
