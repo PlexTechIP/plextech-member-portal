@@ -20,6 +20,7 @@ import { SuccessDialog } from '../SuccessDialog';
 
 interface Props {
   open: boolean;
+  requestId: string;
   onClose: (success: boolean) => void;
 }
 
@@ -29,7 +30,11 @@ export function ApproveMFA(props: Props) {
   const [success, setSuccess] = useState<boolean>(false);
 
   const onSubmit = async () => {
-    const [success, res] = await apiRequest(`/approval/_/`, 'POST', { code });
+    const [success, res] = await apiRequest(
+      `/approval/${props.requestId}/`,
+      'POST',
+      { code },
+    );
 
     if (!success) {
       setError(res.error);
