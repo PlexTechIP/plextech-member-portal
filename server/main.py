@@ -13,6 +13,7 @@ from flask_jwt_extended import (
 from datetime import datetime, timedelta, timezone
 from time import time
 from cryptography.fernet import Fernet
+from pathlib import Path
 import os
 from flask_cors import CORS
 
@@ -30,7 +31,8 @@ import logging
 import uuid
 import requests
 
-load_dotenv()
+SERVER_DIR = Path(__file__).resolve().parent
+load_dotenv(SERVER_DIR / ".env")
 
 # Set up environment-specific CORS settings
 if getenv("ENVIRONMENT") == "local":
@@ -827,15 +829,56 @@ def approve_request(request_id):
 
     if request.method == "POST":
         form = dict(request.json)
-        code = str(form["code"])
+        raw_code = form.get("code")
+        code = str(raw_code).strip() if raw_code is not None else ""
+        if not code or len(code) > 32:
+            return {"error": "Invalid MFA code"}, 400
 
         execute_query(
-            "INSERT INTO mfa (id, code) VALUES (%s, %s)",
-            (generate_uuid(), code),
+            """
+            INSERT INTO mfa (id, code) VALUES (%s, %s)
+            ON DUPLICATE KEY UPDATE code = VALUES(code), created_at = CURRENT_TIMESTAMP
+            """,
+            (request_id, code),
             fetch=False,
         )
 
         return {}, 200
+
+
+@app.route("/approval/<request_id>/mfa-needed", methods=["GET", "OPTIONS"])
+@jwt_required()
+def mfa_needed(request_id):
+    if request.method == "OPTIONS":
+        return {}, 200
+
+    id = get_jwt_identity()
+    user = execute_query("SELECT treasurer FROM users WHERE id = %s", (id,))[0]
+    if not user["treasurer"]:
+        return {}, 401
+
+    rows = execute_query(
+        "SELECT id FROM mfa WHERE id = %s AND code IS NULL LIMIT 1",
+        (request_id,),
+    )
+    return {"needed": len(rows) > 0}, 200
+
+
+@app.route("/approval/<request_id>/status", methods=["GET", "OPTIONS"])
+@jwt_required()
+def approval_status(request_id):
+    if request.method == "OPTIONS":
+        return {}, 200
+
+    id = get_jwt_identity()
+    user = execute_query("SELECT treasurer FROM users WHERE id = %s", (id,))[0]
+    if not user["treasurer"]:
+        return {}, 401
+
+    rows = execute_query("SELECT status FROM requests WHERE id = %s", (request_id,))
+    if not rows:
+        return {}, 404
+    return {"status": rows[0]["status"]}, 200
 
 
 def convert_date(date_str):
