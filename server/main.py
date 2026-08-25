@@ -783,7 +783,8 @@ def approve_request(request_id):
 
     if request.method == "POST":
         form = dict(request.json)
-        code = str(form.get("code", "")).strip()
+        raw_code = form.get("code")
+        code = str(raw_code).strip() if raw_code is not None else ""
         if not code or len(code) > 32:
             return {"error": "Invalid MFA code"}, 400
 

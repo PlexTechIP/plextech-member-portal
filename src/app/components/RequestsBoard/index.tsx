@@ -287,7 +287,13 @@ export function RequestsBoard(props: Props) {
         onSubmit={onApprove}
         userName={props.userName}
       />
-      {showMFA && <ApproveMFA open={showMFA} onClose={onApproveMFA} />}
+      {showMFA && approvedRequest && (
+        <ApproveMFA
+          open={showMFA}
+          requestId={approvedRequest.id}
+          onClose={onApproveMFA}
+        />
+      )}
       <DragDropContext onDragEnd={onDragEnd}>
         <Stack direction="row" spacing={1}>
           {statuses.map((statusKey: string) => {
