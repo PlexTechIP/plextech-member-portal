@@ -10,7 +10,7 @@ import { AllRequests, Comment, Error, Request } from '../../../types/types';
 import AddIcon from '@mui/icons-material/Add';
 import { DragDropContext, Droppable } from '@hello-pangea/dnd';
 import jwt_decode from 'jwt-decode';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ErrorModal } from '../ErrorModal';
 import { ApproveModal } from './ApproveModal';
 import { apiRequest } from 'utils/apiRequest';
@@ -54,6 +54,85 @@ export function RequestsBoard(props: Props) {
   const [destinationIndex, setDestinationIndex] = useState<number>(0);
   const [showMFA, setShowMFA] = useState<boolean>(false);
   const [approvedRequest, setApprovedRequest] = useState<Request>();
+  const mfaPollIntervalRef = useRef<number | null>(null);
+  const statusPollIntervalRef = useRef<number | null>(null);
+
+  const stopMfaPolling = () => {
+    if (mfaPollIntervalRef.current !== null) {
+      window.clearInterval(mfaPollIntervalRef.current);
+      mfaPollIntervalRef.current = null;
+    }
+  };
+
+  const stopStatusPolling = () => {
+    if (statusPollIntervalRef.current !== null) {
+      window.clearInterval(statusPollIntervalRef.current);
+      statusPollIntervalRef.current = null;
+    }
+  };
+
+  const startMfaPolling = () => {
+    if (mfaPollIntervalRef.current !== null) return;
+
+    mfaPollIntervalRef.current = window.setInterval(async () => {
+      const [success, res] = await apiRequest(`/approval/mfa-needed`, 'GET');
+      if (success && res.needed) {
+        setShowMFA(true);
+        stopMfaPolling();
+      }
+    }, 2000);
+  };
+
+  const startStatusPolling = (requestId: string) => {
+    if (statusPollIntervalRef.current !== null) return;
+
+    statusPollIntervalRef.current = window.setInterval(async () => {
+      const [success, res] = await apiRequest(
+        `/approval/${requestId}/status`,
+        'GET',
+      );
+
+      if (!success) return;
+
+      if (res.status === 'paid') {
+        setShowMFA(false);
+        stopMfaPolling();
+        stopStatusPolling();
+
+        const paidRequest =
+          props.requests!.approved.find((r: Request) => r.id === requestId) ??
+          (approvedRequest?.id === requestId ? approvedRequest : undefined);
+
+        props.requests!.approved = props.requests!.approved.filter(
+          (request: Request) => request.id !== requestId,
+        );
+
+        if (paidRequest) {
+          props.requests!['paid'].splice(0, 0, paidRequest);
+          const amt = parseFloat(String((paidRequest as any).amount));
+          setSums((prevState: Sums) => ({
+            ...prevState,
+            approved: prevState.approved - amt,
+            paid: prevState.paid + amt,
+          }));
+        }
+      }
+
+      if (res.status === 'errors') {
+        setShowMFA(false);
+        stopMfaPolling();
+        stopStatusPolling();
+        setError({ errorMessage: 'Payment failed. Check the Errors column.' });
+      }
+    }, 2000);
+  };
+
+  useEffect(() => {
+    return () => {
+      stopMfaPolling();
+      stopStatusPolling();
+    };
+  }, []);
 
   useEffect(() => {
     const tempSums: Sums = {
@@ -164,18 +243,13 @@ export function RequestsBoard(props: Props) {
 
     if (!success) return;
 
-    props.requests!.approved = props.requests!.approved.filter(
-      (request: Request) => request.id !== approvedRequest!.id,
-    );
-
-    props.requests!['paid'].splice(0, 0, approvedRequest!);
-
-    setSums((prevState: Sums) => ({
-      ...prevState,
-      approved:
-        prevState.approved - parseFloat((approvedRequest as any)!.amount),
-      paid: prevState.paid + parseFloat((approvedRequest as any)!.amount),
-    }));
+    // After MFA submission, keep polling:
+    // - /approval/mfa-needed to reopen modal if another challenge appears
+    // - /approval/<id>/status to only move to Paid once backend confirms
+    startMfaPolling();
+    if (approvedRequest?.id) {
+      startStatusPolling(approvedRequest.id);
+    }
   };
 
   const onClickName = (request: Request) => {

@@ -5,10 +5,12 @@ from dotenv import load_dotenv
 from datetime import datetime, timedelta
 from threading import Thread
 from flask import Flask
+from datetime import datetime, timedelta
 import requests
 import mysql.connector
 import logging
 import json
+import uuid
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s - %(message)s")
 
@@ -16,13 +18,15 @@ load_dotenv()
 
 app = Flask(__name__)
 
+_logged_create_payee_response_shape = False
+
 
 def get_db():
     return mysql.connector.connect(
         host=getenv("MYSQL_HOST"),
         user=getenv("MYSQL_USER"),
         password=getenv("MYSQL_PASSWORD"),
-        database="plexfinance",
+        database="plextech",
     )
 
 
@@ -46,6 +50,166 @@ def execute_query(query, params=None, fetch=True):
         db.close()
 
 
+def ensure_pending_mfa_row():
+    pending = execute_query("SELECT id FROM mfa WHERE code IS NULL LIMIT 1")
+    if pending:
+        return pending[0]["id"]
+    new_id = str(uuid.uuid4())
+    execute_query(
+        "INSERT INTO mfa (id, code) VALUES (%s, NULL)",
+        (new_id,),
+        fetch=False,
+    )
+    return new_id
+
+def next_business_day():
+    date = datetime.now() + timedelta(days=1)
+    while date.weekday() >= 5:
+        date += timedelta(days=1)
+    return date.strftime("%Y-%m-%d")
+
+def mark_request_error(request_id: str, message: str):
+    try:
+        logging.error("marking request %s as errors: %s", request_id, message)
+        execute_query(
+            "UPDATE requests SET status = 'errors' WHERE id = %s",
+            (request_id,),
+            fetch=False,
+        )
+    except Exception:
+        logging.error("failed to mark request error", exc_info=True)
+
+
+def normalize_name(name: str) -> str:
+    return " ".join((name or "").strip().lower().split())
+
+
+def extract_last4(value) -> str | None:
+    if value is None:
+        return None
+    s = str(value)
+    digits = "".join(ch for ch in s if ch.isdigit())
+    return digits[-4:] if len(digits) >= 4 else None
+
+
+def reconcile_existing_payee(
+    s,
+    login_data,
+    user_id: str,
+    full_name: str,
+    routing_number: str,
+    account_number: str,
+):
+    """
+    BlueVine may already have a payee we didn't persist locally. When payee creation
+    fails with payee_name_already_exists, fetch payees and try a safe match.
+    """
+    try:
+        payee_url = f"https://app.bluevine.com/api/v3/dda-company/{login_data['company_slug']}/dda-user/{login_data['slug']}/payee/"
+        res = s.get(
+            payee_url,
+            headers={
+                "referer": "https://app.bluevine.com/dashboard/payees",
+                "x-csrftoken": s.cookies.get("csrftoken"),
+                "origin": "https://app.bluevine.com",
+                "x-client-route": "payees",
+                "bv-trace-id": str(uuid.uuid4()),
+                "accept": "application/json, text/plain, */*",
+            },
+        )
+
+        logging.info("list payees status: %s", res.status_code)
+        if res.status_code != 200:
+            logging.error("list payees failed: %s", res.text)
+            return None
+
+        data = res.json()
+        # BlueVine response shape may be a list or an object with results/items.
+        payees = (
+            data
+            if isinstance(data, list)
+            else data.get("results") or data.get("items") or data.get("payees") or []
+        )
+
+        target_name = normalize_name(full_name)
+        target_routing = "".join(ch for ch in str(routing_number) if ch.isdigit())
+        target_last4 = extract_last4(account_number)
+
+        best = None
+        best_score = -1
+
+        for p in payees:
+            if not isinstance(p, dict):
+                continue
+            slug = p.get("slug") or p.get("id")
+            if not slug:
+                continue
+
+            score = 0
+            p_name = normalize_name(p.get("name") or p.get("payee_name") or "")
+            if p_name and p_name == target_name:
+                score += 2
+
+            p_routing = p.get("ach_routing_number") or p.get("routing_number")
+            if p_routing:
+                p_routing_digits = "".join(ch for ch in str(p_routing) if ch.isdigit())
+                if p_routing_digits and p_routing_digits == target_routing:
+                    score += 2
+
+            # Try multiple possible fields for "last4"
+            p_last4 = (
+                p.get("account_last4")
+                or p.get("account_number_last4")
+                or p.get("last4")
+                or extract_last4(p.get("encrypted_account_number"))
+            )
+            if target_last4 and p_last4 and str(p_last4)[-4:] == target_last4:
+                score += 2
+
+            # Only accept "safe" matches: name + (routing or last4)
+            if score >= 4 and score > best_score:
+                best = slug
+                best_score = score
+
+        if not best:
+            logging.error("no safe payee match found for reconciliation")
+            return None
+
+        execute_query(
+            "UPDATE users SET bluevine_slug = %s WHERE id = %s",
+            (best, user_id),
+            fetch=False,
+        )
+        logging.info("reconciled existing payee slug: %s", best)
+        return best
+
+    except Exception:
+        logging.error("payee reconciliation failed", exc_info=True)
+        return None
+
+
+def extract_payee_identifier(payee_json: dict) -> tuple[str | None, str | None]:
+    """
+    Returns (identifier_value, identifier_field_name).
+    We only select from fields that actually exist on the response.
+    """
+    if not isinstance(payee_json, dict):
+        return None, None
+
+    candidates = [
+        "slug",
+        "payee_slug",
+        "id",
+        "payee_id",
+        "uuid",
+    ]
+    for field in candidates:
+        val = payee_json.get(field)
+        if val:
+            return str(val), field
+    return None, None
+
+
 def login(
     s,
     accountNumber,
@@ -62,18 +226,29 @@ def login(
     bluevinePassword=None,
 ):
     logging.warning(s.headers)
+
+    logging.info("bluevineEmail is set: %s", bluevineEmail is not None)
+
     # login
     res = s.post(
         "https://app.bluevine.com/api/v3/auth/login/",
-        {"email": bluevineEmail, "password": bluevinePassword},
-        headers={"referer": "https://app.bluevine.com/dashboard"},
+        json={"email": bluevineEmail, "password": bluevinePassword},
+        headers={
+            "referer": "https://app.bluevine.com/dashboard",
+            "origin": "https://app.bluevine.com",
+            "bv-trace-id": str(uuid.uuid4()),
+            "accept": "application/json, text/plain, */*",
+        },
     )
-    logging.info(res.text)
+
+    logging.info("login status: %s", res.status_code)
+
     if res.status_code != 200:
         raise Exception("Failed to login to bluevine: " + str(res.json()))
     s.headers.update({"x-csrftoken": s.cookies["csrftoken"]})
 
     login_data = res.json()
+    logging.info("login_data: %s", json.dumps(login_data))
 
     res = s.get(
         f"https://app.bluevine.com/api/v3/company/{login_data['company_slug']}/user/{login_data['slug']}/mfa/",
@@ -81,12 +256,22 @@ def login(
     )
     logging.info(res.text)
 
+    # clear any stale codes
+    execute_query("DELETE FROM mfa", fetch=False)
+    logging.info("cleared stale MFA codes")
+
     # get mfa
     res = s.post(
         f"https://app.bluevine.com/api/v3/company/{login_data['company_slug']}/user/{login_data['slug']}/mfa/send_token/",
         headers={"referer": "https://app.bluevine.com/dashboard"},
     )
-    logging.info(res.text)
+    logging.info("send_token status: %s", res.status_code)
+    logging.info("send_token response: %s", res.text)
+
+    # Create a pending MFA row so the frontend can detect the challenge.
+    ensure_pending_mfa_row()
+
+    logging.info("starting after_login thread")
 
     # start a new thread that waits for mfa then runs after_login
     Thread(
@@ -122,158 +307,354 @@ def after_login(
     request_id,
     description=None,
 ):
-    logging.info("after_login started")
-
-    i = 0
-    while True:
-        mfa_codes = execute_query("SELECT code FROM mfa LIMIT 1")
-        if mfa_codes:
-            code = mfa_codes[0]["code"]
-            execute_query("DELETE FROM mfa WHERE code = %s", (code,), fetch=False)
-            break
-
-        logging.info("waiting for mfa")
-        sleep(1)
-        i += 1
-        if i > 60:
-            return {"error": "mfa timeout"}, 400
-
-    # verify mfa
-    res = s.post(
-        f"https://app.bluevine.com/api/v3/company/{login_data['company_slug']}/user/{login_data['slug']}/mfa/verify_token/",
-        {"token": code, "trust_device": True},
-        headers={"referer": "https://app.bluevine.com/dashboard"},
-    )
-    logging.info("verify mfa: %s", res.text)
-
-    body = {
-        "name": fullName,
-        "status": "Active",
-        "payee_type": "P",
-        "service": "Other Products and Services",
-        "bank_name": bankName,
-        "encrypted_account_number": str(accountNumber),
-        "verify_account_number": str(accountNumber),
-        "ach_routing_number": str(routingNumber),
-        "contact_email": email,
-        "address": "295 Summerford Cir",
-        "address_city": "San Ramon",
-        "address_extra": "",
-        "address_state": "CA",
-        "address_zip": "94583",
-    }
-
-    user = execute_query("SELECT bluevine_slug FROM users WHERE id = %s", (user_id,))[0]
-
-    if not user.get("bluevine_slug"):
-        # create payee
-        res = s.post(
-            f"https://app.bluevine.com/api/v3/dda-company/{login_data['company_slug']}/dda-user/{login_data['slug']}/payee/",
-            body,
-            headers={
-                "referer": "https://app.bluevine.com/dashboard/payees",
-                "x-csrftoken": s.cookies["csrftoken"],
-            },
-        )
-
-        if "slug" not in res.json():
-            return {"error": "failed to create payee: " + res.text}, 400
-
-        payee_slug = res.json()["slug"]
-        execute_query(
-            "UPDATE users SET bluevine_slug = %s WHERE id = %s",
-            (payee_slug, user_id),
-            fetch=False,
-        )
-    else:
-        payee_slug = user["bluevine_slug"]
-
-    # send money
-    res = s.post(
-        f"https://app.bluevine.com/api/v3/dda-company/{login_data['company_slug']}/dda-user/{login_data['slug']}/scheduled_payment/",
-        {
-            "account": "dcce374f0a9f45d0984c59ae9e33d27d",
-            "payee_slug": payee_slug,
-            "next_payment_date": (datetime.now() + timedelta(days=1)).strftime(
-                "%Y-%m-%d"
-            ),
-            "payment_type": "ACH",
-            "amount": amount,
-            "frequency": "once",
-            "is_continuously_recurring": False,
-            "funds_source": "dda",
-            "send_email_to_payee": True,
-        },
-        headers={
-            "referer": "https://app.bluevine.com/dashboard/payees",
-            "x-csrftoken": s.cookies["csrftoken"],
-        },
-    )
-    logging.info("send money: %s, %s", res.text, res.status_code)
-
-    if res.status_code == 428:
-        res = s.post(
-            f"https://app.bluevine.com/api/v3/company/{login_data['company_slug']}/user/{login_data['slug']}/mfa/send_token/",
-            headers={
-                "referer": "https://app.bluevine.com/dashboard",
-                "x-csrftoken": s.cookies["csrftoken"],
-            },
-        )
+    try:
+        logging.info("after_login started")
 
         i = 0
         while True:
-            mfa_codes = execute_query("SELECT code FROM mfa LIMIT 1")
+            mfa_codes = execute_query(
+                "SELECT id, code FROM mfa WHERE code IS NOT NULL ORDER BY created_at ASC LIMIT 1"
+            )
             if mfa_codes:
-                code = mfa_codes[0]["code"]
-                execute_query("DELETE FROM mfa WHERE code = %s", (code,), fetch=False)
+                row = mfa_codes[0]
+                code = row["code"]
+                logging.info("MFA code found (len=%d)", len(str(code)))
+                execute_query("DELETE FROM mfa WHERE id = %s", (row["id"],), fetch=False)
                 break
 
-            sleep(2)
+            logging.info("waiting for mfa (%d)", i)
+            sleep(1)
             i += 1
-            if i > 30:
+            if i > 60:
+                logging.error("MFA timeout after 60s")
+                mark_request_error(request_id, "MFA timeout (initial)")
                 return {"error": "mfa timeout"}, 400
 
+        # verify mfa
+        logging.info("verifying MFA...")
         res = s.post(
             f"https://app.bluevine.com/api/v3/company/{login_data['company_slug']}/user/{login_data['slug']}/mfa/verify_token/",
-            {"trust_device": True, "token": code},
+            json={"token": code, "trust_device": True},
+            headers={
+                "referer": "https://app.bluevine.com/dashboard/depositAccounts",
+                "origin": "https://app.bluevine.com",
+                "x-csrftoken": s.cookies["csrftoken"],
+                "x-client-route": "depositAccounts",
+                "bv-trace-id": str(uuid.uuid4()),
+                "accept": "application/json, text/plain, */*",
+            },
         )
+        logging.info("verify mfa status: %s", res.status_code)
+        logging.info("verify mfa response: %s", res.text)
+        if res.status_code != 200:
+            mark_request_error(request_id, f"BlueVine MFA verify failed ({res.status_code})")
+            return {"error": "mfa verify failed"}, 400
 
+        body = {
+            "name": fullName,
+            "status": "Active",
+            "payee_type": "P",
+            "service": "Other Products and Services",
+            "bank_name": bankName,
+            "encrypted_account_number": str(accountNumber),
+            "verify_account_number": str(accountNumber),
+            "ach_routing_number": str(routingNumber),
+            "contact_email": email,
+            "address": "295 Summerford Cir",
+            "address_city": "San Ramon",
+            "address_extra": "",
+            "address_state": "CA",
+            "address_zip": "94583",
+        }
+
+        user = execute_query("SELECT bluevine_slug FROM users WHERE id = %s", (user_id,))[0]
+        logging.info("user bluevine_slug: %s", user.get("bluevine_slug"))
+
+        if not user.get("bluevine_slug"):
+            # create payee
+            logging.info("creating payee...")
+            res = s.post(
+                f"https://app.bluevine.com/api/v3/dda-company/{login_data['company_slug']}/dda-user/{login_data['slug']}/payee/",
+                json=body,
+                headers={
+                    "referer": "https://app.bluevine.com/dashboard/payees",
+                    "x-csrftoken": s.cookies["csrftoken"],
+                    "origin": "https://app.bluevine.com",
+                    "x-client-route": "payees",
+                    "bv-trace-id": str(uuid.uuid4()),
+                    "accept": "application/json, text/plain, */*",
+                },
+            )
+            logging.info("create payee status: %s", res.status_code)
+            logging.info("create payee response: %s", res.text)
+
+            if res.status_code == 428:
+                logging.info("428 on payee creation, requesting MFA...")
+                ensure_pending_mfa_row()
+                s.post(
+                    f"https://app.bluevine.com/api/v3/company/{login_data['company_slug']}/user/{login_data['slug']}/mfa/send_token/",
+                    headers={
+                        "referer": "https://app.bluevine.com/dashboard",
+                        "x-csrftoken": s.cookies["csrftoken"],
+                    },
+                )
+
+                i = 0
+                while True:
+                    mfa_codes = execute_query(
+                        "SELECT id, code FROM mfa WHERE code IS NOT NULL ORDER BY created_at ASC LIMIT 1"
+                    )
+                    if mfa_codes:
+                        row = mfa_codes[0]
+                        code = row["code"]
+                        logging.info("payee MFA code found (len=%d)", len(str(code)))
+                        execute_query(
+                            "DELETE FROM mfa WHERE id = %s", (row["id"],), fetch=False
+                        )
+                        break
+
+                    logging.info("waiting for payee mfa (%d)", i)
+                    sleep(2)
+                    i += 1
+                    if i > 30:
+                        logging.error("payee MFA timeout")
+                        mark_request_error(request_id, "MFA timeout (payee)")
+                        return {"error": "mfa timeout"}, 400
+
+                logging.info("verifying payee MFA...")
+                res = s.post(
+                    f"https://app.bluevine.com/api/v3/company/{login_data['company_slug']}/user/{login_data['slug']}/mfa/verify_token/",
+                    json={"trust_device": True, "token": code},
+                    headers={
+                        "referer": "https://app.bluevine.com/dashboard/depositAccounts",
+                        "origin": "https://app.bluevine.com",
+                        "x-csrftoken": s.cookies["csrftoken"],
+                        "x-client-route": "depositAccounts",
+                        "bv-trace-id": str(uuid.uuid4()),
+                        "accept": "application/json, text/plain, */*",
+                    },
+                )
+                logging.info("payee MFA verify status: %s", res.status_code)
+                logging.info("payee MFA verify response: %s", res.text)
+                if res.status_code != 200:
+                    mark_request_error(
+                        request_id, f"BlueVine MFA verify failed (payee) ({res.status_code})"
+                    )
+                    return {"error": "mfa verify failed"}, 400
+
+                # retry payee creation
+                logging.info("retrying payee creation...")
+                res = s.post(
+                    f"https://app.bluevine.com/api/v3/dda-company/{login_data['company_slug']}/dda-user/{login_data['slug']}/payee/",
+                    json=body,
+                    headers={
+                        "referer": "https://app.bluevine.com/dashboard/payees",
+                        "x-csrftoken": s.cookies["csrftoken"],
+                        "origin": "https://app.bluevine.com",
+                        "x-client-route": "payees",
+                        "bv-trace-id": str(uuid.uuid4()),
+                        "accept": "application/json, text/plain, */*",
+                    },
+                )
+                logging.info("retry create payee status: %s", res.status_code)
+                logging.info("retry create payee response: %s", res.text)
+
+            # BlueVine may respond with an existing-payee error (e.g. payee_name_already_exists).
+            if res.status_code == 412:
+                try:
+                    err = res.json().get("error")
+                except Exception:
+                    err = None
+                if err == "payee_name_already_exists":
+                    logging.info("payee already exists; attempting reconciliation")
+                    reconciled = reconcile_existing_payee(
+                        s,
+                        login_data,
+                        user_id=user_id,
+                        full_name=fullName,
+                        routing_number=str(routingNumber),
+                        account_number=str(accountNumber),
+                    )
+                    if reconciled:
+                        payee_slug = reconciled
+                    else:
+                        mark_request_error(request_id, "failed to reconcile existing payee")
+                        return {"error": "failed to reconcile existing payee"}, 400
+
+            if "slug" not in res.json() and "payee_slug" not in locals():
+                logging.error("failed to create payee")
+                mark_request_error(request_id, "failed to create payee")
+                return {"error": "failed to create payee: " + res.text}, 400
+
+            if "payee_slug" not in locals():
+                payee_json = res.json()
+                global _logged_create_payee_response_shape
+                if not _logged_create_payee_response_shape:
+                    try:
+                        keys = sorted(list(payee_json.keys()))
+                    except Exception:
+                        keys = []
+                    candidate_fields = ["slug", "payee_slug", "id", "payee_id", "uuid"]
+                    present_candidates = [
+                        f for f in candidate_fields if f in payee_json and payee_json.get(f)
+                    ]
+                    logging.info(
+                        "create payee success response keys=%s candidate_id_fields_present=%s",
+                        keys,
+                        present_candidates,
+                    )
+                    _logged_create_payee_response_shape = True
+
+                extracted, extracted_field = extract_payee_identifier(payee_json)
+                if not extracted:
+                    mark_request_error(request_id, "create payee missing identifier field")
+                    return {"error": "create payee missing identifier field"}, 400
+
+                logging.info("persisting payee identifier field=%s", extracted_field)
+                payee_slug = extracted
+                execute_query(
+                    "UPDATE users SET bluevine_slug = %s WHERE id = %s",
+                    (payee_slug, user_id),
+                    fetch=False,
+                )
+        else:
+            payee_slug = user["bluevine_slug"]
+
+        logging.info("payee_slug: %s", payee_slug)
+
+        # send money
+        logging.info("sending scheduled payment...")
         res = s.post(
             f"https://app.bluevine.com/api/v3/dda-company/{login_data['company_slug']}/dda-user/{login_data['slug']}/scheduled_payment/",
-            {
+            json={
+                "account": "dcce374f0a9f45d0984c59ae9e33d27d",
                 "payee_slug": payee_slug,
-                "next_payment_date": (datetime.now() + timedelta(days=1)).strftime(
-                    "%Y-%m-%d"
-                ),
+                "next_payment_date": next_business_day(),
                 "payment_type": "ACH",
                 "amount": amount,
                 "frequency": "once",
                 "is_continuously_recurring": False,
                 "funds_source": "dda",
                 "send_email_to_payee": True,
-                "account": "dcce374f0a9f45d0984c59ae9e33d27d",
             },
             headers={
-                "referer": "https://app.bluevine.com/dashboard/payees",
+                "referer": "https://app.bluevine.com/dashboard/depositAccounts",
                 "x-csrftoken": s.cookies["csrftoken"],
+                "origin": "https://app.bluevine.com",
+                "x-client-route": "depositAccounts",
+                "bv-trace-id": str(uuid.uuid4()),
+                "accept": "application/json, text/plain, */*",
             },
         )
+        logging.info("send money status: %s", res.status_code)
+        logging.info("send money response: %s", res.text)
 
-    execute_query(
-        """
-        UPDATE requests 
-        SET status = 'paid', comments = JSON_ARRAY_APPEND(
-            COALESCE(comments, '[]'),
-            '$',
-            %s
+        if res.status_code == 428:
+            logging.info("428 received, requesting second MFA...")
+            ensure_pending_mfa_row()
+            res = s.post(
+                f"https://app.bluevine.com/api/v3/company/{login_data['company_slug']}/user/{login_data['slug']}/mfa/send_token/",
+                headers={
+                    "referer": "https://app.bluevine.com/dashboard",
+                    "x-csrftoken": s.cookies["csrftoken"],
+                },
+            )
+            logging.info("second send_token status: %s", res.status_code)
+
+            i = 0
+            while True:
+                mfa_codes = execute_query(
+                    "SELECT id, code FROM mfa WHERE code IS NOT NULL ORDER BY created_at ASC LIMIT 1"
+                )
+                if mfa_codes:
+                    row = mfa_codes[0]
+                    code = row["code"]
+                    logging.info("second MFA code found (len=%d)", len(str(code)))
+                    execute_query("DELETE FROM mfa WHERE id = %s", (row["id"],), fetch=False)
+                    break
+
+                logging.info("waiting for second mfa (%d)", i)
+                sleep(2)
+                i += 1
+                if i > 30:
+                    logging.error("second MFA timeout")
+                    mark_request_error(request_id, "MFA timeout (second)")
+                    return {"error": "mfa timeout"}, 400
+
+            logging.info("verifying second MFA...")
+            res = s.post(
+                f"https://app.bluevine.com/api/v3/company/{login_data['company_slug']}/user/{login_data['slug']}/mfa/verify_token/",
+                json={"trust_device": True, "token": code},
+                headers={
+                    "referer": "https://app.bluevine.com/dashboard/depositAccounts",
+                    "origin": "https://app.bluevine.com",
+                    "x-csrftoken": s.cookies["csrftoken"],
+                    "x-client-route": "depositAccounts",
+                    "bv-trace-id": str(uuid.uuid4()),
+                    "accept": "application/json, text/plain, */*",
+                },
+            )
+            logging.info("second verify mfa status: %s", res.status_code)
+            logging.info("second verify mfa response: %s", res.text)
+            if res.status_code != 201:
+                mark_request_error(
+                    request_id, f"BlueVine MFA verify failed (second) ({res.status_code})"
+                )
+                return {"error": "mfa verify failed"}, 400
+
+            logging.info("retrying scheduled payment...")
+            res = s.post(
+                f"https://app.bluevine.com/api/v3/dda-company/{login_data['company_slug']}/dda-user/{login_data['slug']}/scheduled_payment/",
+                json={
+                    "payee_slug": payee_slug,
+                    "next_payment_date": (datetime.now() + timedelta(days=1)).strftime(
+                        "%Y-%m-%d"
+                    ),
+                    "payment_type": "ACH",
+                    "amount": amount,
+                    "frequency": "once",
+                    "is_continuously_recurring": False,
+                    "funds_source": "dda",
+                    "send_email_to_payee": True,
+                    "account": "dcce374f0a9f45d0984c59ae9e33d27d",
+                },
+                headers={
+                    "referer": "https://app.bluevine.com/dashboard/depositAccounts",
+                    "x-csrftoken": s.cookies["csrftoken"],
+                    "origin": "https://app.bluevine.com",
+                    "x-client-route": "depositAccounts",
+                    "bv-trace-id": str(uuid.uuid4()),
+                    "accept": "application/json, text/plain, */*",
+                },
+            )
+            logging.info("retry send money status: %s", res.status_code)
+            logging.info("retry send money response: %s", res.text)
+
+        if res.status_code not in [200, 201]:
+            mark_request_error(request_id, f"BlueVine payment failed ({res.status_code})")
+            return {"error": "payment failed"}, 400
+
+        logging.info("updating request status in DB...")
+        execute_query(
+            """
+            UPDATE requests
+            SET status = 'paid', comments = JSON_ARRAY_APPEND(
+                COALESCE(comments, '[]'),
+                '$',
+                %s
+            )
+            WHERE id = %s
+            """,
+            (json.dumps(comments), request_id),
+            fetch=False,
         )
-        WHERE id = %s
-        """,
-        (json.dumps(comments), request_id),
-        fetch=False,
-    )
+        logging.info("done!")
 
-    return {}, 200
+        return {}, 200
+
+    except Exception as e:
+        logging.error("after_login crashed: %s", str(e), exc_info=True)
+        mark_request_error(request_id, f"after_login crashed: {str(e)}")
 
 
 def bluevine_send_money(

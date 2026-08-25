@@ -13,6 +13,7 @@ from flask_jwt_extended import (
 from datetime import datetime, timedelta, timezone
 from time import time
 from cryptography.fernet import Fernet
+from pathlib import Path
 import os
 from flask_cors import CORS
 
@@ -29,7 +30,9 @@ import json
 import logging
 import uuid
 
-load_dotenv()
+SERVER_DIR = Path(__file__).resolve().parent
+load_dotenv(SERVER_DIR / ".env")
+load_dotenv(SERVER_DIR / "env", override=True)
 
 # Set up environment-specific CORS settings
 if getenv("ENVIRONMENT") == "local":
@@ -57,7 +60,6 @@ CORS(
     allow_headers=["Content-Type", "Authorization", "X-Requested-With"],
     supports_credentials=True,
     expose_headers=["Content-Type", "Authorization"],
-    allow_credentials=True,
 )
 
 
@@ -783,13 +785,55 @@ def approve_request(request_id):
         form = dict(request.json)
         code = str(form["code"])
 
-        execute_query(
-            "INSERT INTO mfa (id, code) VALUES (%s, %s)",
-            (generate_uuid(), code),
-            fetch=False,
+        pending = execute_query(
+            "SELECT id FROM mfa WHERE code IS NULL ORDER BY created_at ASC LIMIT 1"
         )
+        if pending:
+            execute_query(
+                "UPDATE mfa SET code = %s WHERE id = %s",
+                (code, pending[0]["id"]),
+                fetch=False,
+            )
+        else:
+            execute_query(
+                "INSERT INTO mfa (id, code) VALUES (%s, %s)",
+                (generate_uuid(), code),
+                fetch=False,
+            )
 
         return {}, 200
+
+
+@app.route("/approval/mfa-needed", methods=["GET", "OPTIONS"])
+@jwt_required()
+def mfa_needed():
+    if request.method == "OPTIONS":
+        return {}, 200
+
+    id = get_jwt_identity()
+    user = execute_query("SELECT treasurer FROM users WHERE id = %s", (id,))[0]
+    if not user["treasurer"]:
+        return {}, 401
+
+    rows = execute_query("SELECT id FROM mfa WHERE code IS NULL LIMIT 1")
+    return {"needed": len(rows) > 0}, 200
+
+
+@app.route("/approval/<request_id>/status", methods=["GET", "OPTIONS"])
+@jwt_required()
+def approval_status(request_id):
+    if request.method == "OPTIONS":
+        return {}, 200
+
+    id = get_jwt_identity()
+    user = execute_query("SELECT treasurer FROM users WHERE id = %s", (id,))[0]
+    if not user["treasurer"]:
+        return {}, 401
+
+    rows = execute_query("SELECT status FROM requests WHERE id = %s", (request_id,))
+    if not rows:
+        return {}, 404
+    return {"status": rows[0]["status"]}, 200
 
 
 def convert_date(date_str):
@@ -890,7 +934,7 @@ def requests():
             r["created_at"] = r["created_at"].strftime("%Y-%m-%d")
             if r["status"] != "paid" or (
                 datetime.strptime(r["created_at"], "%Y-%m-%d")
-                > datetime.now() - timedelta(days=180)
+                > datetime.now() - timedelta(days=3000)
             ):
                 res[r["status"]].append(r)
 
@@ -1189,4 +1233,8 @@ def get_profile_image(user_id):
 
 
 if __name__ == "__main__":
-    app.run(port=getenv("PORT"), host="0.0.0.0", debug=getenv("ENVIRONMENT") == "local")
+    app.run(
+        port=int(getenv("PORT", "5000")),
+        host="0.0.0.0",
+        debug=getenv("ENVIRONMENT") == "local",
+    )
