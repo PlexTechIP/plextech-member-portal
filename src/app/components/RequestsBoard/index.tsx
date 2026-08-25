@@ -71,11 +71,14 @@ export function RequestsBoard(props: Props) {
     }
   };
 
-  const startMfaPolling = () => {
+  const startMfaPolling = (requestId: string) => {
     if (mfaPollIntervalRef.current !== null) return;
 
     mfaPollIntervalRef.current = window.setInterval(async () => {
-      const [success, res] = await apiRequest(`/approval/mfa-needed`, 'GET');
+      const [success, res] = await apiRequest(
+        `/approval/${requestId}/mfa-needed`,
+        'GET',
+      );
       if (success && res.needed) {
         setShowMFA(true);
         stopMfaPolling();
@@ -244,10 +247,10 @@ export function RequestsBoard(props: Props) {
     if (!success) return;
 
     // After MFA submission, keep polling:
-    // - /approval/mfa-needed to reopen modal if another challenge appears
+    // - /approval/<id>/mfa-needed to reopen modal if another challenge appears
     // - /approval/<id>/status to only move to Paid once backend confirms
-    startMfaPolling();
     if (approvedRequest?.id) {
+      startMfaPolling(approvedRequest.id);
       startStatusPolling(approvedRequest.id);
     }
   };

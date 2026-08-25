@@ -32,7 +32,6 @@ import uuid
 
 SERVER_DIR = Path(__file__).resolve().parent
 load_dotenv(SERVER_DIR / ".env")
-load_dotenv(SERVER_DIR / "env", override=True)
 
 # Set up environment-specific CORS settings
 if getenv("ENVIRONMENT") == "local":
@@ -60,6 +59,7 @@ CORS(
     allow_headers=["Content-Type", "Authorization", "X-Requested-With"],
     supports_credentials=True,
     expose_headers=["Content-Type", "Authorization"],
+    allow_credentials=True,
 )
 
 
@@ -783,30 +783,25 @@ def approve_request(request_id):
 
     if request.method == "POST":
         form = dict(request.json)
-        code = str(form["code"])
+        code = str(form.get("code", "")).strip()
+        if not code or len(code) > 32:
+            return {"error": "Invalid MFA code"}, 400
 
-        pending = execute_query(
-            "SELECT id FROM mfa WHERE code IS NULL ORDER BY created_at ASC LIMIT 1"
+        execute_query(
+            """
+            INSERT INTO mfa (id, code) VALUES (%s, %s)
+            ON DUPLICATE KEY UPDATE code = VALUES(code), created_at = CURRENT_TIMESTAMP
+            """,
+            (request_id, code),
+            fetch=False,
         )
-        if pending:
-            execute_query(
-                "UPDATE mfa SET code = %s WHERE id = %s",
-                (code, pending[0]["id"]),
-                fetch=False,
-            )
-        else:
-            execute_query(
-                "INSERT INTO mfa (id, code) VALUES (%s, %s)",
-                (generate_uuid(), code),
-                fetch=False,
-            )
 
         return {}, 200
 
 
-@app.route("/approval/mfa-needed", methods=["GET", "OPTIONS"])
+@app.route("/approval/<request_id>/mfa-needed", methods=["GET", "OPTIONS"])
 @jwt_required()
-def mfa_needed():
+def mfa_needed(request_id):
     if request.method == "OPTIONS":
         return {}, 200
 
@@ -815,7 +810,10 @@ def mfa_needed():
     if not user["treasurer"]:
         return {}, 401
 
-    rows = execute_query("SELECT id FROM mfa WHERE code IS NULL LIMIT 1")
+    rows = execute_query(
+        "SELECT id FROM mfa WHERE id = %s AND code IS NULL LIMIT 1",
+        (request_id,),
+    )
     return {"needed": len(rows) > 0}, 200
 
 
@@ -934,7 +932,7 @@ def requests():
             r["created_at"] = r["created_at"].strftime("%Y-%m-%d")
             if r["status"] != "paid" or (
                 datetime.strptime(r["created_at"], "%Y-%m-%d")
-                > datetime.now() - timedelta(days=3000)
+                > datetime.now() - timedelta(days=180)
             ):
                 res[r["status"]].append(r)
 
@@ -1233,8 +1231,4 @@ def get_profile_image(user_id):
 
 
 if __name__ == "__main__":
-    app.run(
-        port=int(getenv("PORT", "5000")),
-        host="0.0.0.0",
-        debug=getenv("ENVIRONMENT") == "local",
-    )
+    app.run(port=getenv("PORT"), host="0.0.0.0", debug=getenv("ENVIRONMENT") == "local")
